@@ -1,0 +1,39 @@
+#include <algorithm>
+#include <boost/mp.hpp>
+#include <ranges>
+
+#if defined(METABENCH)
+template <auto v>
+auto sort_unique_reverse = [] {
+  auto sort = []<class... Ts>(boost::mp::concepts::meta auto types) {
+    std::sort(std::begin(types), std::end(types),
+              [values = std::array{Ts::value...}](auto lhs, auto rhs) {
+                return values[lhs] < values[rhs];
+              });
+    return types;
+  };
+
+  auto unique = []<class... Ts>(boost::mp::concepts::meta auto types) {
+    types.erase(
+        std::unique(std::begin(types), std::end(types),
+                    [values = std::array{Ts::value...}](auto lhs, auto rhs) {
+                      return values[lhs] == values[rhs];
+                    }),
+        std::end(types));
+
+    return types;
+  };
+
+  return v | sort | unique | std::ranges::views::reverse;
+}();
+
+static_assert(<%= n %> ==
+  sort_unique_reverse<boost::mp::type_list<
+  <% (0..n-1).each do |i| %>
+  std::integral_constant<std::size_t, <%= i %>>
+  <%= ',' if i < n-1 %>
+  <% end %>
+>{}>.size);
+#endif
+
+int main() {}

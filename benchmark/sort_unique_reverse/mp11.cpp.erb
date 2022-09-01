@@ -1,0 +1,18 @@
+#include <boost/mp11/algorithm.hpp>
+
+#if defined(METABENCH)
+template<class T, class U> using sizeof_less = boost::mp11::mp_bool<(sizeof(T) < sizeof(U))>;
+
+template<class T>
+using sort_unique_reverse_t = boost::mp11::mp_reverse<boost::mp11::mp_unique<boost::mp11::mp_sort<T, sizeof_less>>>;
+
+static_assert(<%= n %> ==
+  boost::mp11::mp_size<sort_unique_reverse_t<boost::mp11::mp_list<
+  <% (0..n-1).each do |i| %>
+  std::integral_constant<std::size_t, <%= i %>>
+  <%= ',' if i < n-1 %>
+  <% end %>
+>>>{});
+#endif
+
+int main() {}

@@ -1,0 +1,41 @@
+#include <algorithm>
+#include <boost/mp.hpp>
+
+#if defined(METABENCH)
+template <auto Fn>
+auto filter = []<class... Ts>(boost::mp::concepts::meta auto types) {
+  types.erase(std::remove_if(
+                  std::begin(types), std::end(types),
+                  [fn = std::array{Fn(Ts{})...}](auto type) { return not fn[type]; }),
+              std::end(types));
+
+
+  return types;
+};
+
+template <auto v>
+auto transform_filter =  v |
+  []<class... Ts> {
+   return boost::mp::list<Ts*...>();
+  }
+  | filter<[](auto t) {
+    return requires { t->value; };
+  }>;
+
+template <auto>
+struct bar {};
+template <auto>
+struct foo {
+  int value;
+};
+
+static_assert(<%= 1 + n / 2 %> ==
+  transform_filter<boost::mp::type_list<
+  <% (0..n-1).each do |i| %>
+  <%= i % 2 == 0 ? 'foo<' + i.to_s + '>' : 'bar<' + i.to_s + '>' %>
+  <%= ',' if i < n-1 %>
+  <% end %>
+>{}>.size);
+#endif
+
+int main() {}

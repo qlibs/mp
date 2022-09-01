@@ -1,3 +1,11 @@
-template <auto... Ns>
-auto xx = mp::value_list<Ns...>{} | std::ranges::views::reverse;
+#include <boost/mp.hpp>
+#include <ranges>
 
+auto reverse = []<class... Ts> {
+  return boost::mp::list<Ts...>() | std::ranges::views::reverse;
+};
+
+static_assert((boost::mp::list<int, double, float>() | reverse) ==
+              boost::mp::list<float, double, int>());
+
+int main() {}

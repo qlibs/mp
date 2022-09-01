@@ -1,29 +1,26 @@
 #include <boost/mp.hpp>
+#include <ranges>
 
-template <class... Ts>
-auto insert =
-    boost::mp::type_list<Ts...>{}
-  | [] { return std::ranges::views::drop(1); } | []<class... Rs> {
-                 auto r2 = mp::type_list<Rs...>{} |
-                           [] { return std::ranges::views::drop(1); };
-                 return mp::type_list<Rs...>{} |
-                        [] { return std::ranges::views::take(2); } |
-                        push_back<float> | append(r2) |
-                        []<class... Xs> {
-                          auto rest = mp::type_list<Xs...>{} | [] {
-                            return std::ranges::views::drop(sizeof...(Xs) - 2);
-                          } | []<class X, class... Cs> {
-                            return mp::type_list<X(), Cs...>{};
-                          };
+template <class... TRhs>
+constexpr auto append() {
+  return []<class... TLhs> { return boost::mp::type_list<TLhs..., TRhs...>{}; };
+}
 
-                          return mp::type_list<Xs...>{} | [] {
-                            return std::ranges::views::take(sizeof...(Xs) - 2);
-                          } | append(rest);
-                        } |
-                        append(mp::to_list<foo>) | push_back<void>;
-               };
-      else
-        return mp::type_list<Us...>{};
-    };
+template <class... TRhs>
+constexpr auto append(boost::mp::type_list<TRhs...>) {
+  return []<class... TLhs> { return boost::mp::type_list<TLhs..., TRhs...>{}; };
+}
 
+template <auto N, class... Ns>
+auto insert = []<class... Ts> {
+  auto v = boost::mp::list<Ts...>();
+  auto head = v | [] { return std::ranges::views::take(N); };
+  auto tail = v | [] { return std::ranges::views::drop(N); };
+  return boost::mp::type_list<>{} | append(head) | append<Ns...>() |
+         append(tail);
+};
 
+static_assert((boost::mp::list<int, double, float>() | insert<1, short>) ==
+              boost::mp::list<int, short, double, float>());
+
+int main() {}

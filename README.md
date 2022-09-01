@@ -1,13 +1,11 @@
 <a href="https://github.com/boost-ext/mp/actions/workflows/linux.yml" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
 <a href="https://godbolt.org/">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
-> STD based Meta-Programming
-
-# MP
+# MP - ~~Template~~ Meta-Programming
 
 | [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [User Guide](#user-guide) | [FAQ](#faq) | [Benchmarks](#benchmarks) |
 
-<details open><summary>C++ <b>single header/single module, STL based</b> C++23 Meta-Programming Library</summary>
+<details open><summary>C++ <b>single header/single module</b> C++23 Meta-Programming Library</summary>
 <p>
 
 <a name="motivation"></a>
@@ -41,26 +39,14 @@
 <a name="examples"></a>
 <details open><summary>Examples</summary>
 <p>
-
-<a name="api"></a>
-<a name="configuration"></a>
-<a name="user-guide"></a>
-<details open><summary>User Guide</summary>
-<p>
+</p>
+</details>
 
 <a name="faq"></a>
 <details open><summary>FAQ</summary>
 <p>
-</p>
-</details>
-
-<a name="how-to-contribute"></a>
-<details open><summary>&nbsp;&nbsp;&nbsp;&nbsp;How to contribute?</summary>
-<p>
 
 > [CONTRIBUTING](.github/CONTRIBUTING.md)
-
-</p></details>
 
 </p>
 </details>
