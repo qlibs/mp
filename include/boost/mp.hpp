@@ -104,6 +104,29 @@ struct value_list final {
   }
 };
 
+template <std::size_t N>
+struct fixed_string final {
+  static constexpr auto size = N;
+
+  constexpr explicit(true) fixed_string(const auto... cs) : data{cs...} {}
+
+  constexpr explicit(false) fixed_string(const char (&str)[N + 1]) {
+    std::copy_n(str, N + 1, std::data(data));
+  }
+
+  [[nodiscard]] constexpr auto operator<=>(const fixed_string&) const = default;
+
+  [[nodiscard]] constexpr explicit(false) operator std::string_view() const {
+    return {std::data(data), N};
+  }
+
+  std::array<char, N + 1> data{};
+};
+
+template <std::size_t N>
+fixed_string(const char (&str)[N]) -> fixed_string<N - 1>;
+fixed_string(const auto... Cs) -> fixed_string<sizeof...(Cs)>;
+
 template <class... Ts>
 [[nodiscard]] constexpr auto list() {
   return type_list<Ts...>{};
@@ -112,6 +135,17 @@ template <class... Ts>
 template <auto... Vs>
 [[nodiscard]] constexpr auto list() {
   return value_list<Vs...>{};
+}
+
+template <fixed_string Str>
+  requires requires {
+             Str.data;
+             Str.size;
+           }
+[[nodiscard]] constexpr auto list() {
+  return []<auto... Ns>(std::index_sequence<Ns...>) {
+    return value_list<Str.data[Ns]...>{};
+  }(std::make_index_sequence<Str.size>{});
 }
 
 template <class T>
@@ -145,8 +179,8 @@ constexpr auto to_tuple = []<class T>(T&& obj) {
   }
 };
 
-template <class... Ts>
-[[nodiscard]] constexpr auto operator|(type_list<Ts...>, auto fn) {
+template <template <class...> class T, class... Ts>
+[[nodiscard]] constexpr auto operator|(T<Ts...>, auto fn) {
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
@@ -168,13 +202,13 @@ template <class... Ts>
     constexpr auto vs_out = vs(fn, std::make_index_sequence<size>{}).second;
 
     return [vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
-      return type_list<utility::nth_pack_element<vs_out[Ids], Ts...>...>{};
+      return T<utility::nth_pack_element<vs_out[Ids], Ts...>...>{};
     }(std::make_index_sequence<size>{});
   }
 }
 
-template <auto... Vs>
-[[nodiscard]] constexpr auto operator|(value_list<Vs...>, auto fn) {
+template <template <auto...> class T, auto... Vs>
+[[nodiscard]] constexpr auto operator|(T<Vs...>, auto fn) {
   if constexpr (requires { fn.template operator()<Vs...>(); }) {
     return fn.template operator()<Vs...>();
   } else {
@@ -196,7 +230,7 @@ template <auto... Vs>
     constexpr auto vs_out = vs(fn, std::make_index_sequence<size>{}).second;
 
     return [vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
-      return value_list<utility::nth_pack_element_v<vs_out[Ids], Vs...>...>{};
+      return T<utility::nth_pack_element_v<vs_out[Ids], Vs...>...>{};
     }(std::make_index_sequence<size>{});
   }
 }
@@ -228,29 +262,6 @@ template <class... Ts>
     }(std::make_index_sequence<size>{});
   }
 }
-
-template <std::size_t N>
-struct fixed_string final {
-  constexpr explicit(true) fixed_string(const auto... cs) : data{cs...} {}
-
-  constexpr explicit(false) fixed_string(const char (&str)[N + 1]) {
-    std::copy_n(str, N + 1, std::data(data));
-  }
-
-  [[nodiscard]] constexpr auto operator<=>(const fixed_string&) const = default;
-
-  [[nodiscard]] constexpr explicit(false) operator std::string_view() const {
-    return {std::data(data), N};
-  }
-
-  [[nodiscard]] constexpr auto size() const -> std::size_t { return N; }
-
-  std::array<char, N + 1> data{};
-};
-
-template <std::size_t N>
-fixed_string(const char (&str)[N]) -> fixed_string<N - 1>;
-fixed_string(const auto... Cs) -> fixed_string<sizeof...(Cs)>;
 
 template <auto N>
 constexpr auto _c = std::integral_constant<decltype(N), N>{};

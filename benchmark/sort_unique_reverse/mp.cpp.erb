@@ -14,8 +14,8 @@ template <auto v>
 auto sort_unique_reverse = [] {
   auto sort = []<class... Ts>(boost::mp::concepts::meta auto types) {
     std::sort(std::begin(types), std::end(types),
-              [values = std::array{Ts::value...}](auto lhs, auto rhs) {
-                return values[lhs] < values[rhs];
+              [](auto lhs, auto rhs) {
+                return lhs.size < rhs.size;
               });
     return types;
   };

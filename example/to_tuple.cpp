@@ -5,10 +5,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+#include <algorithm>
 #include <bit>
 #include <boost/mp.hpp>
-
-using boost::mp::operator|;
 
 template <auto Fn>
 auto sort = [](boost::mp::concepts::meta auto types) {
@@ -18,6 +17,7 @@ auto sort = [](boost::mp::concepts::meta auto types) {
 
 auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 
+using boost::mp::operator|;
 auto pack = [](auto t) { return boost::mp::to_tuple(t) | sort<by_size>; };
 
 struct not_packed {
