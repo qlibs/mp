@@ -1,0 +1,27 @@
+//
+// Copyright (c) 2022 Kris Jusiak (kris at jusiak dot net)
+//
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
+#include <utility>
+
+#if defined(METABENCH)
+template<class... Ts> struct list{
+  static constexpr auto size = sizeof...(Ts);
+};
+
+template<class... Ts>
+auto sort_unique_reverse = list<Ts.sort(sizeof(_0) < sizeof(_1)).unique...[::-1]...>{};
+
+static_assert(<%= n %> ==
+  sort_unique_reverse<
+  <% (0..n-1).each do |i| %>
+  std::integral_constant<std::size_t, <%= i %>>
+  <%= ',' if i < n-1 %>
+  <% end %>
+>.size);
+#endif
+
+int main() {}

@@ -15,6 +15,8 @@ metabench_add_dataset(sort_unique_reverse.mp "sort_unique_reverse/mp.cpp.erb"
     "(1...501).step(100)")
 metabench_add_dataset(sort_unique_reverse.mp11
     "sort_unique_reverse/mp11.cpp.erb" "(1...501).step(100)")
+metabench_add_dataset(sort_unique_reverse.circle
+    "sort_unique_reverse/circle.cpp.erb" "(1...501).step(100)")
 
 metabench_add_chart(sort_unique_reverse
     TITLE "sort_unique_reverse"
@@ -24,6 +26,7 @@ metabench_add_chart(sort_unique_reverse
     DATASETS
       sort_unique_reverse.mp
       sort_unique_reverse.mp11
+      sort_unique_reverse.circle
 )
 
 metabench_add_dataset(transform_filter.mp "transform_filter/mp.cpp.erb"
