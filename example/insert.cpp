@@ -14,8 +14,8 @@ constexpr auto append(boost::mp::type_list<TRhs...>) {
 template <auto N, class... Ns>
 auto insert = []<class... Ts> {
   auto v = boost::mp::list<Ts...>();
-  auto head = v | [] { return std::ranges::views::take(N); };
-  auto tail = v | [] { return std::ranges::views::drop(N); };
+  auto head = v | std::ranges::views::take(boost::mp::ct<N>);
+  auto tail = v | std::ranges::views::drop(boost::mp::ct<N>);
   return boost::mp::type_list<>{} | append(head) | append<Ns...>() |
          append(tail);
 };

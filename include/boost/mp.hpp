@@ -58,6 +58,9 @@ struct meta final {
   [[nodiscard]] constexpr auto operator==(const meta&) const -> bool = default;
 };
 
+template <auto N>
+static constexpr std::integral_constant<decltype(N), N> ct{};
+
 template <class... Ts>
 struct type_list final {
   static constexpr auto size = sizeof...(Ts);
@@ -123,29 +126,6 @@ template <class... Ts>
 [[nodiscard]] constexpr auto operator|(type_list<Ts...>, auto fn) {
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
-  } else if constexpr (requires { fn(); }) {
-    auto size = [fn] {
-      auto id = 0uz;
-      const std::vector types{meta{.id = id++, .size = sizeof(Ts)}...};
-      const auto v = types | fn();
-      const std::vector<meta> vs{std::cbegin(v), std::cend(v)};
-      return std::size(vs);
-    };
-
-    auto vs = [fn]<auto... Ids>(std::index_sequence<Ids...>) {
-      auto id = 0uz;
-      const std::vector types{meta{.id = id++, .size = sizeof(Ts)}...};
-      const auto v = types | fn();
-      const std::vector<meta> vs{std::cbegin(v), std::cend(v)};
-      return std::array<std::size_t, sizeof...(Ids)>{vs[Ids].id...};
-    };
-
-    constexpr auto out = std::make_index_sequence<size()>{};
-    constexpr auto vs_out = vs(out);
-
-    return [vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
-      return type_list<utility::nth_pack_element<vs_out[Ids], Ts...>...>{};
-    }(out);
   } else {
     auto size = [fn] {
       auto id = 0uz;
@@ -201,29 +181,6 @@ template <auto... Ts>
 [[nodiscard]] constexpr auto operator|(value_list<Ts...> lhs, auto fn) {
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
-  } else if constexpr (requires { fn(); }) {
-    auto size = [fn] {
-      auto id = 0uz;
-      const std::vector types{meta{.id = id++, .size = sizeof(Ts)}...};
-      const auto v = types | fn();
-      const std::vector<meta> vs{std::cbegin(v), std::cend(v)};
-      return std::size(vs);
-    };
-
-    auto vs = [fn]<auto... Ids>(std::index_sequence<Ids...>) {
-      auto id = 0uz;
-      const std::vector types{meta{.id = id++, .size = sizeof(Ts)}...};
-      const auto v = types | fn();
-      const std::vector<meta> vs{std::cbegin(v), std::cend(v)};
-      return std::array<std::size_t, sizeof...(Ids)>{vs[Ids].id...};
-    };
-
-    constexpr auto out = std::make_index_sequence<size()>{};
-    constexpr auto vs_out = vs(out);
-
-    return [vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
-      return value_list<utility::nth_pack_element_v<vs_out[Ids], Ts...>...>{};
-    }(out);
   } else {
     auto size = [fn] {
       auto id = 0uz;
@@ -279,29 +236,6 @@ template <class... Ts>
 [[nodiscard]] constexpr auto operator|(std::tuple<Ts...> t, auto fn) {
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
-  } else if constexpr (requires { fn(); }) {
-    auto size = [fn] {
-      auto id = 0uz;
-      const std::vector types{meta{.id = id++, .size = sizeof(Ts)}...};
-      const auto v = types | fn();
-      const std::vector<meta> vs{std::cbegin(v), std::cend(v)};
-      return std::size(vs);
-    };
-
-    auto vs = [fn]<auto... Ids>(std::index_sequence<Ids...>) {
-      auto id = 0uz;
-      const std::vector types{meta{.id = id++, .size = sizeof(Ts)}...};
-      const auto v = types | fn();
-      const std::vector<meta> vs{std::cbegin(v), std::cend(v)};
-      return std::array<std::size_t, sizeof...(Ids)>{vs[Ids].id...};
-    };
-
-    constexpr auto out = std::make_index_sequence<size()>{};
-    constexpr auto vs_out = vs(out);
-
-    return [t, vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
-      return std::tuple{std::get<vs_out[Ids]>(t)...};
-    }(out);
   } else {
     auto size = [fn] {
       auto id = 0uz;
