@@ -138,10 +138,6 @@ template <class... Ts>
         const auto vs = fn.template operator()(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
-      } else if constexpr (requires { fn(); }) {
-        const auto vs = fn();
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
       }
     };
 
@@ -170,10 +166,6 @@ template <auto... Vs>
         const auto vs = fn.template operator()(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
-      } else if constexpr (requires { fn(); }) {
-        const auto vs = fn();
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
       }
     };
 
@@ -200,10 +192,6 @@ template <class... Ts>
                                             vs[Ids].id...}};
       } else if constexpr (requires { fn(types); }) {
         const auto vs = fn.template operator()(types);
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
-      } else if constexpr (requires { fn(); }) {
-        const auto vs = fn();
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
       }
