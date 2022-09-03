@@ -16,8 +16,8 @@
 ```cpp
 #include <ranges>
 
-template <auto Begin, auto End, auto V>
-auto slice = V
+template <auto Begin, auto End, auto List>
+auto slice = List
            | std::ranges::views::drop(Begin)
            | std::ranges::views::take(End);
 
