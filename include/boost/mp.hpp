@@ -61,6 +61,20 @@ struct meta final {
 template <auto N>
 static constexpr std::integral_constant<decltype(N), N> ct{};
 
+namespace detail {
+template <class T>
+consteval auto type_id() {
+  std::size_t result{};
+  for (const auto& c : __PRETTY_FUNCTION__) {
+    (result ^= c) <<= 1;
+  }
+  return result;
+}
+}  // namespace detail
+
+template <class T>
+constexpr auto type_id = detail::type_id<T>();
+
 template <class... Ts>
 struct type_list final {
   static constexpr auto size = sizeof...(Ts);

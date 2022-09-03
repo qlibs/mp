@@ -13,4 +13,5 @@ endfunction()
 
 ut(list)
 ut(meta)
+ut(type_id)
 ut(utility)
