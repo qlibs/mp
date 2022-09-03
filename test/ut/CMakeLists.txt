@@ -11,6 +11,7 @@ function(ut name)
   add_test(NAME ${name}_test COMMAND ./${name}_test)
 endfunction()
 
+ut(fixed_string)
 ut(list)
 ut(meta)
 ut(type_id)
