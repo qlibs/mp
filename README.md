@@ -54,6 +54,9 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 <a name="quick-start"></a>
 <details open><summary>Quick Start</summary>
 <p>
+
+> Just play on https://godbolt.org/z/d5G9aE871
+
 </p>
 </details>
 
@@ -84,6 +87,20 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 <a name="examples"></a>
 <details open><summary>Examples</summary>
 <p>
+
+- <a href="example/append.cpp">append</a>
+- <a href="conditional.cpp">conditional</a>
+- <a href="filter.cpp">filter</a>
+- <a href="insert.cpp">insert</a>
+- <a href="nth_pack_element.cpp">nth_pack_element</a>
+- <a href="reverse.cpp">reverse</a>
+- <a href="rotate.cpp">rotate</a>
+- <a href="slice.cpp">slice</a>
+- <a href="to_list.cpp">to_list</a>
+- <a href="to_tuple.cpp">to_tuple</a>
+- <a href="transform.cpp">transform</a>
+- <a href="unique.cpp">unique</a>
+
 </p>
 </details>
 
