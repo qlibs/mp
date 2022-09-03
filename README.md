@@ -99,6 +99,11 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 <a name="benchmarks"></a>
 <details open><summary>Benchmarks</summary>
 <p>
+
+- <a href="https://boost-ext.github.io/mp/benchmark/sort_unique_reverse">sort_unique_reverse</a>
+- <a href="https://boost-ext.github.io/mp/benchmark/transform_filter">transform_filter</a>
+- <a href="https://boost-ext.github.io/mp/benchmark/conditional_drop_sum">conditional_drop_sum</a>
+
 </p>
 </details>
 
@@ -108,3 +113,4 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 ---
 
 **Disclaimer** `MP` is not an official Boost library.
+
