@@ -1,5 +1,5 @@
 <a href="https://github.com/boost-ext/mp/actions/workflows/linux.yml" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
-<a href="https://godbolt.org/z/foGcd9bxa">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/d5G9aE871">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 # MP - ~~Template~~ Meta-Programming
 
@@ -60,6 +60,14 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 <a name="overview"></a>
 <details open><summary>Overview</summary>
 <p>
+
+- Single C++23 header/module
+- Small learning curve (reuses STL, ranges or any thrid-party solution)
+- Easy debugging (meta-functions can be simply run at run-time too)
+- Same interface for types/nttp/tuples
+- Declarative by design (ranges)
+- Fast compilation times (#benchmarks)
+
 </p>
 </details>
 
