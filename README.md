@@ -10,8 +10,45 @@
 
 <a name="motivation"></a>
 <details open><summary>Motivation</summary>
+
 <p>
+
+```cpp
+#include <ranges>
+
+template <auto Begin, auto End, auto V>
+auto slice = v
+           | std::ranges::views::drop(ct<Begin>)
+           | std::ranges::views::take(ct<End>);
+
+static_assert(slice<1, 2, list<int, double, float>> == list<double, float>);
+```
+
 </p>
+
+<p>
+
+```cpp
+#include <algorithm>
+
+auto sort_by_size = [](boost::mp::concepts::meta auto types) {
+  std::sort(std::begin(types), std::end(types),
+    [](auto lhs, auto rhs) { return lhs.size < rhs.size; });
+  return types;
+};
+
+struct not_packed {
+  char c{};
+  int i{};
+  std::byte b{};
+};
+
+static_assert(sizeof(not_packed) == 12uz);
+static_assert(sizeof(to_tuple(not_packed{}) | sort<by_size>) == 8uz);
+```
+
+</p>
+
 </details>
 
 <a name="quick-start"></a>
