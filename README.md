@@ -104,15 +104,6 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 </p>
 </details>
 
-<a name="faq"></a>
-<details open><summary>FAQ</summary>
-<p>
-
-> [CONTRIBUTING](.github/CONTRIBUTING.md)
-
-</p>
-</details>
-
 <a name="benchmarks"></a>
 <details open><summary>Benchmarks</summary>
 <p>
@@ -124,10 +115,18 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 </p>
 </details>
 
+<a name="faq"></a>
+<details open><summary>FAQ</summary>
+<p>
+
+> [CONTRIBUTING](.github/CONTRIBUTING.md)
+
+</p>
+</details>
+
 </p>
 </details>
 
 ---
 
 **Disclaimer** `MP` is not an official Boost library.
-
