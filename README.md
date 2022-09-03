@@ -89,17 +89,17 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 <p>
 
 - <a href="example/append.cpp">append</a>
-- <a href="conditional.cpp">conditional</a>
-- <a href="filter.cpp">filter</a>
-- <a href="insert.cpp">insert</a>
-- <a href="nth_pack_element.cpp">nth_pack_element</a>
-- <a href="reverse.cpp">reverse</a>
-- <a href="rotate.cpp">rotate</a>
-- <a href="slice.cpp">slice</a>
-- <a href="to_list.cpp">to_list</a>
-- <a href="to_tuple.cpp">to_tuple</a>
-- <a href="transform.cpp">transform</a>
-- <a href="unique.cpp">unique</a>
+- <a href="example/conditional.cpp">conditional</a>
+- <a href="example/filter.cpp">filter</a>
+- <a href="example/insert.cpp">insert</a>
+- <a href="example/nth_pack_element.cpp">nth_pack_element</a>
+- <a href="example/reverse.cpp">reverse</a>
+- <a href="example/rotate.cpp">rotate</a>
+- <a href="example/slice.cpp">slice</a>
+- <a href="example/to_list.cpp">to_list</a>
+- <a href="example/to_tuple.cpp">to_tuple</a>
+- <a href="example/transform.cpp">transform</a>
+- <a href="example/unique.cpp">unique</a>
 
 </p>
 </details>
