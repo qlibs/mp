@@ -5,7 +5,7 @@
 #if defined(METABENCH)
 template<auto N> constexpr auto div_by = [](auto value) { return value / N; };
 template<auto N>
-constexpr auto drop_last = [] { return std::ranges::views::take(N); };
+constexpr auto drop_last = std::ranges::views::take(boost::mp::ct<N>);
 constexpr auto unique = []<class... Ts>(boost::mp::concepts::meta auto types) {
     types.erase(
         std::unique(types.begin(), types.end(),

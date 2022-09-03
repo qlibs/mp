@@ -127,108 +127,62 @@ template <class... Ts>
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
-    auto size = [fn] {
+    constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
       auto id = 0uz;
       const std::vector<meta> types{meta{.id = id++, .size = sizeof(Ts)}...};
       if constexpr (requires { fn.template operator()<Ts...>(types); }) {
-        if constexpr (auto ts = fn.template operator()<Ts...>(types);
-                      requires { std::size(ts); }) {
-          return std::size(ts);
-        } else {
-          return 1uz;
-        }
-      } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
-        return fn.template operator()<Ts...>().size;
+        const auto vs = fn.template operator()<Ts...>(types);
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
       } else if constexpr (requires { fn(types); }) {
-        if constexpr (auto ts = fn(types); requires { std::size(ts); }) {
-          return std::size(ts);
-        } else {
-          return 1uz;
-        }
-      }
-    };
-    auto vs = [fn]<auto... Ids>(std::index_sequence<Ids...>) {
-      auto id = 0uz;
-      const std::vector<meta> types{meta{.id = id++, .size = sizeof(Ts)}...};
-      if constexpr (requires { fn.template operator()<Ts...>(types); }) {
-        if constexpr (auto ts = fn.template operator()<Ts...>(types);
-                      requires { ts[0]; }) {
-          return std::array{ts[Ids].id...};
-        } else if constexpr (requires { ts.id; }) {
-          return std::array{ts.id};
-        }
-      } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
-        return std::array{Ids...};
-      } else if constexpr (requires { fn(types); }) {
-        if constexpr (auto ts = fn(types); requires { ts[0].id; }) {
-          return std::array{ts[Ids].id...};
-        } else {
-          return std::array{ts.id};
-        }
+        const auto vs = fn.template operator()(types);
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
+      } else if constexpr (requires { fn(); }) {
+        const auto vs = fn();
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
       }
     };
 
-    constexpr auto out = std::make_index_sequence<size()>{};
-    constexpr auto vs_out = vs(out);
+    constexpr auto size = vs(fn, std::index_sequence<>{}).first;
+    constexpr auto vs_out = vs(fn, std::make_index_sequence<size>{}).second;
 
     return [vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
       return type_list<utility::nth_pack_element<vs_out[Ids], Ts...>...>{};
-    }(out);
+    }(std::make_index_sequence<size>{});
   }
 }
 
-template <auto... Ts>
-[[nodiscard]] constexpr auto operator|(value_list<Ts...> lhs, auto fn) {
-  if constexpr (requires { fn.template operator()<Ts...>(); }) {
-    return fn.template operator()<Ts...>();
+template <auto... Vs>
+[[nodiscard]] constexpr auto operator|(value_list<Vs...>, auto fn) {
+  if constexpr (requires { fn.template operator()<Vs...>(); }) {
+    return fn.template operator()<Vs...>();
   } else {
-    auto size = [fn] {
+    constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
       auto id = 0uz;
-      const std::vector<meta> types{meta{.id = id++, .size = sizeof(Ts)}...};
-      if constexpr (requires { fn.template operator()<Ts...>(types); }) {
-        if constexpr (auto ts = fn.template operator()<Ts...>(types);
-                      requires { std::size(ts); }) {
-          return std::size(ts);
-        } else {
-          return 1uz;
-        }
-      } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
-        return fn.template operator()<Ts...>().size;
+      const std::vector<meta> types{meta{.id = id++, .size = sizeof(Vs)}...};
+      if constexpr (requires { fn.template operator()<Vs...>(types); }) {
+        const auto vs = fn.template operator()<Vs...>(types);
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
       } else if constexpr (requires { fn(types); }) {
-        if constexpr (auto ts = fn(types); requires { std::size(ts); }) {
-          return std::size(ts);
-        } else {
-          return 1uz;
-        }
-      }
-    };
-    auto vs = [fn]<auto... Ids>(std::index_sequence<Ids...>) {
-      auto id = 0uz;
-      const std::vector<meta> types{meta{.id = id++, .size = sizeof(Ts)}...};
-      if constexpr (requires { fn.template operator()<Ts...>(types); }) {
-        if constexpr (auto ts = fn.template operator()<Ts...>(types);
-                      requires { ts[0]; }) {
-          return std::array{ts[Ids].id...};
-        } else if constexpr (requires { ts.id; }) {
-          return std::array{ts.id};
-        }
-      } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
-        return std::array{Ids...};
-      } else if constexpr (requires { fn(types); }) {
-        if constexpr (auto ts = fn(types); requires { ts[0].id; }) {
-          return std::array{ts[Ids].id...};
-        } else {
-          return std::array{ts.id};
-        }
+        const auto vs = fn.template operator()(types);
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
+      } else if constexpr (requires { fn(); }) {
+        const auto vs = fn();
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
       }
     };
 
-    constexpr auto out = std::make_index_sequence<size()>{};
-    constexpr auto vs_out = vs(out);
+    constexpr auto size = vs(fn, std::index_sequence<>{}).first;
+    constexpr auto vs_out = vs(fn, std::make_index_sequence<size>{}).second;
 
     return [vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
-      return value_list<utility::nth_pack_element_v<vs_out[Ids], Ts...>...>{};
-    }(out);
+      return value_list<utility::nth_pack_element_v<vs_out[Ids], Vs...>...>{};
+    }(std::make_index_sequence<size>{});
   }
 }
 
@@ -237,53 +191,31 @@ template <class... Ts>
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
-    auto size = [fn] {
+    constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
       auto id = 0uz;
       const std::vector<meta> types{meta{.id = id++, .size = sizeof(Ts)}...};
       if constexpr (requires { fn.template operator()<Ts...>(types); }) {
-        if constexpr (auto ts = fn.template operator()<Ts...>(types);
-                      requires { std::size(ts); }) {
-          return std::size(ts);
-        } else {
-          return 1uz;
-        }
-      } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
-        return fn.template operator()<Ts...>().size;
+        const auto vs = fn.template operator()<Ts...>(types);
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
       } else if constexpr (requires { fn(types); }) {
-        if constexpr (auto ts = fn(types); requires { std::size(ts); }) {
-          return std::size(ts);
-        } else {
-          return 1uz;
-        }
-      }
-    };
-    auto vs = [fn]<auto... Ids>(std::index_sequence<Ids...>) {
-      auto id = 0uz;
-      const std::vector<meta> types{meta{.id = id++, .size = sizeof(Ts)}...};
-      if constexpr (requires { fn.template operator()<Ts...>(types); }) {
-        if constexpr (auto ts = fn.template operator()<Ts...>(types);
-                      requires { ts[0]; }) {
-          return std::array{ts[Ids].id...};
-        } else if constexpr (requires { ts.id; }) {
-          return std::array{ts.id};
-        }
-      } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
-        return std::array{Ids...};
-      } else if constexpr (requires { fn(types); }) {
-        if constexpr (auto ts = fn(types); requires { ts[0].id; }) {
-          return std::array{ts[Ids].id...};
-        } else {
-          return std::array{ts.id};
-        }
+        const auto vs = fn.template operator()(types);
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
+      } else if constexpr (requires { fn(); }) {
+        const auto vs = fn();
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
       }
     };
 
-    constexpr auto out = std::make_index_sequence<size()>{};
-    constexpr auto vs_out = vs(out);
+    constexpr auto size = vs(fn, std::index_sequence<>{}).first;
+    constexpr auto vs_out = vs(fn, std::make_index_sequence<size>{}).second;
 
-    return [t, vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
-      return std::tuple{std::get<vs_out[Ids]>(t)...};
-    }(out);
+    return [vs_out, t]<auto... Ids>(std::index_sequence<Ids...>) {
+      return std::make_tuple(std::get<vs_out[Ids]>(t)...);
+    }(std::make_index_sequence<size>{});
   }
 }
+
 }  // namespace boost::mp::inline v0_0_1
