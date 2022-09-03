@@ -15,7 +15,7 @@ template <auto v>
 auto conditional = v | []<class... Ts> {
   if constexpr (constexpr auto any_has_value = (has_value<Ts> or ...);
                 any_has_value) {
-    return boost::mp::ct<(has_value<Ts> + ... + 0uz)>;
+    return std::integral_constant<int, (has_value<Ts> + ... + 0uz)>{};
   } else {
     return boost::mp::type_list{};
   }

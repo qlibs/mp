@@ -21,7 +21,7 @@ auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 auto unique = []<class... Ts>(boost::mp::concepts::meta auto types) {
   types.erase(
       std::unique(std::begin(types), std::end(types),
-                  [ids = std::array{boost::mp::type_id<Ts>...}](
+                  [ids = std::array{boost::mp::utility::type_id<Ts>...}](
                       auto lhs, auto rhs) { return ids[lhs] == ids[rhs]; }),
       std::end(types));
   return types;

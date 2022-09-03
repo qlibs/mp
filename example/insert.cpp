@@ -21,13 +21,14 @@ constexpr auto append(boost::mp::type_list<TRhs...>) {
 template <auto N, class... Ns>
 auto insert = []<class... Ts> {
   auto v = boost::mp::list<Ts...>();
-  auto head = v | std::ranges::views::take(boost::mp::ct<N>);
-  auto tail = v | std::ranges::views::drop(boost::mp::ct<N>);
+  auto head = v | std::ranges::views::take(N);
+  auto tail = v | std::ranges::views::drop(N);
   return boost::mp::type_list<>{} | append(head) | append<Ns...>() |
          append(tail);
 };
 
-static_assert((boost::mp::list<int, double, float>() | insert<1, short>) ==
+using boost::mp::operator""_c;
+static_assert((boost::mp::list<int, double, float>() | insert<1_c, short>) ==
               boost::mp::list<int, short, double, float>());
 
 int main() {}

@@ -10,16 +10,17 @@
 
 template <auto Begin, auto End>
 auto slice = []<class... Ts> {
-  return boost::mp::list<Ts...>() |
-         std::ranges::views::drop(boost::mp::ct<Begin>) |
-         std::ranges::views::take(boost::mp::ct<End>);
+  return boost::mp::list<Ts...>() | std::ranges::views::drop(Begin) |
+         std::ranges::views::take(End);
 };
 
-static_assert((boost::mp::list<int, double, float>() | slice<0, 2>) ==
+using boost::mp::operator""_c;
+
+static_assert((boost::mp::list<int, double, float>() | slice<0_c, 2_c>) ==
               boost::mp::list<int, double>());
-static_assert((boost::mp::list<int, double, float>() | slice<1, 1>) ==
+static_assert((boost::mp::list<int, double, float>() | slice<1_c, 1_c>) ==
               boost::mp::list<double>());
-static_assert((boost::mp::list<int, double, float>() | slice<1, 2>) ==
+static_assert((boost::mp::list<int, double, float>() | slice<1_c, 2_c>) ==
               boost::mp::list<double, float>());
 
 int main() {}

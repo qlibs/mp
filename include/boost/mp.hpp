@@ -13,6 +13,7 @@ export import std;
 #endif
 
 #include <array>
+#include <cmath>
 #include <concepts>
 #include <string_view>
 #include <tuple>
@@ -35,6 +36,30 @@ constexpr auto nth_pack_element_v =
 
 template <auto N, class... Ts>
 using nth_pack_element = __type_pack_element<N, Ts...>;
+
+template <char... Cs>
+[[nodiscard]] consteval auto operator""_c() {
+  return std::integral_constant<std::size_t, [] {
+    std::size_t result{};
+    for (const auto c : std::array{Cs...}) {
+      result = result * std::size_t(10) + std::size_t(c - '0');
+    }
+    return result;
+  }()>{};
+}
+namespace detail {
+template <class T>
+[[nodiscard]] consteval auto type_id() {
+  std::size_t result{};
+  for (const auto& c : __PRETTY_FUNCTION__) {
+    (result ^= c) <<= 1;
+  }
+  return result;
+}
+}  // namespace detail
+
+template <class T>
+constexpr auto type_id = detail::type_id<T>();
 }  // namespace utility
 
 namespace concepts {
@@ -58,46 +83,6 @@ struct meta final {
   [[nodiscard]] constexpr operator auto() const { return id; }
   [[nodiscard]] constexpr auto operator==(const meta&) const -> bool = default;
 };
-
-template <auto N>
-static constexpr std::integral_constant<decltype(N), N> ct{};
-
-namespace detail {
-template <class T>
-consteval auto type_id() {
-  std::size_t result{};
-  for (const auto& c : __PRETTY_FUNCTION__) {
-    (result ^= c) <<= 1;
-  }
-  return result;
-}
-}  // namespace detail
-
-template <class T>
-constexpr auto type_id = detail::type_id<T>();
-
-template <std::size_t N>
-struct fixed_string final {
-  constexpr explicit(true) fixed_string(const auto... cs) : data{cs...} {}
-
-  constexpr explicit(false) fixed_string(const char (&str)[N + 1]) {
-    std::copy_n(str, N + 1, std::data(data));
-  }
-
-  [[nodiscard]] constexpr auto operator<=>(const fixed_string&) const = default;
-
-  [[nodiscard]] constexpr explicit(false) operator std::string_view() const {
-    return {std::data(data), N};
-  }
-
-  [[nodiscard]] constexpr auto size() const -> std::size_t { return N; }
-
-  std::array<char, N + 1> data{};
-};
-
-template <std::size_t N>
-fixed_string(const char (&str)[N]) -> fixed_string<N - 1>;
-fixed_string(const auto... Cs) -> fixed_string<sizeof...(Cs)>;
 
 template <class... Ts>
 struct type_list final {
@@ -244,4 +229,30 @@ template <class... Ts>
   }
 }
 
+template <std::size_t N>
+struct fixed_string final {
+  constexpr explicit(true) fixed_string(const auto... cs) : data{cs...} {}
+
+  constexpr explicit(false) fixed_string(const char (&str)[N + 1]) {
+    std::copy_n(str, N + 1, std::data(data));
+  }
+
+  [[nodiscard]] constexpr auto operator<=>(const fixed_string&) const = default;
+
+  [[nodiscard]] constexpr explicit(false) operator std::string_view() const {
+    return {std::data(data), N};
+  }
+
+  [[nodiscard]] constexpr auto size() const -> std::size_t { return N; }
+
+  std::array<char, N + 1> data{};
+};
+
+template <std::size_t N>
+fixed_string(const char (&str)[N]) -> fixed_string<N - 1>;
+fixed_string(const auto... Cs) -> fixed_string<sizeof...(Cs)>;
+
+template <auto N>
+constexpr auto _c = std::integral_constant<decltype(N), N>{};
+using utility::operator""_c;
 }  // namespace boost::mp::inline v0_0_1

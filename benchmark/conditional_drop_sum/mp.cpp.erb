@@ -12,7 +12,7 @@
 #if defined(METABENCH)
 template<auto N> constexpr auto div_by = [](auto value) { return value / N; };
 template<auto N>
-constexpr auto drop_last = std::ranges::views::take(boost::mp::ct<N>);
+constexpr auto drop_last = std::ranges::views::take(N);
 constexpr auto unique = []<class... Ts>(boost::mp::concepts::meta auto types) {
     types.erase(
         std::unique(types.begin(), types.end(),
@@ -24,11 +24,12 @@ constexpr auto sum = []<class... Ts> {
   return (Ts{} + ...);
 };
 
+
 template <auto v>
 constexpr auto conditional_drop_sum =  v |
   []<class... Ts> {
     if constexpr ((div_by<7>(Ts{}) or ...)) {
-      return v | drop_last<sizeof...(Ts) - 2>
+      return v | drop_last<boost::mp::_c<sizeof...(Ts) - 2>>
                | unique
                | sum;
     } else {

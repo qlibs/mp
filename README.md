@@ -18,10 +18,10 @@
 
 template <auto Begin, auto End, auto V>
 auto slice = V
-           | std::ranges::views::drop(ct<Begin>)
-           | std::ranges::views::take(ct<End>);
+           | std::ranges::views::drop(Begin)
+           | std::ranges::views::take(End);
 
-static_assert(slice<1, 2, list<int, double, float>> == list<double, float>);
+static_assert(slice<1_c, 2_c, list<int, double, float>> == list<double, float>);
 ```
 
 </p>
