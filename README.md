@@ -20,15 +20,12 @@
 
 template <auto Begin, auto End, auto List>
 auto slice = List
-           | std::ranges::views::drop(Begin)
-           | std::ranges::views::take(End);
+ | std::ranges::views::drop(Begin) // use std.ranges
+ | std::ranges::views::take(End);  // any library which can operate on containers is supported!
 
-static_assert(slice<1_c, 2_c, list<int, double, float>> == list<double, float>);
+static_assert(slice<1_c, 2_c, list<int, double, float>>
+                           == list<double, float>);
 ```
-
-</p>
-
-<p>
 
 ```cpp
 #include <algorithm>
@@ -39,25 +36,43 @@ auto sort_by_size = [](boost::mp::concepts::meta auto types) {
   return types;
 };
 
+/**
+ * Verify/debug at run-time
+ */
+"sort by size"_test = [] {
+  // given
+  const auto m1 = meta{.id = 0, .size = 2};
+  const auto m2 = meta{.id = 1, .size = 1};
+  const auto m3 = meta{.id = 2, .size = 3};
+
+  // when
+  const auto sorted = sort_by_size({m1, m2, m3});
+
+  // then
+  expect({m2, m1, m3} == sorted);
+};
+
 struct not_packed {
   char c{};
   int i{};
   std::byte b{};
 };
 
+/**
+ * Check at compile-time
+ */
 static_assert(sizeof(not_packed) == 12uz);
 static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 ```
 
 </p>
-
 </details>
 
 <a name="quick-start"></a>
 <details open><summary>Quick Start</summary>
 <p>
 
-> Just play on https://godbolt.org/z/d5G9aE871
+> Try it out - https://godbolt.org/z/d5G9aE871
 
 </p>
 </details>
@@ -67,15 +82,16 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 <p>
 
 - Single C++20 header/module
-- Small learning curve (reuses STL, ranges or any thrid-party solution)
-- Easy debugging (meta-functions can be simply run at run-time too)
-- Same interface for types/nttp/tuples
-- Declarative by design (ranges)
-- Fast compilation times (see benchmarks)
+- Minimal learning curve (reuses STL, ranges or any thrid-party solution)
+- Easy debugging (meta-functions can be simply run at run-time!)
+- Same interface for `types/values/tuples`
+- Declarative by design (composable using pipe operator, support for ranges)
+- Fast compilation times (see [benchmarks](#benchmarks))
 
-- Requirements
-  - C++20 compliant compiler (clang-16+)
-  - `constexpr` support inside STL (stdlibc++-16+)
+> Requirements
+
+- C++20 compliant compiler (clang-16+)
+- `constexpr` support inside STL (stdlibc++-16+)
 
 </p>
 </details>
@@ -436,8 +452,8 @@ template <template <auto...> class T, auto... Vs>
  * Composability pipe operator for std::tuple
  * @param fn functor to be applied
    - [](concepts::meta auto types)
-   - []<class... Ts>
-   - []<class... Ts>(concepts::meta auto types)
+   - [](auto&&... args)
+   - [](concepts::meta auto types, auto&&... args)
  */
 template <template <class...> class T, class... Ts>
 [[nodiscard]] constexpr auto operator|(std::tuple<Ts...>, auto fn) {
