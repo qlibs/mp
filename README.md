@@ -3,7 +3,7 @@
 
 # MP - ~~Template~~ Meta-Programming
 
-| [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
+| [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [User Guide](#user-guide) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
 
 <details open><summary>C++ <b>single header/single module</b> C++23 Meta-Programming Library</summary>
 <p>
@@ -277,18 +277,25 @@ That's it for now, for more let's take a look at more Examples in the following 
 <details open><summary>Examples</summary>
 <p>
 
-- <a href="example/append.cpp">append</a>
-- <a href="example/conditional.cpp">conditional</a>
-- <a href="example/filter.cpp">filter</a>
-- <a href="example/insert.cpp">insert</a>
-- <a href="example/nth_pack_element.cpp">nth_pack_element</a>
-- <a href="example/reverse.cpp">reverse</a>
-- <a href="example/rotate.cpp">rotate</a>
-- <a href="example/slice.cpp">slice</a>
-- <a href="example/to_list.cpp">to_list</a>
-- <a href="example/to_tuple.cpp">to_tuple</a>
-- <a href="example/transform.cpp">transform</a>
-- <a href="example/unique.cpp">unique</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/append.cpp">append</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/conditional.cpp">conditional</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/filter.cpp">filter</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/insert.cpp">insert</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/nth_pack_element.cpp">nth_pack_element</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/reverse.cpp">reverse</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/rotate.cpp">rotate</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/slice.cpp">slice</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/to_list.cpp">to_list</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/to_tuple.cpp">to_tuple</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/transform.cpp">transform</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example/unique.cpp">unique</a>
+
+</p>
+</details>
+
+<a name="user-guide"></a>
+<details open><summary>User-Guide</summary>
+<p>
 
 </p>
 </details>
