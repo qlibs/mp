@@ -5,7 +5,7 @@
 
 | [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [User Guide](#user-guide) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
 
-<details open><summary>C++ <b>single header/single module</b> C++23 Meta-Programming Library</summary>
+<details open><summary>C++ <b>single header/single module</b> C++20 Meta-Programming Library</summary>
 <p>
 
 <a name="motivation"></a>
@@ -64,7 +64,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 <details open><summary>Overview</summary>
 <p>
 
-- Single C++23 header/module
+- Single C++20 header/module
 - Small learning curve (reuses STL, ranges or any thrid-party solution)
 - Easy debugging (meta-functions can be simply run at run-time too)
 - Same interface for types/nttp/tuples
@@ -72,7 +72,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 - Fast compilation times (see benchmarks)
 
 - Requirements
-  - C++23 compliant compiler (clang-16+)
+  - C++20 compliant compiler (clang-16+)
   - `constexpr` support inside STL (stdlibc++-16+)
 
 </p>
