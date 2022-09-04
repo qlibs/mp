@@ -13,6 +13,8 @@
 
 <p>
 
+> Goal: Make ~~Template~~ Meta-Programming boring/easy by using similar to run-time approach.
+
 ```cpp
 #include <ranges>
 
@@ -313,6 +315,143 @@ Examples in the following section and the User-Guide.
 <a name="user-guide"></a>
 <details open><summary>User-Guide</summary>
 <p>
+
+```cpp
+/**
+ * Library version for example 1'0'0
+ */
+#define BOOST_MP_VERSION
+```
+
+```cpp
+/**
+ * Forces using includes even if modules are supported
+ */
+#define BOOST_MP_DISABLE_MODULE
+```
+
+```cpp
+/**
+ * A meta type representation to be manipulated
+ * vector<meta> is passed to pipe lambdas
+ */
+struct meta {
+  std::size_t id{};
+  std::size_t size{};
+  //...
+}
+```
+
+```cpp
+/**
+ * Returns unique integral (std::size_t) representation of type
+ * Should only be used for comparison
+ * static_assert(type_id<void> ! = type_id<int>);
+ */
+template <class T> constexpr auto type_id;
+```
+
+```cpp
+/**
+ * A meta concept which verifies meta range
+ * static_assert(concepts::meta<vector<meta>>);
+ */
+concept concepts::meta;
+```
+
+```cpp
+/**
+ * List of types
+ */
+template<class... Ts> struct type_list;
+```
+
+```cpp
+/**
+ * List of values
+ */
+template<class... Ts> struct value_list;
+```
+
+```cpp
+/**
+ * Compile-time string representation to be used
+ * as <"Hello World">
+ */
+template<std::size_t> struct fixed_string;
+```
+
+```cpp
+/**
+ * Deduces correct list based on types
+ *  type_list for Ts...
+ *  value_list for auto...
+ *  fixed_string for if { t.data; t.size; }
+ */
+template<template auto...> [[nodiscard]] constexpr list();
+```
+
+```cpp
+/**
+ * Converts type into a type_list by reflecting fields
+ * @tparam T type to be reflected
+ */
+template <class T> constexpr auto to_list;
+```
+
+```cpp
+/**
+ * Converts type into a std::tuple by reflecting fields
+ * @param obj object to be reflected
+ */
+constexpr auto to_tuple = []<class T>(T&& obj);
+```
+
+```cpp
+/**
+ * Composability pipe operator for types
+ * @param fn functor to be applied
+   - [](concepts::meta auto types)
+   - []<class... Ts>
+   - []<class... Ts>(concepts::meta auto types)
+ */
+template <template <class...> class T, class... Ts>
+[[nodiscard]] constexpr auto operator|(T<Ts...>, auto fn) {
+```
+
+```cpp
+/**
+ * Composability pipe operator for values
+ * @param fn functor to be applied
+   - [](concepts::meta auto types)
+   - []<auto... Ts>
+   - []<auto... Ts>(concepts::meta auto types)
+ */
+template <template <auto...> class T, auto... Vs>
+[[nodiscard]] constexpr auto operator|(T<Vs...>, auto fn) {
+```
+
+```cpp
+/**
+ * Composability pipe operator for std::tuple
+ * @param fn functor to be applied
+   - [](concepts::meta auto types)
+   - []<class... Ts>
+   - []<class... Ts>(concepts::meta auto types)
+ */
+template <template <class...> class T, class... Ts>
+[[nodiscard]] constexpr auto operator|(std::tuple<Ts...>, auto fn) {
+```
+
+```cpp
+/**
+ * Compile time integral value representation (required to mimic constexpr parameters)
+ * static_assert(42 == _c(1+41));
+ * static_assert(42 == 42_c);
+ */
+template <auto N> constexpr auto _c;
+template <char... Cs> [[nodiscard]] consteval auto operator""_c();
+```
 
 </p>
 </details>
