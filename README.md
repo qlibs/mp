@@ -13,7 +13,7 @@
 
 <p>
 
-> Goal: Make ~~Template~~ Meta-Programming boring/easy by using similar to run-time approach.
+> Make ~~Template~~ Meta-Programming easier by using similar to run-time approach.
 
 ```cpp
 #include <ranges>
@@ -27,6 +27,8 @@ static_assert(slice<1_c, 2_c, list<int, double, float>>
                            == list<double, float>);
 ```
 
+---
+
 ```cpp
 #include <algorithm>
 
@@ -39,19 +41,23 @@ auto sort_by_size = [](boost::mp::concepts::meta auto types) {
 /**
  * Verify/debug at run-time
  */
-"sort by size"_test = [] {
-  // given
-  const auto m1 = meta{.id = 0, .size = 2};
-  const auto m2 = meta{.id = 1, .size = 1};
-  const auto m3 = meta{.id = 2, .size = 3};
+int main () {
+  "sort by size"_test = [] {
+    // given
+    const auto m1 = meta{.id = 0, .size = 2};
+    const auto m2 = meta{.id = 1, .size = 1};
+    const auto m3 = meta{.id = 2, .size = 3};
 
-  // when
-  const auto sorted = sort_by_size({m1, m2, m3});
+    // when
+    const auto sorted = sort_by_size({m1, m2, m3});
 
-  // then
-  expect({m2, m1, m3} == sorted);
-};
+    // then
+    expect({m2, m1, m3} == sorted);
+  };
+}
+```
 
+```cpp
 struct not_packed {
   char c{};
   int i{};
