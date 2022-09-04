@@ -22,6 +22,9 @@ export import std;
 
 #define BOOST_MP_VERSION 0'0'1
 
+#if defined(__cpp_modules) && !defined(BOOST_MP_DISABLE_MODULE)
+export
+#endif
 namespace boost::mp::inline v0_0_1 {
 namespace utility {
 namespace detail {

@@ -3,7 +3,7 @@
 
 # MP - ~~Template~~ Meta-Programming
 
-| [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [User Guide](#user-guide) | [FAQ](#faq) | [Benchmarks](#benchmarks) |
+| [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
 
 <details open><summary>C++ <b>single header/single module</b> C++23 Meta-Programming Library</summary>
 <p>
@@ -138,7 +138,12 @@ static_assert(slice<boost::mp::list<int, dobule, float>(), 1_c, 2_c>
            == boost::mp::list<double, float>());
 ```
 
+`""_c` is an User Defined Literal which represents contant integral value which
+is required for simulating passing constexpr parameters which aren't supported
+in C++.
+
 > Notice that we have just use std::ranges at compile-time to munipulate type-list!
+
 
 Let's add STL too
 
