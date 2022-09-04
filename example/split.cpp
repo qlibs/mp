@@ -8,17 +8,22 @@
 #include <boost/mp.hpp>
 #include <ranges>
 
+template <auto...>
+struct ct_string {};
+
 template <boost::mp::fixed_string Str, auto N>
-auto split = boost::mp::list<Str>() | []<auto... Cs> {
-  auto v = boost::mp::list<Cs...>();
-  auto head = v | std::ranges::views::take(N);
-  auto tail = v | std::ranges::views::drop(boost::mp::_c<N + 1>);
-  return std::tuple(head, tail);
+constexpr auto split = boost::mp::list<Str>() | []<auto... Cs> {
+  auto list = boost::mp::list<Cs...>();
+  auto to_ct_string = []<auto... Vs> { return ct_string<Vs...>{}; };
+  auto head = list | std::ranges::views::take(N) | to_ct_string;
+  auto tail =
+      list | std::ranges::views::drop(boost::mp::_c<N + 1>) | to_ct_string;
+  return boost::mp::list<head, tail>();
 };
 
 using boost::mp::operator""_c;
 static_assert(split<"Hello World", 5_c> ==
-              std::tuple(boost::mp::list<"Hello">(),
-                         boost::mp::list<"World">()));
+              boost::mp::list<ct_string<'H', 'e', 'l', 'l', 'o'>{},
+                              ct_string<'W', 'o', 'r', 'l', 'd'>{}>());
 
 int main() {}

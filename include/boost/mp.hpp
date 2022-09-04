@@ -235,8 +235,9 @@ template <template <class...> class T, class... Ts>
   } else {
     constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
       auto id = 0uz;
-      const std::vector<meta> types{meta{.id = id++, .size = sizeof(Ts)}...};
-      if constexpr (requires { fn.template operator()<Ts...>(types); }) {
+      if constexpr (const std::vector<meta> types{
+                        meta{.id = id++, .size = sizeof(Ts)}...};
+                    requires { fn.template operator()<Ts...>(types); }) {
         const auto vs = fn.template operator()<Ts...>(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
@@ -263,8 +264,9 @@ template <template <auto...> class T, auto... Vs>
   } else {
     constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
       auto id = 0uz;
-      const std::vector<meta> types{meta{.id = id++, .size = sizeof(Vs)}...};
-      if constexpr (requires { fn.template operator()<Vs...>(types); }) {
+      if constexpr (const std::vector<meta> types{
+                        meta{.id = id++, .size = sizeof(Vs)}...};
+                    requires { fn.template operator()<Vs...>(types); }) {
         const auto vs = fn.template operator()<Vs...>(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
@@ -289,10 +291,12 @@ template <class... Ts>
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
-    constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
+    constexpr auto vs = []<auto... Ids, auto... Is>(
+                            auto fn, std::index_sequence<Ids...>) {
       auto id = 0uz;
-      const std::vector<meta> types{meta{.id = id++, .size = sizeof(Ts)}...};
-      if constexpr (requires { fn.template operator()<Ts...>(types); }) {
+      if constexpr (const std::vector<meta> types{
+                        meta{.id = id++, .size = sizeof(Ts)}...};
+                    requires { fn.template operator()<Ts...>(types); }) {
         const auto vs = fn.template operator()<Ts...>(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
