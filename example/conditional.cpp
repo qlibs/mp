@@ -11,8 +11,8 @@
 template <class T>
 concept has_value = requires(T t) { t.value; };
 
-template <auto v>
-auto conditional = v | []<class... Ts> {
+template <auto List>
+auto conditional = List | []<class... Ts> {
   if constexpr (constexpr auto any_has_value = (has_value<Ts> or ...);
                 any_has_value) {
     return std::integral_constant<int, (has_value<Ts> + ... + 0uz)>{};
@@ -30,5 +30,40 @@ struct bar {};
 static_assert(conditional<boost::mp::type_list<foo, bar>{}>.value == 1);
 static_assert(conditional<boost::mp::type_list<bar, bar>{}> ==
               boost::mp::type_list{});
+
+#include <ranges>
+
+template <auto List>
+auto first_or_last_depending_on_size = List | []<class...> {
+  using boost::mp::operator""_c;
+  auto first = List | std::ranges::views::take(1_c);
+  auto last =
+      List | std::ranges::views::reverse | std::ranges::views::take(1_c);
+  auto size = []<class T> { return sizeof(T); };
+
+  if constexpr ((first | size) > (last | size)) {
+    return first;
+  } else {
+    return last;
+  }
+};
+
+static_assert(first_or_last_depending_on_size<
+                  boost::mp::list<std::byte[42], std::byte[43]>()> ==
+              boost::mp::list<std::byte[43]>());
+
+static_assert(
+    first_or_last_depending_on_size<
+        boost::mp::list<std::byte[42], std::byte[999], std::byte[43]>()> ==
+    boost::mp::list<std::byte[43]>());
+
+static_assert(
+    first_or_last_depending_on_size<
+        boost::mp::list<std::byte[142], std::byte[999], std::byte[43]>()> ==
+    boost::mp::list<std::byte[142]>());
+
+static_assert(first_or_last_depending_on_size<boost::mp::list<
+                  std::byte[1], std::byte[2], std::byte[3], std::byte[2]>()> ==
+              boost::mp::list<std::byte[2]>());
 
 int main() {}

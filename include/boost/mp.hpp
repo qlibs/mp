@@ -124,7 +124,6 @@ struct fixed_string final {
   static constexpr auto size = N;
 
   constexpr explicit(true) fixed_string(const auto... cs) : data{cs...} {}
-
   constexpr explicit(false) fixed_string(const char (&str)[N + 1]) {
     std::copy_n(str, N + 1, std::data(data));
   }
@@ -254,7 +253,11 @@ template <template <class...> class T, class... Ts>
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
       } else if constexpr (requires { fn(types); }) {
-        const auto vs = fn.template operator()(types);
+        const auto vs = fn(types);
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
+      } else {
+        const auto vs = fn();
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
       }
@@ -283,7 +286,11 @@ template <template <auto...> class T, auto... Vs>
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
       } else if constexpr (requires { fn(types); }) {
-        const auto vs = fn.template operator()(types);
+        const auto vs = fn(types);
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
+      } else {
+        const auto vs = fn();
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
       }
@@ -313,7 +320,11 @@ template <class... Ts>
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
       } else if constexpr (requires { fn(types); }) {
-        const auto vs = fn.template operator()(types);
+        const auto vs = fn(types);
+        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
+                                            vs[Ids].id...}};
+      } else {
+        const auto vs = fn();
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
                                             vs[Ids].id...}};
       }
