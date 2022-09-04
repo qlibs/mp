@@ -88,10 +88,10 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 - Declarative by design (composable using pipe operator, support for ranges)
 - Fast compilation times (see [benchmarks](#benchmarks))
 
-> Requirements
+> Requirements ([Dockerfile](Dockerfile))
 
 - C++20 compliant compiler (clang-16+)
-- `constexpr` support inside STL (stdlibc++-16+)
+- STL with `constexpr std::vector`(libc++-16+)
 
 </p>
 </details>
@@ -410,6 +410,7 @@ template<template auto...> [[nodiscard]] constexpr list();
 ```cpp
 /**
  * Converts type into a type_list by reflecting fields
+ * 0-10 number of reflected fields is supported
  * @tparam T type to be reflected
  */
 template <class T> constexpr auto to_list;
@@ -418,6 +419,7 @@ template <class T> constexpr auto to_list;
 ```cpp
 /**
  * Converts type into a std::tuple by reflecting fields
+ * 0-10 number of reflected fields is supported
  * @param obj object to be reflected
  */
 constexpr auto to_tuple = []<class T>(T&& obj);
