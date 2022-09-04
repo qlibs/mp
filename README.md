@@ -88,7 +88,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 <p>
 
 - Single C++20 header/module
-- Minimal learning curve (reuses STL, ranges or any thrid-party solution)
+- Minimal learning curve (reuses STL, ranges or any third-party solution)
 - Easy debugging (meta-functions can be simply run at run-time!)
 - Same interface for `types/values/tuples`
 - Declarative by design (composable using pipe operator, support for ranges)
@@ -129,7 +129,7 @@ auto identity = [](boost::mp::concepts::meta types) {
 `meta` is a meta objects range (like `vector<meta>`) which we can do operations on.
 For example, sorting, changing the size, removing elements, etc...
 
-Let's apply our firt meta-function.
+Let's apply our first meta-function.
 
 ```cpp
 auto magic = boost::mp::list<int, double, float>() | identity;
@@ -157,11 +157,11 @@ auto slice = list
    | std::ranges::views::take(End);
 ```
 
-> Notice that we have just use std::ranges at compile-time to munipulate type-list!
+> Notice that we have just use std::ranges at compile-time to manipulate type-list!
 
 ```cpp
 using boost::mp::operator""_c;
-static_assert(slice<boost::mp::list<int, dobule, float>(), 1_c, 2_c>
+static_assert(slice<boost::mp::list<int, double, float>(), 1_c, 2_c>
            == boost::mp::list<double, float>());
 ```
 
@@ -172,8 +172,8 @@ in C++.
 Let's add STL too, why not
 
 ```
-#incldue <tuple>
-#incldue <algorithm>
+#include <tuple>
+#include <algorithm>
 ```
 
 This time we will sort and reverse a tuple
@@ -184,10 +184,10 @@ This time we will sort and reverse a tuple
   - `boost::mp::fixed_string`
   - `std::tuple`
 
-Additionaly `type_list/value_list/fixed_string` will be deduced automatically
+Additionally `type_list/value_list/fixed_string` will be deduced automatically
 based on parameters when `boost::mp::list<...>()` is used.
 
-Okay, combing back to our sort...
+Okay, coming back to our sort...
 
 ```cpp
 template <auto Fn>
@@ -196,7 +196,7 @@ auto sort = [](boost::mp::concepts::meta auto types) {
   return types;
 };
 
-> Note With ranges that could `actions::sort(types, Fn)`
+> Note With ranges that could be `actions::sort(types, Fn)`
 
 auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 ```
@@ -243,15 +243,15 @@ auto append = []<class... TLhs> {
 };
 ```
 
-> Note: we propagtes `<class... Ts>` instead of meta types. Both options are valid.
-  Aslo passing both `<class... Ts>(boost::mp::concepts::meta auto types)` is also
+> Note: we propagate `<class... Ts>` instead of meta types. Both options are valid.
+  Also passing both `<class... Ts>(boost::mp::concepts::meta auto types)` is also
   correct and useful for cases when meta-types require manipulation based on types.
 
-> Note: With C++ and Universal Tempalte Parameters we will be able to unify it
+> Note: With C++ and Universal Template Parameters we will be able to unify it
 
 ```cpp
 template <template auto... TRhs>
-auto append = []<tempalte auto... TLhs> {
+auto append = []<template auto... TLhs> {
   return boost::mp::list<TLhs..., TRhs...>;
 };
 ```
@@ -298,7 +298,7 @@ auto find_if_has_value =
 | filter<[](auto t) { return requires { t.value; }; }>;
 ```
 
-> Notice handy `requries with lambda` pattern to verify ad-hoc concepts.
+> Notice handy `requires with lambda` pattern to verify ad-hoc concepts.
 
 ```cpp
 static_assert(boost::mp::type_list<foo>{} ==
@@ -515,3 +515,4 @@ template <char... Cs> [[nodiscard]] consteval auto operator""_c();
 ---
 
 **Disclaimer** `MP` is not an official Boost library.
+
