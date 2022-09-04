@@ -41,6 +41,15 @@ int main() {
                     boost::mp::utility::type_id<const int&>>);
   };
 
+  "utility.type_name"_test = [] {
+    expect(constant<"void" == boost::mp::utility::type_name<void>()>);
+    expect(
+        constant<"const int *" == boost::mp::utility::type_name<const int*>()>);
+    struct foo {};
+    expect(constant<"foo" == boost::mp::utility::type_name<foo>()>);
+    expect(constant<"42" == boost::mp::utility::type_name<42>()>);
+  };
+
   "utility.<char...>_c"_test = [] {
     using boost::mp::operator""_c;
     expect(std::is_same_v<std::integral_constant<std::size_t, 42>,

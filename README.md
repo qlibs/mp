@@ -375,6 +375,15 @@ template <class T> constexpr auto type_id;
 
 ```cpp
 /**
+ * Returns type/value name as string_view
+ * static_assert(type_name<void>() == "void");
+ * static_assert(type_name<42>() == "42");
+ */
+template <template auto T> constexpr auto type_name;
+```
+
+```cpp
+/**
  * A meta concept which verifies meta range
  * static_assert(concepts::meta<vector<meta>>);
  */

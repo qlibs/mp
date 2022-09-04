@@ -63,6 +63,18 @@ template <class T>
 
 template <class T>
 constexpr auto type_id = detail::type_id<T>();
+
+template <class T>
+constexpr auto type_name() {
+  return std::string_view{&__PRETTY_FUNCTION__[42],
+                          sizeof(__PRETTY_FUNCTION__) - 42 - 2};
+}
+
+template <auto T>
+constexpr auto type_name() {
+  return std::string_view{&__PRETTY_FUNCTION__[42],
+                          sizeof(__PRETTY_FUNCTION__) - 42 - 2};
+}
 }  // namespace utility
 
 namespace concepts {
