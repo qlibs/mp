@@ -39,9 +39,9 @@ auto first_or_last_depending_on_size = List | []<class...> {
   auto first = List | std::ranges::views::take(1_c);
   auto last =
       List | std::ranges::views::reverse | std::ranges::views::take(1_c);
-  auto size = []<class T> { return sizeof(T); };
+  auto size = [](auto v) { return v | []<class T> { return sizeof(T); }; };
 
-  if constexpr ((first | size) > (last | size)) {
+  if constexpr (size(first) > size(last)) {
     return first;
   } else {
     return last;

@@ -81,7 +81,7 @@ namespace concepts {
 namespace detail {
 template <class T>
 concept meta = requires(T t) {
-                 std::size_t{t.id};
+                 std::size_t{t.index};
                  std::size_t{t.size};
                };
 }  // namespace detail
@@ -92,10 +92,10 @@ concept meta = std::ranges::random_access_range<T> and
 }  // namespace concepts
 
 struct meta final {
-  std::size_t id{};
+  std::size_t index{};
   std::size_t size{};
 
-  [[nodiscard]] constexpr operator auto() const { return id; }
+  [[nodiscard]] constexpr operator auto() const { return index; }
   [[nodiscard]] constexpr auto operator==(const meta&) const -> bool = default;
 };
 
@@ -245,21 +245,21 @@ template <template <class...> class T, class... Ts>
     return fn.template operator()<Ts...>();
   } else {
     constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
-      auto id = 0uz;
+      auto i = 0uz;
       if constexpr (const std::vector<meta> types{
-                        meta{.id = id++, .size = sizeof(Ts)}...};
+                        meta{.index = i++, .size = sizeof(Ts)}...};
                     requires { fn.template operator()<Ts...>(types); }) {
         const auto vs = fn.template operator()<Ts...>(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
+                                            vs[Ids].index...}};
       } else if constexpr (requires { fn(types); }) {
         const auto vs = fn(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
+                                            vs[Ids].index...}};
       } else {
         const auto vs = fn();
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
+                                            vs[Ids].index...}};
       }
     };
 
@@ -278,21 +278,21 @@ template <template <auto...> class T, auto... Vs>
     return fn.template operator()<Vs...>();
   } else {
     constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
-      auto id = 0uz;
+      auto i = 0uz;
       if constexpr (const std::vector<meta> types{
-                        meta{.id = id++, .size = sizeof(Vs)}...};
+                        meta{.index = i++, .size = sizeof(Vs)}...};
                     requires { fn.template operator()<Vs...>(types); }) {
         const auto vs = fn.template operator()<Vs...>(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
+                                            vs[Ids].index...}};
       } else if constexpr (requires { fn(types); }) {
         const auto vs = fn(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
+                                            vs[Ids].index...}};
       } else {
         const auto vs = fn();
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
+                                            vs[Ids].index...}};
       }
     };
 
@@ -312,21 +312,21 @@ template <class... Ts>
   } else {
     constexpr auto vs = []<auto... Ids, auto... Is>(
                             auto fn, std::index_sequence<Ids...>) {
-      auto id = 0uz;
+      auto i = 0uz;
       if constexpr (const std::vector<meta> types{
-                        meta{.id = id++, .size = sizeof(Ts)}...};
+                        meta{.index = i++, .size = sizeof(Ts)}...};
                     requires { fn.template operator()<Ts...>(types); }) {
         const auto vs = fn.template operator()<Ts...>(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
+                                            vs[Ids].index...}};
       } else if constexpr (requires { fn(types); }) {
         const auto vs = fn(types);
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
+                                            vs[Ids].index...}};
       } else {
         const auto vs = fn();
         return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].id...}};
+                                            vs[Ids].index...}};
       }
     };
 

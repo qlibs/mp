@@ -15,12 +15,12 @@ int main() {
 
   "meta.comparable"_test = [] {
     expect(boost::mp::meta{} == boost::mp::meta{});
-    expect(boost::mp::meta{.id = 42, .size = 4} ==
-           boost::mp::meta{.id = 42, .size = 4});
-    expect(boost::mp::meta{.id = 42, .size = 4} !=
-           boost::mp::meta{.id = 42, .size = 10000});
-    expect(boost::mp::meta{.id = 42, .size = 4} !=
-           boost::mp::meta{.id = 1000, .size = 4});
+    expect(boost::mp::meta{.index = 42, .size = 4} ==
+           boost::mp::meta{.index = 42, .size = 4});
+    expect(boost::mp::meta{.index = 42, .size = 4} !=
+           boost::mp::meta{.index = 42, .size = 10000});
+    expect(boost::mp::meta{.index = 42, .size = 4} !=
+           boost::mp::meta{.index = 1000, .size = 4});
   };
 
   "meta.concept"_test = [] {

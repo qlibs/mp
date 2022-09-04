@@ -44,9 +44,9 @@ auto sort_by_size = [](boost::mp::concepts::meta auto types) {
 int main () {
   "sort by size"_test = [] {
     // given
-    const auto m1 = meta{.id = 0, .size = 2};
-    const auto m2 = meta{.id = 1, .size = 1};
-    const auto m3 = meta{.id = 2, .size = 3};
+    const auto m1 = meta{.index = 0, .size = 2};
+    const auto m2 = meta{.index = 1, .size = 1};
+    const auto m3 = meta{.index = 2, .size = 3};
 
     // when
     const auto sorted = sort_by_size({m1, m2, m3});
@@ -358,7 +358,7 @@ Examples in the following section and the User-Guide.
  * vector<meta> is passed to pipe lambdas
  */
 struct meta {
-  std::size_t id{};
+  std::size_t pos{};
   std::size_t size{};
   //...
 }
