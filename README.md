@@ -379,7 +379,7 @@ template <class T> constexpr auto type_id;
  * static_assert(type_name<void>() == "void");
  * static_assert(type_name<42>() == "42");
  */
-template <template auto T> constexpr auto type_name;
+template <template auto T> [[nodiscard]] constexpr auto type_name()
 ```
 
 ```cpp
