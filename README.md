@@ -239,7 +239,7 @@ For adding we need to use type/value space land to accomplish that, though.
 ```cpp
 template <class... TRhs>
 auto append = []<class... TLhs> {
-  return boost::mp::type_list<TLhs..., TRhs...>{};
+  return boost::mp::list<TLhs..., TRhs...>();
 };
 ```
 
@@ -264,8 +264,8 @@ auto add = list | append<void>; // adds void type
 ```
 
 ```cpp
-static_assert(add<boost::mp::type_list<int, double>{}> ==
-              boost::mp::type_list<int, double, void>{});
+static_assert(add<boost::mp::list<int, double>()> ==
+              boost::mp::list<int, double, void>());
 ```
 
 Okay, so what about the case when we need meta-types and Ts...?
@@ -301,8 +301,8 @@ auto find_if_has_value =
 > Notice handy `requires with lambda` pattern to verify ad-hoc concepts.
 
 ```cpp
-static_assert(boost::mp::type_list<foo>{} ==
-              find_if_has_value<boost::mp::type_list<foo, bar>{}>);
+static_assert(boost::mp::list<foo>() ==
+              find_if_has_value<boost::mp::list<foo, bar>()>);
 ```
 
 That's it for now, for more let's take a look at more
