@@ -69,7 +69,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 - Easy debugging (meta-functions can be simply run at run-time too)
 - Same interface for types/nttp/tuples
 - Declarative by design (ranges)
-- Fast compilation times (#benchmarks)
+- Fast compilation times (see benchmarks)
 
 - Requirements
   - C++23 compliant compiler (clang-16+)
@@ -134,7 +134,8 @@ auto slice = list
 
 ```cpp
 using boost::mp::operator""_c;
-static_assert(slice<boost::mp::list<int, dobule, float>(), 1_c, 2_c> == boost::mp::list<double, float>());
+static_assert(slice<boost::mp::list<int, dobule, float>(), 1_c, 2_c>
+           == boost::mp::list<double, float>());
 ```
 
 > Notice that we have just use std::ranges at compile-time to munipulate type-list!
@@ -159,7 +160,7 @@ based on parmeters when `boost::mp::list<...>()` is used.
 
 Okay, combing back to our sort...
 
-````
+```cpp
 template <auto Fn>
 auto sort = [](boost::mp::concepts::meta auto types) {
   std::sort(std::begin(types), std::end(types), Fn);
