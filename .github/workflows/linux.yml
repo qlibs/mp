@@ -18,7 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
         with:
-          token: ${{ secrets.PAT }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           submodules: true
       - uses: ./.github/workflows/actions/build
