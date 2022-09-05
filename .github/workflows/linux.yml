@@ -22,4 +22,6 @@ jobs:
       - uses: ./.github/workflows/actions/build
         with:
           CXX: clang++-16
+      - uses: ./.github/workflows/actions/build
+        with:
           CXX: g++-12
