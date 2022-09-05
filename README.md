@@ -80,13 +80,17 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 
 > Try it out - https://godbolt.org/z/d5G9aE871
 
+---
+
+> Locally
+
 ```sh
-docker -it run Dockerfile
+docker build . -t image/mp
+docker run -it -v mp/mp image/mp
 ```
 
 ```sh
-mkdir build;
-cd build; 
+mkdir build && cd build
 cmake .. -DBOOST_MP_BUILD_TESTS=ON -DBOOST_MP_BUILD_EXAMPLES=ON
 ```
 
