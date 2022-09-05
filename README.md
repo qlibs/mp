@@ -67,8 +67,8 @@ struct not_packed {
 /**
  * Check at compile-time
  */
-static_assert(sizeof(not_packed) == 12uz);
-static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
+static_assert(sizeof(not_packed) == 12u);
+static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 ```
 
 </p>
@@ -79,6 +79,24 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 <p>
 
 > Try it out - https://godbolt.org/z/d5G9aE871
+
+```sh
+docker -it run Dockerfile
+```
+
+```sh
+mkdir build;
+cd build; 
+cmake .. -DBOOST_MP_BUILD_TESTS=ON -DBOOST_MP_BUILD_EXAMPLES=ON
+```
+
+```sh
+cmake -Cbuild . -j
+```
+
+```sh
+ctest --output-on-failure
+```
 
 </p>
 </details>
@@ -96,8 +114,8 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8uz);
 
 > Requirements ([Dockerfile](Dockerfile))
 
-- C++20 compliant compiler (clang-16+)
-- STL with `constexpr std::vector`(libc++-16+)
+- C++20 compliant compiler (clang-16+, gcc-12+)
+- STL with `constexpr std::vector`(libc++-16+, libstdc++-12+)
 
 </p>
 </details>
@@ -226,8 +244,8 @@ struct not_packed {
 ```
 
 ```cpp
-static_assert(sizeof(not_packed) == 12uz);
-static_assert(sizeof(pack(not_packed{})) == 8uz);
+static_assert(sizeof(not_packed) == 12u);
+static_assert(sizeof(pack(not_packed{})) == 8u);
 ```
 
 Okay, so far so good, but what about adding or removing from type_list?
@@ -516,4 +534,3 @@ template <char... Cs> [[nodiscard]] consteval auto operator""_c();
 ---
 
 **Disclaimer** `MP` is not an official Boost library.
-

@@ -42,6 +42,27 @@ using nth_pack_element = __type_pack_element<N, Ts...>;
 template <auto N, auto... Ns>
 constexpr auto nth_pack_element_v =
     __type_pack_element<N, detail::value_type<Ns>...>::value;
+#else
+namespace detail {
+template <class T, std::size_t N>
+struct any {};
+template <class... Ts>
+struct inherit : Ts... {};
+template <auto N, class T>
+auto nth_pack_element_impl(any<T, N>) -> T;
+template <auto N, class... Ts, std::size_t... Ns>
+auto nth_pack_element(std::index_sequence<Ns...>)
+    -> decltype(nth_pack_element_impl<N>(
+        inherit<any<std::type_identity<Ts>, Ns>...>{}));
+}  // namespace detail
+
+template <auto N, class... Ts>
+using nth_pack_element = typename decltype(detail::nth_pack_element<N, Ts...>(
+    std::make_index_sequence<sizeof...(Ts)>{}))::type;
+
+template <auto N, auto... Ns>
+constexpr auto nth_pack_element_v =
+    nth_pack_element<N, detail::value_type<Ns>...>::value;
 #endif
 
 template <char... Cs>
@@ -261,13 +282,13 @@ template <template <class...> class T, class... Ts>
   } else {
     constexpr auto make = [](const auto& vs) {
       auto svs = detail::size_vs<sizeof...(Ts)>{std::size(vs)};
-      for (auto i = 0; i < svs.size; ++i) {
+      for (auto i = 0u; i < svs.size; ++i) {
         svs.vs[i] = vs[i].index;
       }
       return svs;
     };
     constexpr auto expr = [make](auto fn) {
-      auto i = 0uz;
+      auto i = 0u;
       if constexpr (const std::vector<meta> types{
                         meta{.index = i++, .size = sizeof(Ts)}...};
                     requires { fn.template operator()<Ts...>(types); }) {
@@ -292,13 +313,13 @@ template <template <auto...> class T, auto... Vs>
   } else {
     constexpr auto make = [](const auto& vs) {
       auto svs = detail::size_vs<sizeof...(Vs)>{std::size(vs)};
-      for (auto i = 0; i < svs.size; ++i) {
+      for (auto i = 0u; i < svs.size; ++i) {
         svs.vs[i] = vs[i].index;
       }
       return svs;
     };
     constexpr auto expr = [make](auto fn) {
-      auto i = 0uz;
+      auto i = 0u;
       if constexpr (const std::vector<meta> types{
                         meta{.index = i++, .size = sizeof(Vs)}...};
                     requires { fn.template operator()<Vs...>(types); }) {
@@ -323,13 +344,13 @@ template <class... Ts>
   } else {
     constexpr auto make = [](const auto& vs) {
       auto svs = detail::size_vs<sizeof...(Ts)>{std::size(vs)};
-      for (auto i = 0; i < svs.size; ++i) {
+      for (auto i = 0u; i < svs.size; ++i) {
         svs.vs[i] = vs[i].index;
       }
       return svs;
     };
     constexpr auto expr = [make](auto fn) {
-      auto i = 0uz;
+      auto i = 0u;
       if constexpr (const std::vector<meta> types{
                         meta{.index = i++, .size = sizeof(Ts)}...};
                     requires { fn.template operator()<Ts...>(types); }) {

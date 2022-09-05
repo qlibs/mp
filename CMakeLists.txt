@@ -4,7 +4,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-cmake_minimum_required(VERSION 3.12...3.20)
+cmake_minimum_required(VERSION 3.12)
 project(
   mp
   VERSION 0.0.1
@@ -18,10 +18,17 @@ option(BOOST_MP_BUILD_EXAMPLES "Build the examples" ${MASTER_PROJECT})
 option(BOOST_MP_BUILD_TESTS "Build the tests" ${MASTER_PROJECT})
 option(BOOST_MP_DISABLE_MODULE "Disable mp module" OFF)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(mp INTERFACE)
-target_compile_options(mp INTERFACE -std=c++2b -stdlib=libc++)
-target_link_options(mp INTERFACE -std=c++2b -stdlib=libc++)
 target_include_directories(mp INTERFACE ${CMAKE_SOURCE_DIR}/include)
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+target_compile_options(mp INTERFACE -stdlib=libc++ -Wall -Wextra -Wpedantic -Werror)
+target_link_options(mp INTERFACE -stdlib=libc++)
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+target_compile_options(mp INTERFACE -Wall -Wextra -Wpedantic -Werror)
+endif()
 
 add_custom_target(style)
 add_custom_command(

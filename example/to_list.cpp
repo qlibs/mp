@@ -27,7 +27,7 @@ struct not_packed {
   std::byte b{};
 };
 
-static_assert(sizeof(not_packed) == 12uz);
-static_assert(sizeof(pack<not_packed>) == 8uz);
+static_assert(sizeof(not_packed) == 12u);
+static_assert(sizeof(pack<not_packed>) == 8u);
 
 int main() {}

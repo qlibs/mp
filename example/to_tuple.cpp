@@ -18,7 +18,9 @@ auto sort = [](boost::mp::concepts::meta auto types) {
 auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 
 using boost::mp::operator|;
-auto pack = [](auto t) { return boost::mp::to_tuple(t) | sort<by_size>; };
+constexpr auto pack = [](auto t) {
+  return boost::mp::to_tuple(t) | sort<by_size>;
+};
 
 struct not_packed {
   char c{};
@@ -26,7 +28,7 @@ struct not_packed {
   std::byte b{};
 };
 
-static_assert(sizeof(not_packed) == 12uz);
-static_assert(sizeof(pack(not_packed{})) == 8uz);
+static_assert(sizeof(not_packed) == 12u);
+static_assert(sizeof(pack(not_packed{})) == 8u);
 
 int main() {}

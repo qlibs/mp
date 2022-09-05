@@ -13,7 +13,7 @@ using boost::mp::operator""_c;
 template <auto N>
 auto nth_pack_element = []<class... Ts> {
   return boost::mp::list<Ts...>() | std::ranges::views::drop(N) |
-             std::ranges::views::take(1_c) | []<class T> -> T { return {}; };
+             std::ranges::views::take(1_c) | []<class T>() -> T { return {}; };
 };
 
 static_assert((boost::mp::list<int, double, float>() | nth_pack_element<0_c>) ==
