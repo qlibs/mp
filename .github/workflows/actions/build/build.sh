@@ -1,6 +1,6 @@
 #!bin/bash
 
-cd /mp
+cd /github/home/mp
 
 mkdir build-clang
 cd build-clang
