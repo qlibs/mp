@@ -181,7 +181,7 @@ auto slice = list
    | std::ranges::views::take(End);
 ```
 
-> Notice that we have just use std::ranges at compile-time to manipulate type-list!
+> Notice that we've just used std::ranges at compile-time to manipulate a type-list!
 
 ```cpp
 using boost::mp::operator""_c;
