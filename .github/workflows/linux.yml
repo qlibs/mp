@@ -13,5 +13,8 @@ on:
 
 jobs:
   build:
-    runs-on: docker
-    image: Dockerfile
+    runs-on: ubuntu-latest
+    name: build
+    steps:
+    steps:
+      - uses: actions/build@v1
