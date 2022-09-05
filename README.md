@@ -118,8 +118,9 @@ ctest --output-on-failure
 
 > Requirements ([Dockerfile](Dockerfile))
 
-- C++20 compliant compiler (clang-16+, gcc-12+)
-- STL with `constexpr std::vector`(libc++-16+, libstdc++-12+)
+- C++20 compliant compiler (STL with support for `constexpr std::vector`)
+  - clang++16+ with libc++-16+ (✔️)
+  - g++12+ wht libstdc++-12+ (✔️)
 
 </p>
 </details>
