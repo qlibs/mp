@@ -86,13 +86,13 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 > Locally
 
 ```sh
-docker build . -t dev
+docker build . -t dev # or docker pull krisjusiak/dev
 docker run -it -v "$(pwd)":/mp --privileged dev:latest
 ```
 
 ```sh
 mkdir build && cd build
-CXX=clang++ cmake .. -DBOOST_MP_BUILD_TESTS=ON -DBOOST_MP_BUILD_EXAMPLES=ON
+CXX=clang++-16 cmake .. -DBOOST_MP_BUILD_TESTS=ON -DBOOST_MP_BUILD_EXAMPLES=ON # CXX=g++-12
 ```
 
 ```sh
