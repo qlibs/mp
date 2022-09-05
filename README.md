@@ -13,7 +13,8 @@
 
 <p>
 
-> Make ~~Template~~ Meta-Programming easier by using similar to run-time approach.
+> Make ~~Template~~ Meta-Programming easier by leveraging run-time approach at compile-time.
+  If you know how to use stl.algorithms/rangers you can consider yourself a TMP guru now!
 
 ```cpp
 #include <ranges>
