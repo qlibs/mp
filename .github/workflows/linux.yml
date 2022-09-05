@@ -18,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           submodules: true
       - uses: ./.github/workflows/actions/build
+        with:
+          CXX: clang++-16
+          CXX: g++-12
