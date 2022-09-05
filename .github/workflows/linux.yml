@@ -1,0 +1,29 @@
+---
+name: Linux
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: build
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: ./.github/workflows/actions/build
+        name: clang
+        with:
+          CXX: clang++-16
+      - uses: ./.github/workflows/actions/build
+        name: gcc
+        with:
+          CXX: g++-12
