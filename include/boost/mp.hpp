@@ -21,6 +21,7 @@ export import std;
 #include <vector>
 
 #define BOOST_MP_VERSION 0'0'1
+#define BOOST_MP_PRETTY_FUNCTION __PRETTY_FUNCTION__
 
 #if defined(__cpp_modules) && !defined(BOOST_MP_DISABLE_MODULE)
 export
@@ -33,12 +34,15 @@ struct value_type {
   static constexpr auto value = Value;
 };
 }  // namespace detail
+
+#if __has_builtin(__type_pack_element)
+template <auto N, class... Ts>
+using nth_pack_element = __type_pack_element<N, Ts...>;
+
 template <auto N, auto... Ns>
 constexpr auto nth_pack_element_v =
     __type_pack_element<N, detail::value_type<Ns>...>::value;
-
-template <auto N, class... Ts>
-using nth_pack_element = __type_pack_element<N, Ts...>;
+#endif
 
 template <char... Cs>
 [[nodiscard]] consteval auto operator""_c() {
@@ -54,7 +58,7 @@ namespace detail {
 template <class T>
 [[nodiscard]] consteval auto type_id() {
   std::size_t result{};
-  for (const auto& c : __PRETTY_FUNCTION__) {
+  for (const auto& c : BOOST_MP_PRETTY_FUNCTION) {
     (result ^= c) <<= 1;
   }
   return result;
@@ -66,14 +70,14 @@ constexpr auto type_id = detail::type_id<T>();
 
 template <class T>
 [[nodiscard]] consteval auto type_name() {
-  return std::string_view{&__PRETTY_FUNCTION__[42],
-                          sizeof(__PRETTY_FUNCTION__) - 42 - 2};
+  return std::string_view{&BOOST_MP_PRETTY_FUNCTION[42],
+                          sizeof(BOOST_MP_PRETTY_FUNCTION) - 42 - 2};
 }
 
 template <auto T>
 [[nodiscard]] consteval auto type_name() {
-  return std::string_view{&__PRETTY_FUNCTION__[42],
-                          sizeof(__PRETTY_FUNCTION__) - 42 - 2};
+  return std::string_view{&BOOST_MP_PRETTY_FUNCTION[42],
+                          sizeof(BOOST_MP_PRETTY_FUNCTION) - 42 - 2};
 }
 }  // namespace utility
 
@@ -343,3 +347,5 @@ template <class... Ts>
   }
 }
 }  // namespace boost::mp::inline v0_0_1
+
+#undef BOOST_MP_PRETTY_FUNCTION
