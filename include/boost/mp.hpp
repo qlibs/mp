@@ -154,7 +154,9 @@ struct fixed_string final {
 
   constexpr explicit(true) fixed_string(const auto... cs) : data{cs...} {}
   constexpr explicit(false) fixed_string(const char (&str)[N + 1]) {
-    std::copy_n(str, N + 1, std::data(data));
+    for (auto i = 0u; i <= N; ++i) {
+      data[i] = str[i];
+    }
   }
 
   [[nodiscard]] constexpr auto operator<=>(const fixed_string&) const = default;
