@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     name: build
     steps:
-      uses: actions/checkout@v1
-      with:
+      - uses: actions/checkout@v1
+      - with:
         submodules: true
-      uses: ./.github/workflows/actions/build
+      - uses: ./.github/workflows/actions/build
