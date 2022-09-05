@@ -60,9 +60,9 @@ metabench_add_chart(conditional_drop_sum
 )
 
 metabench_add_dataset(first_or_last_size.mp "first_or_last_size/mp.cpp.erb"
-    "(0...500).step(100)")
-#metabench_add_dataset(first_or_last_size.mp11 "first_or_last_size/mp11.cpp.erb"
-    #"(0...500).step(100)")
+    "(1...501).step(100)")
+metabench_add_dataset(first_or_last_size.mp11 "first_or_last_size/mp11.cpp.erb"
+    "(1...501).step(100)")
 
 metabench_add_chart(first_or_last_size
     TITLE "first_or_last_size"
@@ -71,5 +71,5 @@ metabench_add_chart(first_or_last_size
     YLABEL "Time"
     DATASETS
       first_or_last_size.mp
-      #first_or_last_size.mp11
+      first_or_last_size.mp11
 )

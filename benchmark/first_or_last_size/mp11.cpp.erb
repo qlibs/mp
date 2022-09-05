@@ -1,0 +1,31 @@
+//
+// Copyright (c) 2022 Kris Jusiak (kris at jusiak dot net)
+//
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
+#include <boost/mp11/algorithm.hpp>
+#include <bit>
+
+#if defined(METABENCH)
+template <class TList>
+struct first_or_last_size {
+  using first = boost::mp11::mp_first<TList>;
+  using last = boost::mp11::mp_first<boost::mp11::mp_reverse<TList>>;
+  using type = boost::mp11::mp_if_c<(sizeof(first) > sizeof(last)), boost::mp11::mp_list<first>, boost::mp11::mp_list<last>>;
+};
+
+template<class TList>
+using first_or_last_size_t = typename first_or_last_size<TList>::type;
+
+static_assert(1 ==
+  boost::mp11::mp_size<first_or_last_size_t<boost::mp11::mp_list<
+  <% (0..n-1).each do |i| %>
+  <%= n % 2 == 0 ? 'std::byte[' + i.to_s + ']' : 'std::byte[' + (n-i).to_s + ']' %>
+  <%= ',' if i < n-1 %>
+  <% end %>
+>>>{});
+#endif
+
+int main() {}
