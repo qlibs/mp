@@ -17,6 +17,6 @@ jobs:
     name: build
     steps:
       - uses: actions/checkout@v1
-      - with:
-        submodules: true
+        - with:
+            - submodules: true
       - uses: ./.github/workflows/actions/build
