@@ -15,8 +15,6 @@ auto filter = []<class... Ts>(boost::mp::concepts::meta auto types) {
                   std::begin(types), std::end(types),
                   [fn = std::array{Fn(Ts{})...}](auto type) { return not fn[type]; }),
               std::end(types));
-
-
   return types;
 };
 
