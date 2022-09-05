@@ -1,6 +1,7 @@
 #!bin/sh
 
 cd /github/home/mp
+git submodule update --init
 
 mkdir build-clang
 cd build-clang
