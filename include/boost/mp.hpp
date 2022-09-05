@@ -99,6 +99,10 @@ struct meta final {
   [[nodiscard]] constexpr auto operator==(const meta&) const -> bool = default;
 };
 
+template <auto N>
+constexpr auto _c = std::integral_constant<decltype(N), N>{};
+using utility::operator""_c;
+
 template <class... Ts>
 struct type_list final {
   static constexpr auto size = sizeof...(Ts);
@@ -129,7 +133,6 @@ struct fixed_string final {
   }
 
   [[nodiscard]] constexpr auto operator<=>(const fixed_string&) const = default;
-
   [[nodiscard]] constexpr explicit(false) operator std::string_view() const {
     return {std::data(data), N};
   }
@@ -339,8 +342,4 @@ template <class... Ts>
     }(std::make_index_sequence<expr_fn.size>{});
   }
 }
-
-template <auto N>
-constexpr auto _c = std::integral_constant<decltype(N), N>{};
-using utility::operator""_c;
 }  // namespace boost::mp::inline v0_0_1
