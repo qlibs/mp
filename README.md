@@ -111,7 +111,7 @@ ctest --output-on-failure
 <p>
 
 - Single C++20 header/module
-- Minimal learning curve (reuses STL, ranges or any third-party solution)
+- Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
 - Easy debugging (meta-functions can be simply run at run-time!)
 - Same interface for `types/values/tuples`
 - Declarative by design (composable using pipe operator, support for ranges)
