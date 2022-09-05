@@ -14,7 +14,7 @@
 <p>
 
 > Make ~~Template~~ Meta-Programming easier by leveraging run-time approach at compile-time.
-  If you know how to use stl.algorithms/rangers you can consider yourself a TMP guru now!
+  If you know how to use stl.algorithms/ranges you can consider yourself a TMP guru now as well!
 
 ```cpp
 #include <ranges>
@@ -86,17 +86,17 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 > Locally
 
 ```sh
-docker build . -t image/mp
-docker run -it -v mp/mp image/mp
+docker build . -t dev
+docker run -it -v "$(pwd)":/mp dev:latest
 ```
 
 ```sh
 mkdir build && cd build
-cmake .. -DBOOST_MP_BUILD_TESTS=ON -DBOOST_MP_BUILD_EXAMPLES=ON
+CXX=clang++ cmake .. -DBOOST_MP_BUILD_TESTS=ON -DBOOST_MP_BUILD_EXAMPLES=ON
 ```
 
 ```sh
-cmake -Cbuild . -j
+cmake --build . -j
 ```
 
 ```sh
