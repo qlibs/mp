@@ -411,7 +411,11 @@ template <template auto T> [[nodiscard]] constexpr auto type_name()
  * A meta concept which verifies meta range
  * static_assert(concepts::meta<vector<meta>>);
  */
-concept concepts::meta;
+concept concepts::meta =
+  requires(T t) {
+    std::size_t{t.index};
+    std::size_t{t.size};
+  };
 ```
 
 ```cpp

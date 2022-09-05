@@ -17,19 +17,19 @@ int main() {
   using std::literals::operator""sv;
 
   "make fixed_string"_test = [] {
-    expect(constant<""sv == str<"">>);
-    expect(constant<"Foo"sv == str<"Foo">>);
+    expect(""sv == str<"">);
+    expect("Foo"sv == str<"Foo">);
   };
 
   "make fixed_string with characters"_test = [] {
-    expect(constant<std::string_view{boost::mp::fixed_string{}}.empty()>);
-    expect(constant<"abc"sv == boost::mp::fixed_string{'a', 'b', 'c'}>);
-    expect(constant<"abc"sv == str<boost::mp::fixed_string{'a', 'b', 'c'}>>);
+    expect(std::string_view{boost::mp::fixed_string{}}.empty());
+    expect("abc"sv == boost::mp::fixed_string{'a', 'b', 'c'});
+    expect("abc"sv == str<boost::mp::fixed_string{'a', 'b', 'c'}>);
   };
 
   "compare"_test = [] {
     constexpr auto foo = str<"Foo">;
-    expect(constant<foo == str<"Foo">>);
-    expect(constant<foo != str<"Bar">>);
+    expect(foo == str<"Foo">);
+    expect(foo != str<"Bar">);
   };
 }

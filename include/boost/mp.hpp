@@ -82,17 +82,29 @@ template <class T>
 template <class T>
 constexpr auto type_id = detail::type_id<T>();
 
+#if defined(__clang__)
+#define BOOST_MP_TYPE_NAME_OFFSET 42
+#define BOOST_MP_TYPE_NAME_V_OFFSET 42
+#else
+#define BOOST_MP_TYPE_NAME_OFFSET 65
+#define BOOST_MP_TYPE_NAME_V_OFFSET 70
+#endif
+
 template <class T>
 [[nodiscard]] consteval auto type_name() {
-  return std::string_view{&BOOST_MP_PRETTY_FUNCTION[42],
-                          sizeof(BOOST_MP_PRETTY_FUNCTION) - 42 - 2};
+  return std::string_view{
+      &BOOST_MP_PRETTY_FUNCTION[BOOST_MP_TYPE_NAME_OFFSET],
+      sizeof(BOOST_MP_PRETTY_FUNCTION) - BOOST_MP_TYPE_NAME_OFFSET - 2};
 }
 
 template <auto T>
 [[nodiscard]] consteval auto type_name() {
-  return std::string_view{&BOOST_MP_PRETTY_FUNCTION[42],
-                          sizeof(BOOST_MP_PRETTY_FUNCTION) - 42 - 2};
+  return std::string_view{
+      &BOOST_MP_PRETTY_FUNCTION[BOOST_MP_TYPE_NAME_V_OFFSET],
+      sizeof(BOOST_MP_PRETTY_FUNCTION) - BOOST_MP_TYPE_NAME_V_OFFSET - 2};
 }
+
+#undef BOOST_MP_TYPE_NAME_OFFSET
 }  // namespace utility
 
 namespace concepts {
