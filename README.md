@@ -526,6 +526,15 @@ template <char... Cs> [[nodiscard]] consteval auto operator""_c();
 - <a href="https://boost-ext.github.io/mp/benchmark/conditional_drop_sum">conditional_drop_sum</a>
 - <a href="https://boost-ext.github.io/mp/benchmark/first_or_last_size">first_or_last_size</a>
 
+> To build/run benchmarks
+
+```cpp
+cd benchmark
+mkdir build && cd build
+CXX=clang++-16 cmake .. # CXX=g++-16
+make sort_unique_reverse transform_filter conditional_drop_sum first_or_last_size
+```
+
 </p>
 </details>
 
