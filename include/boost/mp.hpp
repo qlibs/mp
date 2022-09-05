@@ -28,20 +28,13 @@ export
 #endif
     namespace boost::mp::inline v0_0_1 {
 namespace utility {
-namespace detail {
-template <auto Value>
-struct value_type {
-  static constexpr auto value = Value;
-};
-}  // namespace detail
-
 #if __has_builtin(__type_pack_element)
 template <auto N, class... Ts>
 using nth_pack_element = __type_pack_element<N, Ts...>;
 
 template <auto N, auto... Ns>
 constexpr auto nth_pack_element_v =
-    __type_pack_element<N, detail::value_type<Ns>...>::value;
+    __type_pack_element<N, std::integral_constant<decltype(Ns), Ns>...>::value;
 #else
 namespace detail {
 template <class T, std::size_t N>
@@ -62,7 +55,7 @@ using nth_pack_element = typename decltype(detail::nth_pack_element<N, Ts...>(
 
 template <auto N, auto... Ns>
 constexpr auto nth_pack_element_v =
-    nth_pack_element<N, detail::value_type<Ns>...>::value;
+    nth_pack_element<N, std::integral_constant<decltype(Ns), Ns>...>::value;
 #endif
 
 template <char... Cs>
@@ -193,7 +186,7 @@ template <fixed_string Str>
 }
 
 template <class T>
-constexpr auto to_list = [] {
+constexpr auto to_list = [] /*[[nodiscard]]*/ {
   // clang-format off
   if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = T{}; }; }) {
     auto [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = T{};
@@ -231,7 +224,8 @@ constexpr auto to_list = [] {
   // clang-format on
 }();
 
-constexpr auto to_tuple = []<class T>(T&& obj) {
+template <class T>
+[[nodiscard]] constexpr auto to_tuple(T&& obj) {
   // clang-format off
   if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = obj; }; }) {
     auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = std::forward<T>(obj);
@@ -267,7 +261,7 @@ constexpr auto to_tuple = []<class T>(T&& obj) {
     return std::make_tuple();
   }
   // clang-format on
-};
+}
 
 namespace detail {
 template <auto N>
@@ -340,7 +334,7 @@ template <template <auto...> class T, auto... Vs>
 }
 
 template <class... Ts>
-[[nodiscard]] constexpr auto operator|(std::tuple<Ts...> t, auto fn) {
+[[nodiscard]] constexpr auto operator|(std::tuple<Ts...>&& t, auto fn) {
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
@@ -365,7 +359,7 @@ template <class... Ts>
     };
     constexpr auto expr_fn = expr(fn);
     return [expr_fn, t]<auto... Ids>(std::index_sequence<Ids...>) {
-      return std::make_tuple(std::get<expr_fn.vs[Ids]>(t)...);
+      return std::tuple{std::get<expr_fn.vs[Ids]>(t)...};
     }(std::make_index_sequence<expr_fn.size>{});
   }
 }

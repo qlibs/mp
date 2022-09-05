@@ -87,7 +87,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 
 ```sh
 docker build . -t dev
-docker run -it -v "$(pwd)":/mp dev:latest
+docker run -it -v "$(pwd)":/mp --privileged dev:latest
 ```
 
 ```sh
@@ -137,7 +137,7 @@ ctest --output-on-failure
 ```
 or
 ```cpp
-import boost.mp
+import boost.mp;
 ```
 
 > Okay, let's write a hello world, shall we?
