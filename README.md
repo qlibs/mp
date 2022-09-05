@@ -1,5 +1,5 @@
 <a href="https://github.com/boost-ext/mp/actions/workflows/linux.yml" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
-<a href="https://godbolt.org/z/d5G9aE871">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/q91zvMaEf">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 # MP - ~~Template~~ Meta-Programming
 
@@ -79,7 +79,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 <details open><summary>Quick Start</summary>
 <p>
 
-> Try it out - https://godbolt.org/z/d5G9aE871
+> Try it out - https://godbolt.org/z/q91zvMaEf
 
 ---
 
