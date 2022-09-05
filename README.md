@@ -123,7 +123,7 @@ First step is to add our new meta-function.
 ```cpp
 auto identity = [](boost::mp::concepts::meta types) {
   return types;
-}
+};
 ```
 
 `meta` is a meta objects range (like `vector<meta>`) which we can do operations on.
