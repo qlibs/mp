@@ -11,7 +11,10 @@ function(ut name)
   add_test(NAME ${name}_test COMMAND ./${name}_test)
 endfunction()
 
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 ut(fixed_string)
+ut(utility)
+endif()
+
 ut(list)
 ut(meta)
-ut(utility)

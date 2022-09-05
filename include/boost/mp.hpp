@@ -174,7 +174,7 @@ template <auto... Vs>
   return value_list<Vs...>{};
 }
 
-template <fixed_string Str>
+template <auto Str>
   requires requires {
              Str.data;
              Str.size;
