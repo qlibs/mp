@@ -14,7 +14,7 @@
 <p>
 
 > Make ~~Template~~ Meta-Programming easier by leveraging run-time approach at compile-time.
-  If one knows how to use stl.algorithms/ranges one can consider himself a TMP guru now as well!
+  If one knows how to use stl.algorithms/ranges one can consider himself a TMP expert now as well!
 
 ```cpp
 #include <ranges>

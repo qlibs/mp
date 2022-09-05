@@ -10,10 +10,9 @@ RUN wget -nv -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
 RUN wget -P /home https://www.circle-lang.org/linux/build_170.tgz && \
     tar xvf /home/build_170.tgz -C /usr/bin && chmod +x /usr/bin/circle
 
-RUN echo "deb http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye main\n \
-          deb https://deb.debian.org/debian/ unstable main contrib non-free\n \
-          deb-src https://deb.debian.org/debian/ unstable main contrib non-free" \
-        > /etc/apt/sources.list.d/llvm.list; \
+RUN echo "deb http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye main" >> /etc/apt/sources.list.d/llvm.list && \
+    echo "deb https://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/llvm.list && \
+    echo "deb-src https://deb.debian.org/debian/ unstable main contrib non-free" >> /etc/apt/sources.list.d/llvm.list && \
     apt-get -qq update && \
     apt-get install -qqy -t llvm-toolchain-bullseye \
         git vim ruby g++-12 clang clang-format llvm libc++-16-dev libc++abi-16-dev libboost1.74-dev libelf-dev && \
