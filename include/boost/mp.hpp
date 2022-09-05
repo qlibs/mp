@@ -239,36 +239,42 @@ constexpr auto to_tuple = []<class T>(T&& obj) {
   // clang-format on
 };
 
+namespace detail {
+template <auto N>
+struct size_vs final {
+  std::size_t size{};
+  std::array<std::size_t, N> vs{};
+};
+}  // namespace detail
+
 template <template <class...> class T, class... Ts>
 [[nodiscard]] constexpr auto operator|(T<Ts...>, auto fn) {
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
-    constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
+    constexpr auto make = [](const auto& vs) {
+      auto svs = detail::size_vs<sizeof...(Ts)>{std::size(vs)};
+      for (auto i = 0; i < svs.size; ++i) {
+        svs.vs[i] = vs[i].index;
+      }
+      return svs;
+    };
+    constexpr auto expr = [make](auto fn) {
       auto i = 0uz;
       if constexpr (const std::vector<meta> types{
                         meta{.index = i++, .size = sizeof(Ts)}...};
                     requires { fn.template operator()<Ts...>(types); }) {
-        const auto vs = fn.template operator()<Ts...>(types);
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].index...}};
+        return make(fn.template operator()<Ts...>(types));
       } else if constexpr (requires { fn(types); }) {
-        const auto vs = fn(types);
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].index...}};
+        return make(fn(types));
       } else {
-        const auto vs = fn();
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].index...}};
+        return make(fn());
       }
     };
-
-    constexpr auto size = vs(fn, std::index_sequence<>{}).first;
-    constexpr auto vs_out = vs(fn, std::make_index_sequence<size>{}).second;
-
-    return [vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
-      return T<utility::nth_pack_element<vs_out[Ids], Ts...>...>{};
-    }(std::make_index_sequence<size>{});
+    constexpr auto expr_fn = expr(fn);
+    return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
+      return T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>{};
+    }(std::make_index_sequence<expr_fn.size>{});
   }
 }
 
@@ -277,31 +283,29 @@ template <template <auto...> class T, auto... Vs>
   if constexpr (requires { fn.template operator()<Vs...>(); }) {
     return fn.template operator()<Vs...>();
   } else {
-    constexpr auto vs = []<auto... Ids>(auto fn, std::index_sequence<Ids...>) {
+    constexpr auto make = [](const auto& vs) {
+      auto svs = detail::size_vs<sizeof...(Vs)>{std::size(vs)};
+      for (auto i = 0; i < svs.size; ++i) {
+        svs.vs[i] = vs[i].index;
+      }
+      return svs;
+    };
+    constexpr auto expr = [make](auto fn) {
       auto i = 0uz;
       if constexpr (const std::vector<meta> types{
                         meta{.index = i++, .size = sizeof(Vs)}...};
                     requires { fn.template operator()<Vs...>(types); }) {
-        const auto vs = fn.template operator()<Vs...>(types);
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].index...}};
+        return make(fn.template operator()<Vs...>(types));
       } else if constexpr (requires { fn(types); }) {
-        const auto vs = fn(types);
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].index...}};
+        return make(fn(types));
       } else {
-        const auto vs = fn();
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].index...}};
+        return make(fn());
       }
     };
-
-    constexpr auto size = vs(fn, std::index_sequence<>{}).first;
-    constexpr auto vs_out = vs(fn, std::make_index_sequence<size>{}).second;
-
-    return [vs_out]<auto... Ids>(std::index_sequence<Ids...>) {
-      return T<utility::nth_pack_element_v<vs_out[Ids], Vs...>...>{};
-    }(std::make_index_sequence<size>{});
+    constexpr auto expr_fn = expr(fn);
+    return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
+      return T<utility::nth_pack_element_v<expr_fn.vs[Ids], Vs...>...>{};
+    }(std::make_index_sequence<expr_fn.size>{});
   }
 }
 
@@ -310,32 +314,29 @@ template <class... Ts>
   if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
-    constexpr auto vs = []<auto... Ids, auto... Is>(
-                            auto fn, std::index_sequence<Ids...>) {
+    constexpr auto make = [](const auto& vs) {
+      auto svs = detail::size_vs<sizeof...(Ts)>{std::size(vs)};
+      for (auto i = 0; i < svs.size; ++i) {
+        svs.vs[i] = vs[i].index;
+      }
+      return svs;
+    };
+    constexpr auto expr = [make](auto fn) {
       auto i = 0uz;
       if constexpr (const std::vector<meta> types{
                         meta{.index = i++, .size = sizeof(Ts)}...};
                     requires { fn.template operator()<Ts...>(types); }) {
-        const auto vs = fn.template operator()<Ts...>(types);
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].index...}};
+        return make(fn.template operator()<Ts...>(types));
       } else if constexpr (requires { fn(types); }) {
-        const auto vs = fn(types);
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].index...}};
+        return make(fn(types));
       } else {
-        const auto vs = fn();
-        return std::pair{std::size(vs), std::array<std::size_t, sizeof...(Ids)>{
-                                            vs[Ids].index...}};
+        return make(fn());
       }
     };
-
-    constexpr auto size = vs(fn, std::index_sequence<>{}).first;
-    constexpr auto vs_out = vs(fn, std::make_index_sequence<size>{}).second;
-
-    return [vs_out, t]<auto... Ids>(std::index_sequence<Ids...>) {
-      return std::make_tuple(std::get<vs_out[Ids]>(t)...);
-    }(std::make_index_sequence<size>{});
+    constexpr auto expr_fn = expr(fn);
+    return [expr_fn, t]<auto... Ids>(std::index_sequence<Ids...>) {
+      return std::make_tuple(std::get<expr_fn.vs[Ids]>(t)...);
+    }(std::make_index_sequence<expr_fn.size>{});
   }
 }
 
