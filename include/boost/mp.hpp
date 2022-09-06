@@ -145,10 +145,18 @@ struct type {
     return false;
   }
 };
+template <template <class> class Trait>
+struct trait {
+  template <class T>
+  using fn = Trait<T>;
+};
 }  // namespace detail
 
 template <class T>
 constexpr detail::type<T> type{};
+
+template <template <class> class Trait>
+constexpr detail::trait<Trait> trait{};
 
 template <class... Ts>
 struct type_list final {
@@ -305,6 +313,17 @@ struct size_vs final {
   std::array<std::size_t, N> vs{};
 };
 }  // namespace detail
+
+template <template <class...> class T, class... Ts, class... Us>
+[[nodiscard]] constexpr auto operator|(T<Ts...>, T<Us...>) {
+  return T<Ts..., Us...>{};
+}
+
+template <template <class...> class T, class... Ts,
+          template <class> class Trait>
+[[nodiscard]] constexpr auto operator|(T<Ts...>, detail::trait<Trait>) {
+  return T<typename detail::trait<Trait>::template fn<Ts>::type...>{};
+}
 
 template <template <class...> class T, class... Ts>
 [[nodiscard]] constexpr auto operator|(T<Ts...>, auto fn) {

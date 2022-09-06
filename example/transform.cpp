@@ -6,17 +6,13 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include <boost/mp.hpp>
+#include <type_traits>
 
-template <auto Fn>
-auto transform = []<template <class...> class T, class... Ts> {
-  return T<decltype(Fn.template operator()<Ts>())...>();
-};
-
-auto add_pointer = []<class T>() -> T* { return {}; };
+template <auto List>
+auto transform = List | boost::mp::trait<std::add_pointer>;
 
 // clang-format off
-static_assert((boost::mp::list<int, double>() | transform<add_pointer>) ==
-               boost::mp::list<int*, double*>());
+static_assert(transform<boost::mp::list<int, double>()> == boost::mp::list<int*, double*>());
 // clang-format on
 
 int main() {}

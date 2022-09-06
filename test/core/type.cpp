@@ -8,7 +8,6 @@
 #include <boost/mp.hpp>
 #include <boost/ut.hpp>
 #include <type_traits>
-#include <vector>
 
 int main() {
   using namespace boost::ut;

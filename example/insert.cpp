@@ -8,13 +8,13 @@
 #include <boost/mp.hpp>
 #include <ranges>
 
+// clang-format off
 template <auto List, auto N, class... Ns>
-auto insert = List | std::ranges::views::take(N) |
-              []<template <class...> class T, class... Ts>()
-    -> T<Ts..., Ns...> { return {}; } |
-           []<template <class...> class T, class... Ts>(T<Ts...>) {
-             return []<class... Xs>() -> T<Xs..., Ts...> { return {}; };
-           }(List | std::ranges::views::drop(N));
+auto insert = List
+  | std::ranges::views::take(N)
+  | boost::mp::list<Ns...>()
+  | (List | std::ranges::views::drop(N));
+// clang-format on
 
 using boost::mp::operator""_c;
 
