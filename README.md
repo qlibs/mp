@@ -424,9 +424,21 @@ concept concepts::meta =
 
 ```cpp
 /**
+ * Variable template to represents single type
+ * Useful for non-default constructible types
+ */
+template<class T> unspecified<T> type{};
+```
+
+```cpp
+/**
  * List of types
  */
-template<class... Ts> struct type_list;
+template<class... Ts> struct type_list {
+  constexpr auto size = sizeof...(Ts);
+  constexpr operator==(type_list) = default;
+  constexpr operator[](auto N); // returns N-th type
+};
 ```
 
 ```cpp
@@ -434,6 +446,10 @@ template<class... Ts> struct type_list;
  * List of values
  */
 template<class... Ts> struct value_list;
+  constexpr auto size = sizeof...(Vs);
+  constexpr operator==(value_list) = default;
+  constexpr operator[](auto N); // returns N-th value
+};
 ```
 
 ```cpp
@@ -441,7 +457,12 @@ template<class... Ts> struct value_list;
  * Compile-time string representation to be used
  * as <"Hello World">
  */
-template<std::size_t> struct fixed_string;
+template<std::size_t N> struct fixed_string {
+  static constexpr auto size = N;
+  [[nodiscard]] constexpr auto operator<=>(const fixed_string&) const = default;
+  [[nodiscard]] constexpr explicit(false) operator std::string_view() const;
+  std::array<char, N + 1> data{};
+};
 ```
 
 ```cpp
@@ -451,7 +472,7 @@ template<std::size_t> struct fixed_string;
  *  value_list for auto...
  *  fixed_string for if { t.data; t.size; }
  */
-template<template auto...> [[nodiscard]] constexpr list();
+template<template auto... Vs> [[nodiscard]] constexpr auto list();
 ```
 
 ```cpp
@@ -460,7 +481,7 @@ template<template auto...> [[nodiscard]] constexpr list();
  * 0-10 number of reflected fields is supported
  * @tparam T type to be reflected
  */
-template <class T> constexpr auto to_list;
+template<class T> [[nodiscard]] constexpr auto to_list;
 ```
 
 ```cpp
