@@ -9,10 +9,10 @@
 #include <variant>
 
 template <auto List, class... Ts>
-auto add = List | boost::mp::list<Ts...>();
+auto append = List | boost::mp::list<Ts...>();
 
 // clang-format off
-static_assert(add<boost::mp::list<int, double>(), void> == boost::mp::list<int, double, void>());
+static_assert(append<boost::mp::list<int, double>(), void> == boost::mp::list<int, double, void>());
 // clang-format on
 
 int main() {}
