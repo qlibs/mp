@@ -292,18 +292,19 @@ static_assert(transform<boost::mp::list<int, double>()> ==
 Okay, so what about the case when we need meta-types and Ts...?
 
 ```cpp
-template <auto F>
-auto filter = []<class... Ts>(boost::mp::concepts::meta auto types) {
-  types.erase(std::remove_if(
-                  std::begin(types), std::end(types),
-                  [](auto type) { return std::array{not F(Ts{})...}[type]; }),
-              std::end(types));
-  return types;
+auto has_value = []<class... Ts>(auto type) {
+  return std::array{requires(Ts t) { t.value; }...}[type];
 };
 ```
 
-> Notice that we created an array with functor values for each type, so that
-  they can be applied at meta-types manipulation level using STL.
+> Notice handy `requires with lambda` pattern to verify ad-hoc concepts.
+
+```cpp
+auto filter = boost::mp::adapt(std::ranges::views::filter, has_value);;
+```
+
+> Notice that we used `adapt` in order to create an array with functor values for each type, so that
+  they can be applied at meta-types manipulation level.
 
 ```cpp
 struct bar {};
@@ -313,17 +314,8 @@ struct foo {
 ```
 
 ```cpp
-template <auto List>
-auto find_if_has_value =
-  List
-| filter<[](auto t) { return requires { t.value; }; }>;
-```
-
-> Notice handy `requires with lambda` pattern to verify ad-hoc concepts.
-
-```cpp
 static_assert(boost::mp::list<foo>() ==
-              find_if_has_value<boost::mp::list<foo, bar>()>);
+             (boost::mp::list<foo, bar>() | filter));
 ```
 
 That's it for now, for more let's take a look at more
@@ -498,9 +490,9 @@ constexpr auto to_tuple = []<class T>(T&& obj);
 /**
  * Composability pipe operator for types
  * @param fn functor to be applied
-   - [](concepts::meta auto types)
-   - []<class... Ts>
-   - []<class... Ts>(concepts::meta auto types)
+ * - [](concepts::meta auto types)
+ * - []<class... Ts>
+ * - []<class... Ts>(concepts::meta auto types)
  */
 template <template <class...> class T, class... Ts>
 [[nodiscard]] constexpr auto operator|(T<Ts...>, auto fn) {
@@ -510,9 +502,9 @@ template <template <class...> class T, class... Ts>
 /**
  * Composability pipe operator for values
  * @param fn functor to be applied
-   - [](concepts::meta auto types)
-   - []<auto... Ts>
-   - []<auto... Ts>(concepts::meta auto types)
+ * - [](concepts::meta auto types)
+ * - []<auto... Ts>
+ * - []<auto... Ts>(concepts::meta auto types)
  */
 template <template <auto...> class T, auto... Vs>
 [[nodiscard]] constexpr auto operator|(T<Vs...>, auto fn) {
@@ -522,12 +514,20 @@ template <template <auto...> class T, auto... Vs>
 /**
  * Composability pipe operator for std::tuple
  * @param fn functor to be applied
-   - [](concepts::meta auto types)
-   - [](auto&&... args)
-   - [](concepts::meta auto types, auto&&... args)
+ * - [](concepts::meta auto types)
+ * - [](auto&&... args)
+ * - [](concepts::meta auto types, auto&&... args)
  */
 template <template <class...> class T, class... Ts>
 [[nodiscard]] constexpr auto operator|(std::tuple<Ts...>, auto fn) {
+```
+
+```cpp
+/**
+ * Adapts ranges to meta type space
+ * adapt(std::ranges::views::filter, []<class... Ts>(auto type) { return ...; })
+ */
+constexpr auto adapt = [](auto fn, auto... ts);
 ```
 
 ```cpp
@@ -558,8 +558,8 @@ template <char... Cs> [[nodiscard]] consteval auto operator""_c();
 ```cpp
 cd benchmark
 mkdir build && cd build
-CXX=clang++-16 cmake .. # CXX=g++-16
-make -j
+CXX=clang++-16 cmake .. # CXX=g++-12
+make <<benchmark>>
 ```
 
 </p>

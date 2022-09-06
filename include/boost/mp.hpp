@@ -457,5 +457,13 @@ template <class... Ts>
     }(std::make_index_sequence<expr_fn.size>{});
   }
 }
+
+constexpr auto adapt = [](auto fn, auto pred) {
+  return [fn, pred]<class... Ts>(boost::mp::concepts::meta auto types) {
+    auto v = fn(types,
+                [pred](auto t) { return pred.template operator()<Ts...>(t); });
+    return decltype(types){std::begin(v), std::end(v)};
+  };
+};
 }  // namespace boost::inline ext::mp::inline v0_0_1
 #undef BOOST_MP_PRETTY_FUNCTION
