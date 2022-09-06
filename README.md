@@ -96,7 +96,7 @@ docker run -it -v "$(pwd)":/mp --privileged dev:latest
 
 ```sh
 mkdir build && cd build
-CXX=clang++-16 cmake .. -DBOOST_MP_BUILD_TESTS=ON -DBOOST_MP_BUILD_EXAMPLES=ON # CXX=g++-12
+CXX={clan}g++ cmake .. -DBOOST_MP_BUILD_TESTS=ON -DBOOST_MP_BUILD_EXAMPLES=ON
 ```
 
 ```sh
@@ -124,7 +124,7 @@ ctest --output-on-failure
 > Requirements ([Dockerfile](Dockerfile))
 
 - C++20 compliant compiler (STL with support for `constexpr std::vector`)
-  - clang++16+ [libc++-16+] (✔️)
+  - clang++15+ [libc++-15+] (✔️)
   - g++12+ [libstdc++-12+] (✔️)
 
 </p>
@@ -300,10 +300,10 @@ auto has_value = []<class... Ts>(auto type) {
 > Notice handy `requires with lambda` pattern to verify ad-hoc concepts.
 
 ```cpp
-auto filter = boost::mp::adapt(std::views::filter, has_value);;
+auto filter = std::views::filter % has_value;
 ```
 
-> Notice that we used `adapt` in order to create an array with functor values for each type, so that
+> Notice that we used `has_value` in order to create an array with functor values for each type, so that
   they can be applied at meta-types manipulation level.
 
 ```cpp
@@ -525,9 +525,9 @@ template <template <class...> class T, class... Ts>
 ```cpp
 /**
  * Adapts ranges to meta type space
- * adapt(std::views::filter, []<class... Ts>(auto type) { return ...; })
+ * std::views::filter % []<class... Ts>(auto type) { return ...; }
  */
-constexpr auto adapt = [](auto fn, auto... ts);
+constexpr auto opeartor%(auto fn, auto... ts);
 ```
 
 ```cpp
@@ -558,7 +558,7 @@ template <char... Cs> [[nodiscard]] consteval auto operator""_c();
 ```cpp
 cd benchmark
 mkdir build && cd build
-CXX=clang++-16 cmake .. # CXX=g++-12
+CXX={clang}g++ cmake ..
 make <<benchmark>>
 ```
 
