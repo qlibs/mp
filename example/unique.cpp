@@ -30,9 +30,9 @@ auto unique = []<class... Ts>(boost::mp::concepts::meta auto types) {
 template <auto v>
 auto unique_sort = v | sort<by_size> | unique;
 
-static_assert(
-    unique_sort<boost::mp::type_list<std::byte[1], std::byte[3], std::byte[2],
-                                     std::byte[1], std::byte[3]>{}> ==
-    boost::mp::type_list<std::byte[1], std::byte[2], std::byte[3]>{});
+// clang-format off
+static_assert(unique_sort<boost::mp::type_list<std::byte[1], std::byte[3], std::byte[2], std::byte[1], std::byte[3]>{}>
+                       == boost::mp::type_list<std::byte[1], std::byte[2], std::byte[3]>{});
+// clang-format on
 
 int main() {}

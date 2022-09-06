@@ -27,9 +27,10 @@ struct foo {
 
 struct bar {};
 
+// clang-format off
 static_assert(conditional<boost::mp::type_list<foo, bar>{}>.value == 1);
-static_assert(conditional<boost::mp::type_list<bar, bar>{}> ==
-              boost::mp::type_list{});
+static_assert(conditional<boost::mp::type_list<bar, bar>{}> == boost::mp::type_list{});
+// clang-format on
 
 #include <ranges>
 
@@ -48,22 +49,11 @@ auto first_or_last_depending_on_size = List | []<class...> {
   }
 };
 
-static_assert(first_or_last_depending_on_size<
-                  boost::mp::list<std::byte[42], std::byte[43]>()> ==
-              boost::mp::list<std::byte[43]>());
-
-static_assert(
-    first_or_last_depending_on_size<
-        boost::mp::list<std::byte[42], std::byte[999], std::byte[43]>()> ==
-    boost::mp::list<std::byte[43]>());
-
-static_assert(
-    first_or_last_depending_on_size<
-        boost::mp::list<std::byte[142], std::byte[999], std::byte[43]>()> ==
-    boost::mp::list<std::byte[142]>());
-
-static_assert(first_or_last_depending_on_size<boost::mp::list<
-                  std::byte[1], std::byte[2], std::byte[3], std::byte[2]>()> ==
-              boost::mp::list<std::byte[2]>());
+// clang-format off
+static_assert(first_or_last_depending_on_size<boost::mp::list<std::byte[42], std::byte[43]>()> == boost::mp::list<std::byte[43]>());
+static_assert(first_or_last_depending_on_size<boost::mp::list<std::byte[42], std::byte[999], std::byte[43]>()> == boost::mp::list<std::byte[43]>());
+static_assert(first_or_last_depending_on_size<boost::mp::list<std::byte[142], std::byte[999], std::byte[43]>()> == boost::mp::list<std::byte[142]>());
+static_assert(first_or_last_depending_on_size<boost::mp::list<std::byte[1], std::byte[2], std::byte[3], std::byte[2]>()> == boost::mp::list<std::byte[2]>());
+// clang-format on
 
 int main() {}

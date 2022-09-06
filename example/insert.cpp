@@ -8,26 +8,18 @@
 #include <boost/mp.hpp>
 #include <ranges>
 
-template <class... TRhs>
-constexpr auto append() {
-  return []<class... TLhs> { return boost::mp::type_list<TLhs..., TRhs...>{}; };
-}
-
-template <class... TRhs>
-constexpr auto append(boost::mp::type_list<TRhs...>) {
-  return []<class... TLhs> { return boost::mp::type_list<TLhs..., TRhs...>{}; };
-}
-
-template <auto N, class... Ns>
-auto insert = []<class... Ts> {
-  auto v = boost::mp::list<Ts...>();
-  auto head = v | std::ranges::views::take(N);
-  auto tail = v | std::ranges::views::drop(N);
-  return boost::mp::type_list{} | append(head) | append<Ns...>() | append(tail);
-};
+template <auto List, auto N, class... Ns>
+auto insert = List | std::ranges::views::take(N) |
+              []<template <class...> class T, class... Ts>()
+    -> T<Ts..., Ns...> { return {}; } |
+           []<template <class...> class T, class... Ts>(T<Ts...>) {
+             return []<class... Xs>() -> T<Xs..., Ts...> { return {}; };
+           }(List | std::ranges::views::drop(N));
 
 using boost::mp::operator""_c;
-static_assert((boost::mp::list<int, double, float>() | insert<1_c, short>) ==
-              boost::mp::list<int, short, double, float>());
+
+// clang-format off
+static_assert(insert<boost::mp::list<int, double, float>(), 1_c, short> == boost::mp::list<int, short, double, float>());
+// clang-format on
 
 int main() {}
