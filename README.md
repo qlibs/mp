@@ -1,4 +1,4 @@
-**Disclaimer** `MP` is not an official [Boost](https://www.boost.org/) library. It's an extension to existsing libraries.
+**Disclaimer** `MP` is not an official [Boost](https://www.boost.org/) library.
 
 ---
 
