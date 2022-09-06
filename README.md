@@ -25,8 +25,8 @@
 
 template <auto Begin, auto End, auto List>
 auto slice = List
- | std::ranges::views::drop(Begin) // use std.ranges
- | std::ranges::views::take(End);  // any library which can operate on containers is supported!
+ | std::views::drop(Begin) // use std.ranges
+ | std::views::take(End);  // any library which can operate on containers is supported!
 
 static_assert(slice<1_c, 2_c, list<int, double, float>>
                            == list<double, float>);
@@ -181,8 +181,8 @@ Let's implement simple slice for types as an example
 ```cpp
 template<auto list, auto Start, auto End>
 auto slice = list
-   | std::ranges::views::drop(Start)
-   | std::ranges::views::take(End);
+   | std::views::drop(Start)
+   | std::views::take(End);
 ```
 
 > Notice that we've just used std::ranges at compile-time to manipulate a type-list!
@@ -300,7 +300,7 @@ auto has_value = []<class... Ts>(auto type) {
 > Notice handy `requires with lambda` pattern to verify ad-hoc concepts.
 
 ```cpp
-auto filter = boost::mp::adapt(std::ranges::views::filter, has_value);;
+auto filter = boost::mp::adapt(std::views::filter, has_value);;
 ```
 
 > Notice that we used `adapt` in order to create an array with functor values for each type, so that
@@ -525,7 +525,7 @@ template <template <class...> class T, class... Ts>
 ```cpp
 /**
  * Adapts ranges to meta type space
- * adapt(std::ranges::views::filter, []<class... Ts>(auto type) { return ...; })
+ * adapt(std::views::filter, []<class... Ts>(auto type) { return ...; })
  */
 constexpr auto adapt = [](auto fn, auto... ts);
 ```

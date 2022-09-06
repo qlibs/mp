@@ -11,8 +11,7 @@
 using boost::mp::operator""_c;
 
 template <auto List, auto N>
-auto nth_pack_element =
-    List | std::ranges::views::drop(N) | std::ranges::views::take(1_c);
+auto nth_pack_element = List | std::views::drop(N) | std::views::take(1_c);
 
 // clang-format off
 static_assert(nth_pack_element<boost::mp::list<int, double, float>(), 0_c>[0_c] == int{});

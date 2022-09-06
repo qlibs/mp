@@ -9,8 +9,7 @@
 #include <ranges>
 
 template <auto List, auto Begin, auto End>
-auto slice =
-    List | std::ranges::views::drop(Begin) | std::ranges::views::take(End);
+auto slice = List | std::views::drop(Begin) | std::views::take(End);
 
 using boost::mp::operator""_c;
 

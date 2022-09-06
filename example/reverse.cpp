@@ -9,7 +9,7 @@
 #include <ranges>
 
 template <auto List>
-auto reverse = List | std::ranges::views::reverse;
+auto reverse = List | std::views::reverse;
 
 // clang-format off
 static_assert((reverse<boost::mp::list<int, double, float>()>) == boost::mp::list<float, double, int>());
