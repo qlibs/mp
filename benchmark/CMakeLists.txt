@@ -73,3 +73,18 @@ metabench_add_chart(first_or_last_size
       first_or_last_size.mp
       first_or_last_size.mp11
 )
+
+metabench_add_dataset(first_middle_last.mp "first_middle_last/mp.cpp.erb"
+    "(3...503).step(100)")
+metabench_add_dataset(first_middle_last.mp11 "first_middle_last/mp11.cpp.erb"
+    "(3...503).step(100)")
+
+metabench_add_chart(first_middle_last
+    TITLE "first_middle_last"
+    SUBTITLE "(smaller is better)"
+    XLABEL "Number of elements"
+    YLABEL "Time"
+    DATASETS
+      first_middle_last.mp
+      first_middle_last.mp11
+)
