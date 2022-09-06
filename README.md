@@ -262,38 +262,31 @@ Okay, so far so good, but what about adding or removing from type_list?
 
 Removing is simple as we can just erase elements from the meta types as before.
 
-For adding we need to use type/value space land to accomplish that, though.
+Dealing with new types/transforms it's a bit different but not difficult either.
 
 ```cpp
-template <class... TRhs>
-auto append = []<class... TLhs> {
-  return boost::mp::list<TLhs..., TRhs...>();
-};
+template <auto List, class... Ts>
+auto add = List | boost::mp::list<Ts...>();
 ```
-
-> Note: we propagate `<class... Ts>` instead of meta types. Both options are valid.
-  Also passing both `<class... Ts>(boost::mp::concepts::meta auto types)` is also
-  correct and useful for cases when meta-types require manipulation based on types.
-
-> Note: With C++ and Universal Template Parameters we will be able to unify it
 
 ```cpp
-template <template auto... TRhs>
-auto append = []<template auto... TLhs> {
-  return boost::mp::list<TLhs..., TRhs...>;
-};
+static_assert(add<boost::mp::list<int, double>(), void> ==
+                  boost::mp::list<int, double, void>());
 ```
 
-But, let's back to reality for now and apply our meta-function
+And what about transform? Let's add pointers to all our type in the list.
 
 ```cpp
 template <auto List>
-auto add = list | append<void>; // adds void type
+auto transform = List | boost::mp::trait<std::add_pointer>;
 ```
 
+It's that easy, we just applied a std::add_pointer trait to the list.
+To support custom traits the only requirement is to have `type` alias with the applied transformation.
+
 ```cpp
-static_assert(add<boost::mp::list<int, double>()> ==
-              boost::mp::list<int, double, void>());
+static_assert(transform<boost::mp::list<int, double>()> ==
+                        boost::mp::list<int*, double*>());
 ```
 
 Okay, so what about the case when we need meta-types and Ts...?
@@ -424,10 +417,18 @@ concept concepts::meta =
 
 ```cpp
 /**
- * Variable template to represents single type
+ * Variable template whichi represents single type
  * Useful for non-default constructible types
  */
 template<class T> unspecified<T> type{};
+```
+
+```cpp
+/**
+ * Variable template which represents trait
+ * static_assert(list<int, double> | trait<add:pointer> == list<int*, double*>)
+ */
+template<template<class> class T> unspecified<T> trait{};
 ```
 
 ```cpp
@@ -558,7 +559,7 @@ template <char... Cs> [[nodiscard]] consteval auto operator""_c();
 cd benchmark
 mkdir build && cd build
 CXX=clang++-16 cmake .. # CXX=g++-16
-make sort_unique_reverse transform_filter conditional_drop_sum first_or_last_size
+make -j
 ```
 
 </p>

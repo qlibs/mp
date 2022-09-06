@@ -8,27 +8,11 @@
 #include <boost/mp.hpp>
 #include <variant>
 
-template <class... TRhs>
-auto append = []<template <class...> class T, class... TLhs> {
-  return boost::mp::type<T<TLhs..., TRhs...>>;
-};
-
 template <auto List, class... Ts>
-auto add = List | append<Ts...>;
+auto add = List | boost::mp::list<Ts...>();
 
-static_assert(*add<boost::mp::list<int, double>(), void> ==
-              boost::mp::list<int, double, void>());
-
-using boost::mp::operator|;
-static_assert(add<boost::mp::type<std::variant<int, double>>, float> ==
-              boost::mp::type<std::variant<int, double, float>>);
-
-template <class... Ts>
-struct list {
-  list() = delete;
-};
-
-static_assert(add<boost::mp::type<list<int, double>>, float> ==
-              boost::mp::type<list<int, double, float>>);
+// clang-format off
+static_assert(add<boost::mp::list<int, double>(), void> == boost::mp::list<int, double, void>());
+// clang-format on
 
 int main() {}
