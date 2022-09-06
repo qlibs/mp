@@ -44,6 +44,7 @@ int main() {
   };
 
   "utility.type_name"_test = [] {
+    std::cout << boost::mp::utility::type_name<void>() << std::endl;
     expect("void" == boost::mp::utility::type_name<void>());
     expect("const int" == boost::mp::utility::type_name<const int>());
     expect("foo" == boost::mp::utility::type_name<foo>());
