@@ -409,7 +409,7 @@ concept concepts::meta =
 
 ```cpp
 /**
- * Variable template whichi represents single type
+ * Variable template which represents single type
  * Useful for non-default constructible types
  */
 template<class T> unspecified<T> type{};
