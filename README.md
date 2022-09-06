@@ -550,6 +550,7 @@ template <char... Cs> [[nodiscard]] consteval auto operator""_c();
 - <a href="https://boost-ext.github.io/mp/benchmark/transform_filter">transform_filter</a>
 - <a href="https://boost-ext.github.io/mp/benchmark/conditional_drop_sum">conditional_drop_sum</a>
 - <a href="https://boost-ext.github.io/mp/benchmark/first_or_last_size">first_or_last_size</a>
+- <a href="https://boost-ext.github.io/mp/benchmark/first_middle_last">first_middle_last</a>
 
 > To build/run benchmarks
 
