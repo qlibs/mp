@@ -158,6 +158,9 @@ struct type_list final {
   constexpr auto operator==(type_list<Us...>) const -> bool {
     return false;
   }
+  constexpr auto operator[](const auto N) const {
+    return utility::nth_pack_element<N, Ts...>();
+  }
 };
 
 template <auto... Vs>
@@ -167,6 +170,9 @@ struct value_list final {
   template <auto... Us>
   constexpr auto operator==(value_list<Us...>) const -> bool {
     return false;
+  }
+  constexpr auto operator[](const auto N) const {
+    return utility::nth_pack_element_v<N, Vs...>;
   }
 };
 
