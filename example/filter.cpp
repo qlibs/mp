@@ -5,29 +5,23 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include <algorithm>
 #include <boost/mp.hpp>
+#include <ranges>
 
-template <auto Fn>
-auto filter = []<class... Ts>(boost::mp::concepts::meta auto types) {
-  types.erase(std::remove_if(std::begin(types), std::end(types),
-                             [fns = std::array{not Fn(Ts{})...}](auto type) {
-                               return fns[type];
-                             }),
-              std::end(types));
-  return types;
-};
+// clang-format off
+auto filter = boost::mp::adapt(
+    std::ranges::views::filter,
+    []<class... Ts>(auto type) {return std::array{requires(Ts t) { t.value; }...}[type];
+  });
+// clang-format on
 
 struct bar {};
 struct foo {
   int value;
 };
 
-template <auto v>
-auto find_if_has_value =
-    v | filter<[](auto t) { return requires { t.value; }; }>;
-
-static_assert(boost::mp::type_list<foo>{} ==
-              find_if_has_value<boost::mp::type_list<foo, bar>{}>);
+// clang-format off
+static_assert((boost::mp::list<foo, bar>() | filter) == boost::mp::list<foo>());
+// clang-format on
 
 int main() {}

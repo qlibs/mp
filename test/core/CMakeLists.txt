@@ -11,6 +11,7 @@ function(test name)
   add_test(NAME ${name}_test COMMAND ./${name}_test)
 endfunction()
 
+test(adapt)
 test(fixed_string)
 test(list)
 test(meta)
