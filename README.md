@@ -1,3 +1,7 @@
+**Disclaimer** `MP` is not an official Boost library.
+
+---
+
 <a href="https://github.com/boost-ext/mp/actions/workflows/linux.yml" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
 <a href="https://godbolt.org/z/q91zvMaEf">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
@@ -549,7 +553,3 @@ make sort_unique_reverse transform_filter conditional_drop_sum first_or_last_siz
 
 </p>
 </details>
-
----
-
-**Disclaimer** `MP` is not an official Boost library.
