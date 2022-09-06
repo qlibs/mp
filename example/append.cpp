@@ -18,6 +18,7 @@ auto add = List | append<Ts...>;
 
 static_assert(*add<boost::mp::list<int, double>(), void> ==
               boost::mp::list<int, double, void>());
+
 using boost::mp::operator|;
 static_assert(add<boost::mp::type<std::variant<int, double>>, float> ==
               boost::mp::type<std::variant<int, double, float>>);
