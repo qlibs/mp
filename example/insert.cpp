@@ -13,7 +13,7 @@ constexpr auto append() {
   return []<class... TLhs> { return boost::mp::type_list<TLhs..., TRhs...>{}; };
 }
 
-template <template <class...> class T, class... TRhs>
+template <class... TRhs>
 constexpr auto append(boost::mp::type_list<TRhs...>) {
   return []<class... TLhs> { return boost::mp::type_list<TLhs..., TRhs...>{}; };
 }
