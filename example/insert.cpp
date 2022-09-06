@@ -13,7 +13,7 @@ constexpr auto append() {
   return []<class... TLhs> { return boost::mp::type_list<TLhs..., TRhs...>{}; };
 }
 
-template <class... TRhs>
+template <template <class...> class T, class... TRhs>
 constexpr auto append(boost::mp::type_list<TRhs...>) {
   return []<class... TLhs> { return boost::mp::type_list<TLhs..., TRhs...>{}; };
 }
@@ -23,8 +23,7 @@ auto insert = []<class... Ts> {
   auto v = boost::mp::list<Ts...>();
   auto head = v | std::ranges::views::take(N);
   auto tail = v | std::ranges::views::drop(N);
-  return boost::mp::type_list<>{} | append(head) | append<Ns...>() |
-         append(tail);
+  return boost::mp::type_list{} | append(head) | append<Ns...>() | append(tail);
 };
 
 using boost::mp::operator""_c;

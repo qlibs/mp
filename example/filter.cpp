@@ -8,11 +8,12 @@
 #include <algorithm>
 #include <boost/mp.hpp>
 
-template <auto F>
+template <auto Fn>
 auto filter = []<class... Ts>(boost::mp::concepts::meta auto types) {
-  types.erase(std::remove_if(
-                  std::begin(types), std::end(types),
-                  [](auto type) { return std::array{not F(Ts{})...}[type]; }),
+  types.erase(std::remove_if(std::begin(types), std::end(types),
+                             [fns = std::array{not Fn(Ts{})...}](auto type) {
+                               return fns[type];
+                             }),
               std::end(types));
   return types;
 };
