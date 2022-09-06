@@ -8,13 +8,15 @@
 #include <boost/mp.hpp>
 
 template <auto Fn>
-auto transform = []<class... Ts> {
-  return boost::mp::list<decltype(Fn.template operator()<Ts>())...>();
+auto transform = []<template <class...> class T, class... Ts> {
+  return T<decltype(Fn.template operator()<Ts>())...>();
 };
 
 auto add_pointer = []<class T>() -> T* { return {}; };
 
+// clang-format off
 static_assert((boost::mp::list<int, double>() | transform<add_pointer>) ==
-              boost::mp::list<int*, double*>());
+               boost::mp::list<int*, double*>());
+// clang-format on
 
 int main() {}
