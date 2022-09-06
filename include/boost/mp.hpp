@@ -26,7 +26,7 @@ export import std;
 #if defined(__cpp_modules) && !defined(BOOST_MP_DISABLE_MODULE)
 export
 #endif
-    namespace boost::mp::inline v0_0_1 {
+    namespace boost::inline ext::mp::inline v0_0_1 {
 namespace utility {
 #if __has_builtin(__type_pack_element)
 template <auto N, class... Ts>
@@ -86,8 +86,8 @@ constexpr auto type_id = detail::type_id<T>();
 #define BOOST_MP_TYPE_NAME_OFFSET 42
 #define BOOST_MP_TYPE_NAME_V_OFFSET 42
 #else
-#define BOOST_MP_TYPE_NAME_OFFSET 65
-#define BOOST_MP_TYPE_NAME_V_OFFSET 70
+#define BOOST_MP_TYPE_NAME_OFFSET 70
+#define BOOST_MP_TYPE_NAME_V_OFFSET 75
 #endif
 
 template <class T>
@@ -375,5 +375,5 @@ template <class... Ts>
     }(std::make_index_sequence<expr_fn.size>{});
   }
 }
-}  // namespace boost::mp::inline v0_0_1
+}  // namespace boost::inline ext::mp::inline v0_0_1
 #undef BOOST_MP_PRETTY_FUNCTION
