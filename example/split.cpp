@@ -15,9 +15,8 @@ template <boost::mp::fixed_string Str, auto N>
 constexpr auto split = boost::mp::list<Str>() | []<auto... Cs> {
   auto list = boost::mp::list<Cs...>();
   auto to_ct_string = []<auto... Vs> { return ct_string<Vs...>{}; };
-  auto head = list | std::ranges::views::take(N) | to_ct_string;
-  auto tail =
-      list | std::ranges::views::drop(boost::mp::_c<N + 1>) | to_ct_string;
+  auto head = list | std::views::take(N) | to_ct_string;
+  auto tail = list | std::views::drop(boost::mp::_c<N + 1>) | to_ct_string;
   return boost::mp::list<head, tail>();
 };
 

@@ -13,16 +13,16 @@ int main() {
   using namespace boost::ut;
 
   "adapt.filter.match"_test = [] {
-    auto v =
-        boost::mp::adapt(std::ranges::views::filter,
-                         []<class... Ts>(auto type) { return sizeof(type); });
+    auto v = boost::mp::adapt(std::views::filter, []<class... Ts>(auto type) {
+      return sizeof(type);
+    });
     expect(2_u == (boost::mp::list<int, double>() | v).size);
   };
 
   "adapt.filter.doesn't match"_test = [] {
-    auto v = boost::mp::adapt(
-        std::ranges::views::filter,
-        []<class... Ts>(auto type) { return not sizeof(type); });
+    auto v = boost::mp::adapt(std::views::filter, []<class... Ts>(auto type) {
+      return not sizeof(type);
+    });
     expect(0_u == (boost::mp::list<int, double>() | v).size);
   };
 }

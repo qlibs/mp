@@ -45,10 +45,9 @@ int main() {
   };
 
   "type_list.ranges"_test = [] {
-    expect(constant<(boost::mp::type_list{} | std::ranges::views::reverse) ==
+    expect(constant<(boost::mp::type_list{} | std::views::reverse) ==
                     boost::mp::type_list{}>);
-    expect(constant<(boost::mp::list<int, double>() |
-                     std::ranges::views::reverse) ==
+    expect(constant<(boost::mp::list<int, double>() | std::views::reverse) ==
                     boost::mp::list<double, int>()>);
   };
 }

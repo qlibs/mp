@@ -10,7 +10,7 @@
 
 // clang-format off
 auto filter = boost::mp::adapt(
-    std::ranges::views::filter,
+    std::views::filter,
     []<class... Ts>(auto type) {return std::array{requires(Ts t) { t.value; }...}[type];
   });
 // clang-format on
