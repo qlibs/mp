@@ -9,10 +9,11 @@
 #include <ranges>
 
 // clang-format off
+template<class T>
+concept has_value = requires(T t) { t.value; };
+
 auto filter = boost::mp::adapt(
-    std::views::filter,
-    []<class... Ts>(auto type) {return std::array{requires(Ts t) { t.value; }...}[type];
-  });
+    std::views::filter, []<class... Ts>(auto type) { return std::array{has_value<Ts>...}[type]; });
 // clang-format on
 
 struct bar {};
