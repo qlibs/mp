@@ -133,6 +133,23 @@ template <auto N>
 constexpr auto _c = std::integral_constant<decltype(N), N>{};
 using utility::operator""_c;
 
+namespace detail {
+template <class T>
+struct type {
+  using value_type = T;
+  static constexpr auto size = 1u;
+  [[nodiscard]] constexpr auto operator*() const -> value_type { return {}; }
+  constexpr auto operator==(type<T>) const -> bool { return true; }
+  template <class U>
+  constexpr auto operator==(type<U>) const -> bool {
+    return false;
+  }
+};
+}  // namespace detail
+
+template <class T>
+constexpr detail::type<T> type{};
+
 template <class... Ts>
 struct type_list final {
   static constexpr auto size = sizeof...(Ts);
@@ -285,7 +302,9 @@ struct size_vs final {
 
 template <template <class...> class T, class... Ts>
 [[nodiscard]] constexpr auto operator|(T<Ts...>, auto fn) {
-  if constexpr (requires { fn.template operator()<Ts...>(); }) {
+  if constexpr (requires { fn.template operator()<T, Ts...>(); }) {
+    return fn.template operator()<T, Ts...>();
+  } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
     constexpr auto make = [](const auto& vs) {
@@ -314,9 +333,45 @@ template <template <class...> class T, class... Ts>
   }
 }
 
+template <template <class...> class T, class... Ts>
+[[nodiscard]] constexpr auto operator|(detail::type<T<Ts...>>, auto fn) {
+  if constexpr (requires { fn.template operator()<T, Ts...>(); }) {
+    return fn.template operator()<T, Ts...>();
+  } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
+    return fn.template operator()<Ts...>();
+  } else {
+    constexpr auto make = [](const auto& vs) {
+      auto svs = detail::size_vs<sizeof...(Ts)>{std::size(vs)};
+      for (auto i = 0u; i < svs.size; ++i) {
+        svs.vs[i] = vs[i].index;
+      }
+      return svs;
+    };
+    constexpr auto expr = [make](auto fn) {
+      auto i = 0u;
+      if constexpr (const std::vector<meta> types{
+                        meta{.index = i++, .size = sizeof(Ts)}...};
+                    requires { fn.template operator()<Ts...>(types); }) {
+        return make(fn.template operator()<Ts...>(types));
+      } else if constexpr (requires { fn(types); }) {
+        return make(fn(types));
+      } else {
+        return make(fn());
+      }
+    };
+    constexpr auto expr_fn = expr(fn);
+    return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
+      return detail::type<
+          T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>{};
+    }(std::make_index_sequence<expr_fn.size>{});
+  }
+}
+
 template <template <auto...> class T, auto... Vs>
 [[nodiscard]] constexpr auto operator|(T<Vs...>, auto fn) {
-  if constexpr (requires { fn.template operator()<Vs...>(); }) {
+  if constexpr (requires { fn.template operator()<T, Vs...>(); }) {
+    return fn.template operator()<T, Vs...>();
+  } else if constexpr (requires { fn.template operator()<Vs...>(); }) {
     return fn.template operator()<Vs...>();
   } else {
     constexpr auto make = [](const auto& vs) {
@@ -347,7 +402,9 @@ template <template <auto...> class T, auto... Vs>
 
 template <class... Ts>
 [[nodiscard]] constexpr auto operator|(std::tuple<Ts...>&& t, auto fn) {
-  if constexpr (requires { fn.template operator()<Ts...>(); }) {
+  if constexpr (requires { fn.template operator()<std::tuple, Ts...>(); }) {
+    return fn.template operator()<std::tuple, Ts...>();
+  } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
     constexpr auto make = [](const auto& vs) {
