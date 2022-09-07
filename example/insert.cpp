@@ -11,21 +11,20 @@
 
 namespace mp = boost::mp;
 
+// clang-format off
+template <auto N, class... Ns>
+auto insert = [](auto list) {
+  using mp::operator|;
+
+  return list
+    | std::views::take(N)
+    | mp::list<Ns...>()
+    | (list | std::views::drop(N));
+};
+
 using mp::operator""_c;
-using mp::operator|;
-
-// clang-format off
-template <auto List, auto N, class... Ns>
-auto insert = List
-  | std::views::take(N)
-  | mp::list<Ns...>()
-  | (List | std::views::drop(N));
-// clang-format on
-
-
-// clang-format off
-static_assert(insert<mp::list<int, double, float>(), 1_c, short> == mp::list<int, short, double, float>());
-static_assert(insert<mp::type<std::variant<int, double, float>>, 1_c, short> == mp::type<std::variant<int, short, double, float>>);
+static_assert(insert<1_c, short>(mp::list<int, double, float>()) == mp::list<int, short, double, float>());
+static_assert(insert<1_c, short>(mp::type<std::variant<int, double, float>>) == mp::type<std::variant<int, short, double, float>>);
 // clang-format on
 
 int main() {}
