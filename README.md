@@ -291,20 +291,13 @@ static_assert(transform<boost::mp::list<int, double>()> ==
 
 Okay, so what about the case when we need meta-types and Ts...?
 
+
 ```cpp
-auto has_value = []<class... Ts>(auto type) {
-  return std::array{requires(Ts t) { t.value; }...}[type];
-};
+auto filter = std::views::filter % []<class T> { return requires(T t) { t.value; }; };
 ```
 
 > Notice handy `requires with lambda` pattern to verify ad-hoc concepts.
 
-```cpp
-auto filter = std::views::filter % has_value;
-```
-
-> Notice that we used `has_value` in order to create an array with functor values for each type, so that
-  they can be applied at meta-types manipulation level.
 
 ```cpp
 struct bar {};
@@ -525,9 +518,9 @@ template <template <class...> class T, class... Ts>
 ```cpp
 /**
  * Adapts ranges to meta type space
- * std::views::filter % []<class... Ts>(auto type) { return ...; }
+ * std::views::filter % []<class T> { return ...; }
  */
-constexpr auto opeartor%(auto fn, auto... ts);
+constexpr auto operator%(auto fn, auto... ts);
 ```
 
 ```cpp

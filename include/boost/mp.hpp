@@ -460,8 +460,8 @@ template <class... Ts>
 
 constexpr auto operator%(auto fn, auto pred) {
   return [fn, pred]<class... Ts>(boost::mp::concepts::meta auto types) {
-    auto v = fn(types,
-                [pred](auto t) { return pred.template operator()<Ts...>(t); });
+    const auto fns = std::array{pred.template operator()<Ts>()...};
+    auto v = fn(types, [fns](auto type) { return fns[type]; });
     return decltype(types){std::begin(v), std::end(v)};
   };
 }
