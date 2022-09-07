@@ -8,17 +8,13 @@
 #include <boost/mp.hpp>
 #include <ranges>
 
-template <class T>
-concept HasValue = requires(T t) { t.value; };
-
-const auto has_value = []<class... Ts>(auto type) {
-  return std::array{HasValue<Ts>...}[type];
-};
-
 using boost::mp::operator%;
 
+// clang-format off
 template <auto List>
-auto filter = List | std::views::filter % has_value;
+auto filter = List
+  | std::views::filter % []<class T> { return requires (T t) { t.value; }; };
+// clang-format on
 
 struct bar {};
 struct foo {

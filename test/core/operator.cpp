@@ -14,14 +14,12 @@ int main() {
   using boost::mp::operator%;
 
   "%.filter.match"_test = [] {
-    auto v = std::views::filter %
-             []<class... Ts>(auto type) { return sizeof(type); };
+    auto v = std::views::filter % []<class T> { return sizeof(T); };
     expect(2_u == (boost::mp::list<int, double>() | v).size);
   };
 
   "%.filter.doesn't match"_test = [] {
-    auto v = std::views::filter %
-             []<class... Ts>(auto type) { return not sizeof(type); };
+    auto v = std::views::filter % []<class T> { return not sizeof(T); };
     expect(0_u == (boost::mp::list<int, double>() | v).size);
   };
 }
