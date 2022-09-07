@@ -319,13 +319,16 @@ template <template <class...> class T, class... Ts, class... Us>
   return T<Ts..., Us...>{};
 }
 
-template <template <class...> class T, class... Ts, template<class...> class U, class... Us>
+template <template <class...> class T, class... Ts, template <class...> class U,
+          class... Us>
 [[nodiscard]] constexpr auto operator|(T<Ts...>, detail::type<U<Us...>>) {
   return T<Ts..., Us...>{};
 }
 
-template <template <class...> class T, class... Ts, template<class...> class U, class... Us>
-[[nodiscard]] constexpr auto operator|(detail::type<T<Ts...>>, detail::type<U<Us...>>) {
+template <template <class...> class T, class... Ts, template <class...> class U,
+          class... Us>
+[[nodiscard]] constexpr auto operator|(detail::type<T<Ts...>>,
+                                       detail::type<U<Us...>>) {
   return type<T<Ts..., Us...>>;
 }
 
