@@ -7,8 +7,12 @@
 //
 #include <boost/mp.hpp>
 #include <ranges>
+#include <variant>
 
 namespace mp = boost::mp;
+
+using mp::operator""_c;
+using mp::operator|;
 
 // clang-format off
 template <auto List, auto N, class... Ns>
@@ -18,10 +22,10 @@ auto insert = List
   | (List | std::views::drop(N));
 // clang-format on
 
-using mp::operator""_c;
 
 // clang-format off
 static_assert(insert<mp::list<int, double, float>(), 1_c, short> == mp::list<int, short, double, float>());
+static_assert(insert<mp::type<std::variant<int, double, float>>, 1_c, short> == mp::type<std::variant<int, short, double, float>>);
 // clang-format on
 
 int main() {}
