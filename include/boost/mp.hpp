@@ -315,14 +315,8 @@ struct size_vs final {
 }  // namespace detail
 
 template <template <class...> class T, class... Ts, class... Us>
-[[nodiscard]] constexpr auto operator|(T<Ts...>, T<Us...>) {
+[[nodiscard]] constexpr auto operator|(T<Ts...>, type_list<Us...>) {
   return T<Ts..., Us...>{};
-}
-
-template <template <class...> class T, class... Ts,
-          template <class> class Trait>
-[[nodiscard]] constexpr auto operator|(T<Ts...>, detail::trait<Trait>) {
-  return T<typename detail::trait<Trait>::template fn<Ts>::type...>{};
 }
 
 template <template <class...> class T, class... Ts>
@@ -354,40 +348,6 @@ template <template <class...> class T, class... Ts>
     constexpr auto expr_fn = expr(fn);
     return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
       return T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>{};
-    }(std::make_index_sequence<expr_fn.size>{});
-  }
-}
-
-template <template <class...> class T, class... Ts>
-[[nodiscard]] constexpr auto operator|(detail::type<T<Ts...>>, auto fn) {
-  if constexpr (requires { fn.template operator()<T, Ts...>(); }) {
-    return fn.template operator()<T, Ts...>();
-  } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
-    return fn.template operator()<Ts...>();
-  } else {
-    constexpr auto make = [](const auto& vs) {
-      auto svs = detail::size_vs<sizeof...(Ts)>{std::size(vs)};
-      for (auto i = 0u; i < svs.size; ++i) {
-        svs.vs[i] = vs[i].index;
-      }
-      return svs;
-    };
-    constexpr auto expr = [make](auto fn) {
-      auto i = 0u;
-      if constexpr (const std::vector<meta> types{
-                        meta{.index = i++, .size = sizeof(Ts)}...};
-                    requires { fn.template operator()<Ts...>(types); }) {
-        return make(fn.template operator()<Ts...>(types));
-      } else if constexpr (requires { fn(types); }) {
-        return make(fn(types));
-      } else {
-        return make(fn());
-      }
-    };
-    constexpr auto expr_fn = expr(fn);
-    return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
-      return detail::type<
-          T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>{};
     }(std::make_index_sequence<expr_fn.size>{});
   }
 }
@@ -456,6 +416,23 @@ template <class... Ts>
       return std::tuple{std::get<expr_fn.vs[Ids]>(t)...};
     }(std::make_index_sequence<expr_fn.size>{});
   }
+}
+
+template <template <class...> class T, class... Ts, class... Us>
+[[nodiscard]] constexpr auto operator|(detail::type<T<Ts...>>,
+                                       type_list<Us...>) {
+  return type<T<Ts..., Us...>>;
+}
+
+template <template <class...> class T, class... Ts>
+[[nodiscard]] constexpr auto operator|(detail::type<T<Ts...>>, auto fn) {
+  return type<decltype(std::declval<T<Ts...>>() | fn)>;
+}
+
+template <template <class...> class T, class... Ts,
+          template <class> class Trait>
+[[nodiscard]] constexpr auto operator|(T<Ts...>, detail::trait<Trait>) {
+  return T<typename detail::trait<Trait>::template fn<Ts>::type...>{};
 }
 
 constexpr auto operator%(auto fn, auto pred) {

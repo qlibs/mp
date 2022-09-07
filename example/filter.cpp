@@ -8,7 +8,8 @@
 #include <boost/mp.hpp>
 #include <ranges>
 
-using boost::mp::operator%;
+namespace mp = boost::mp;
+using mp::operator%;
 
 // clang-format off
 template <auto List>
@@ -22,7 +23,7 @@ struct foo {
 };
 
 // clang-format off
-static_assert(filter<boost::mp::list<foo, bar>()> == boost::mp::list<foo>());
+static_assert(filter<mp::list<foo, bar>()> == mp::list<foo>());
 // clang-format on
 
 int main() {}

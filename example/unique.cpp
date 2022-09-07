@@ -10,18 +10,20 @@
 #include <bit>
 #include <boost/mp.hpp>
 
+namespace mp = boost::mp;
+
 template <auto Fn>
-auto sort = []<class... Ts>(boost::mp::concepts::meta auto types) {
+auto sort = []<class... Ts>(mp::concepts::meta auto types) {
   std::sort(std::begin(types), std::end(types), Fn);
   return types;
 };
 
 auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 
-auto unique = []<class... Ts>(boost::mp::concepts::meta auto types) {
+auto unique = []<class... Ts>(mp::concepts::meta auto types) {
   types.erase(
       std::unique(std::begin(types), std::end(types),
-                  [ids = std::array{boost::mp::utility::type_id<Ts>...}](
+                  [ids = std::array{mp::utility::type_id<Ts>...}](
                       auto lhs, auto rhs) { return ids[lhs] == ids[rhs]; }),
       std::end(types));
   return types;
@@ -31,8 +33,8 @@ template <auto v>
 auto unique_sort = v | sort<by_size> | unique;
 
 // clang-format off
-static_assert(unique_sort<boost::mp::type_list<std::byte[1], std::byte[3], std::byte[2], std::byte[1], std::byte[3]>{}>
-                       == boost::mp::type_list<std::byte[1], std::byte[2], std::byte[3]>{});
+static_assert(unique_sort<mp::type_list<std::byte[1], std::byte[3], std::byte[2], std::byte[1], std::byte[3]>{}>
+                       == mp::type_list<std::byte[1], std::byte[2], std::byte[3]>{});
 // clang-format on
 
 int main() {}

@@ -8,18 +8,20 @@
 #include <boost/mp.hpp>
 #include <ranges>
 
+namespace mp = boost::mp;
+
 // clang-format off
 template <auto List, auto N, class... Ns>
 auto insert = List
   | std::views::take(N)
-  | boost::mp::list<Ns...>()
+  | mp::list<Ns...>()
   | (List | std::views::drop(N));
 // clang-format on
 
-using boost::mp::operator""_c;
+using mp::operator""_c;
 
 // clang-format off
-static_assert(insert<boost::mp::list<int, double, float>(), 1_c, short> == boost::mp::list<int, short, double, float>());
+static_assert(insert<mp::list<int, double, float>(), 1_c, short> == mp::list<int, short, double, float>());
 // clang-format on
 
 int main() {}

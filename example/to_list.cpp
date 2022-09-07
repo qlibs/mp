@@ -9,8 +9,10 @@
 #include <bit>
 #include <boost/mp.hpp>
 
+namespace mp = boost::mp;
+
 template <auto Fn>
-auto sort = [](boost::mp::concepts::meta auto types) {
+auto sort = [](mp::concepts::meta auto types) {
   std::sort(std::begin(types), std::end(types), Fn);
   return types;
 };
@@ -18,7 +20,7 @@ auto sort = [](boost::mp::concepts::meta auto types) {
 auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 
 template <class T>
-auto pack = boost::mp::to_list<T> | sort<by_size> |
+auto pack = mp::to_list<T> | sort<by_size> |
             []<class... Ts> { return std::tuple<Ts...>{}; };
 
 struct not_packed {
