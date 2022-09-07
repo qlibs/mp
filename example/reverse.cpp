@@ -8,11 +8,13 @@
 #include <boost/mp.hpp>
 #include <ranges>
 
+namespace mp = boost::mp;
+
 template <auto List>
 auto reverse = List | std::views::reverse;
 
 // clang-format off
-static_assert((reverse<boost::mp::list<int, double, float>()>) == boost::mp::list<float, double, int>());
+static_assert((reverse<mp::list<int, double, float>()>) == mp::list<float, double, int>());
 // clang-format on
 
 int main() {}

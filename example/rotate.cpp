@@ -8,13 +8,15 @@
 #include <algorithm>
 #include <boost/mp.hpp>
 
-auto rotate = [](boost::mp::concepts::meta auto types) {
+namespace mp = boost::mp;
+
+auto rotate = [](mp::concepts::meta auto types) {
   std::rotate(std::begin(types), std::begin(types) + 1, std::end(types));
   return types;
 };
 
 // clang-format off
-static_assert((boost::mp::list<int, double, float>() | rotate) == boost::mp::list<double, float, int>());
+static_assert((mp::list<int, double, float>() | rotate) == mp::list<double, float, int>());
 // clang-format on
 
 int main() {}

@@ -8,11 +8,13 @@
 #include <boost/mp.hpp>
 #include <type_traits>
 
+namespace mp = boost::mp;
+
 template <auto List>
-auto transform = List | boost::mp::trait<std::add_pointer>;
+auto transform = List | mp::trait<std::add_pointer>;
 
 // clang-format off
-static_assert(transform<boost::mp::list<int, double>()> == boost::mp::list<int*, double*>());
+static_assert(transform<mp::list<int, double>()> == mp::list<int*, double*>());
 // clang-format on
 
 int main() {}

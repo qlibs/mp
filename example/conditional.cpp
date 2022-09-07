@@ -8,6 +8,8 @@
 #include <boost/mp.hpp>
 #include <utility>
 
+namespace mp = boost::mp;
+
 template <class T>
 concept has_value = requires(T t) { t.value; };
 
@@ -17,7 +19,7 @@ auto conditional = List | []<class... Ts> {
                 any_has_value) {
     return std::integral_constant<int, (has_value<Ts> + ... + 0u)>{};
   } else {
-    return boost::mp::type_list{};
+    return mp::type_list{};
   }
 };
 
@@ -28,8 +30,8 @@ struct foo {
 struct bar {};
 
 // clang-format off
-static_assert(conditional<boost::mp::type_list<foo, bar>{}>.value == 1);
-static_assert(conditional<boost::mp::type_list<bar, bar>{}> == boost::mp::type_list{});
+static_assert(conditional<mp::type_list<foo, bar>{}>.value == 1);
+static_assert(conditional<mp::type_list<bar, bar>{}> == mp::type_list{});
 // clang-format on
 
 int main() {}
