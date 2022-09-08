@@ -518,9 +518,9 @@ template <template <class...> class T, class... Ts>
 ```cpp
 /**
  * Adapts ranges to meta type space
- * std::views::filter % []<class T> { return ...; }
+ * std::views::filter<<([]<class T> { return ...; })
  */
-constexpr auto operator%(auto fn, auto... ts);
+constexpr auto operator<<(auto fn, auto... ts);
 ```
 
 ```cpp
