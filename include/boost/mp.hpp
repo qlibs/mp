@@ -448,7 +448,7 @@ template <template <class...> class T, class... Ts,
   return T<typename detail::trait<Trait>::template fn<Ts>::type...>{};
 }
 
-constexpr auto operator%(auto fn, auto pred) {
+constexpr auto operator<<(auto fn, auto pred) {
   return [fn, pred]<class... Ts>(boost::mp::concepts::meta auto types) {
     const auto fns = std::array{pred.template operator()<Ts>()...};
     auto v = fn(types, [fns](auto type) { return fns[type]; });

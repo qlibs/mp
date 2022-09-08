@@ -9,12 +9,12 @@
 #include <ranges>
 
 namespace mp = boost::mp;
-using mp::operator%;
+using mp::operator<<;
 
 // clang-format off
 template <auto List>
 auto filter = List
-  | std::views::filter % []<class T> { return requires (T t) { t.value; }; };
+  | std::views::filter<<([]<class T> { return requires (T t) { t.value; }; });
 // clang-format on
 
 struct bar {};
