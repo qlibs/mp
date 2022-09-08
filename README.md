@@ -3,7 +3,7 @@
 ---
 
 <a href="https://github.com/boost-ext/mp/actions/workflows/linux.yml" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
-<a href="https://godbolt.org/z/q91zvMaEf">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/T9Gh1MKn8">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 # MP - ~~Template~~ Meta-Programming
 
@@ -30,6 +30,20 @@ auto slice = List
 
 static_assert(slice<1_c, 2_c, list<int, double, float>>
                            == list<double, float>);
+```
+
+---
+
+```cpp
+auto fn = [](auto&& tuple) {
+  return tuple
+    | std::views::filter<<([](auto i) -> bool { return i % 2; })
+    | std::views::reverse
+    | std::views::drop(1_c);
+};
+
+static_assert(std::tuple{5, 3, 1} == fn([i] { return std::tuple{1, 2, 3, 4, 5, 6, 7}; }));
+}
 ```
 
 ---
