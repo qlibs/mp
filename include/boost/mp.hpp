@@ -150,13 +150,22 @@ struct trait {
   template <class T>
   using fn = Trait<T>;
 };
+template <auto Fn>
+struct trait_expr {
+  template <class T>
+  using fn = decltype(Fn.template operator()<T>());
+};
 }  // namespace detail
 
 template <class T>
 constexpr detail::type<T> type{};
 
 template <template <class> class Trait>
-constexpr detail::trait<Trait> trait{};
+[[nodiscard]] constexpr auto trait() {
+  return detail::trait<Trait>{};
+}
+
+[[nodiscard]] constexpr auto trait(auto Fn) { return detail::trait_expr<Fn>{}; }
 
 template <class... Ts>
 struct type_list final {
@@ -446,6 +455,12 @@ template <template <class...> class T, class... Ts,
           template <class> class Trait>
 [[nodiscard]] constexpr auto operator|(T<Ts...>, detail::trait<Trait>) {
   return T<typename detail::trait<Trait>::template fn<Ts>::type...>{};
+}
+
+template <template <class...> class T, class... Ts, auto Fn>
+[[nodiscard]] constexpr auto operator|(T<Ts...>, detail::trait_expr<Fn>) {
+  return T<
+      typename detail::trait_expr<Fn>::template fn<Ts>::type::value_type...>{};
 }
 
 constexpr auto operator<<(auto fn, auto pred) {
