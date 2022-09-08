@@ -26,4 +26,18 @@ struct foo {
 static_assert(filter<mp::list<foo, bar>()> == mp::list<foo>());
 // clang-format on
 
-int main() {}
+int main() {
+  using boost::mp::operator""_c;
+  using boost::mp::operator|;
+
+  static constexpr std::tuple tuple{1, 2, 3};
+
+  // clang-format off
+  static_assert(std::tuple{2} == (
+    [] { return tuple; }
+      | std::views::filter << ([](auto i) { return i > 1; })
+      | std::views::reverse
+      | std::views::drop(1_c)
+  ));
+  // clang-format on
+}
