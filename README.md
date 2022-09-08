@@ -37,7 +37,7 @@ static_assert(slice<1_c, 2_c, list<int, double, float>>
 ```cpp
 #include <algorithm>
 
-auto sort_by_size = [](boost::mp::concepts::meta auto types) {
+auto sort_by_size = [](mp::concepts::meta auto types) {
   std::sort(std::begin(types), std::end(types),
     [](auto lhs, auto rhs) { return lhs.size < rhs.size; });
   return types;
@@ -149,7 +149,7 @@ import boost.mp;
 First step is to add our new meta-function.
 
 ```cpp
-auto identity = [](boost::mp::concepts::meta types) {
+auto identity = [](mp::concepts::meta types) {
   return types;
 };
 ```
@@ -160,11 +160,11 @@ For example, sorting, changing the size, removing elements, etc...
 Let's apply our first meta-function.
 
 ```cpp
-auto magic = boost::mp::list<int, double, float>() | identity;
+auto magic = mp::list<int, double, float>() | identity;
 ```
 
 ```cpp
-static_assert(magic == boost::mp::list<int, double, float>());
+static_assert(magic == mp::list<int, double, float>());
 ```
 
 Yay, we have the first meta-function done. Notice the pipe (|)
@@ -188,9 +188,9 @@ auto slice = list
 > Notice that we've just used std::ranges at compile-time to manipulate a type-list!
 
 ```cpp
-using boost::mp::operator""_c;
-static_assert(slice<boost::mp::list<int, double, float>(), 1_c, 2_c>
-           == boost::mp::list<double, float>());
+using mp::operator""_c;
+static_assert(slice<mp::list<int, double, float>(), 1_c, 2_c>
+           == mp::list<double, float>());
 ```
 
 `""_c` is an User Defined Literal which represents constant integral value which
@@ -207,19 +207,19 @@ Let's add STL too, why not
 This time we will sort and reverse a tuple
 
 > Note: All operations are supported for the following entities
-  - `boost::mp::type_list`
-  - `boost::mp::value_list`
-  - `boost::mp::fixed_string`
+  - `mp::type_list`
+  - `mp::value_list`
+  - `mp::fixed_string`
   - `std::tuple`
 
 Additionally `type_list/value_list/fixed_string` will be deduced automatically
-based on parameters when `boost::mp::list<...>()` is used.
+based on parameters when `mp::list<...>()` is used.
 
 Okay, coming back to our sort...
 
 ```cpp
 template <auto Fn>
-auto sort = [](boost::mp::concepts::meta auto types) {
+auto sort = [](mp::concepts::meta auto types) {
   std::sort(std::begin(types), std::end(types), Fn);
   return types;
 };
@@ -234,9 +234,9 @@ So far, nothing magical, same code as in run-time!
 Let's apply it then
 
 ```cpp
-using boost::mp::operator|;
+using mp::operator|;
 auto pack = [](auto t) {
-  return boost::mp::to_tuple(t) | sort<by_size>;
+  return mp::to_tuple(t) | sort<by_size>;
 }
 ```
 
@@ -266,27 +266,28 @@ Dealing with new types/transforms it's a bit different but not difficult either.
 
 ```cpp
 template <auto List, class... Ts>
-auto add = List | boost::mp::list<Ts...>();
+auto add = List | mp::list<Ts...>();
 ```
 
 ```cpp
-static_assert(add<boost::mp::list<int, double>(), void> ==
-                  boost::mp::list<int, double, void>());
+static_assert(add<mp::list<int, double>(), void> ==
+                  mp::list<int, double, void>());
 ```
 
 And what about transform? Let's add pointers to all our type in the list.
 
 ```cpp
 template <auto List>
-auto transform = List | boost::mp::trait<std::add_pointer>;
+auto transform = List
+  | mp::trait<std::add_pointer>() ;
+  | mp::trait([]<class T> { return mp::type<T const>; })
 ```
 
-It's that easy, we just applied a std::add_pointer trait to the list.
-To support custom traits the only requirement is to have `type` alias with the applied transformation.
+It's that easy, we just applied a std::add_pointer trait to the list, followed by adding const.
 
 ```cpp
-static_assert(transform<boost::mp::list<int, double>()> ==
-                        boost::mp::list<int*, double*>());
+static_assert(transform<mp::list<int, double>()> ==
+                        mp::list<int* const, double* const>());
 ```
 
 Okay, so what about the case when we need meta-types and Ts...?
@@ -307,8 +308,8 @@ struct foo {
 ```
 
 ```cpp
-static_assert(boost::mp::list<foo>() ==
-             (boost::mp::list<foo, bar>() | filter));
+static_assert(mp::list<foo>() ==
+             (mp::list<foo, bar>() | filter));
 ```
 
 That's it for now, for more let's take a look at more
@@ -411,9 +412,10 @@ template<class T> unspecified<T> type{};
 ```cpp
 /**
  * Variable template which represents trait
- * static_assert(list<int, double> | trait<add:pointer> == list<int*, double*>)
+ * static_assert(list<int, double> | trait<add::pointer>() == list<int*, double*>)
+ * static_assert(list<int, double> | trait([]<class T> { return mp::type<T*>; }) == list<int*, double*>)
  */
-template<template<class> class T> unspecified<T> trait{};
+template<template auto T> unspecified<T> trait()
 ```
 
 ```cpp

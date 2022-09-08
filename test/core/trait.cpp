@@ -13,12 +13,18 @@ int main() {
   using namespace boost::ut;
 
   "trait"_test = [] {
-    expect(std::is_same_v<typename decltype(boost::mp::trait<std::add_const>)::
-                              template fn<int>::type,
-                          const int>);
     expect(
-        std::is_same_v<typename decltype(boost::mp::trait<std::add_pointer>)::
+        std::is_same_v<typename decltype(boost::mp::trait<std::add_const>())::
+                           template fn<int>::type,
+                       const int>);
+    expect(
+        std::is_same_v<typename decltype(boost::mp::trait<std::add_pointer>())::
                            template fn<int>::type,
                        int*>);
+
+    expect(std::is_same_v<typename decltype(boost::mp::trait([]<class T> {
+                            return boost::mp::type<T*>;
+                          }))::template fn<int>::type::value_type,
+                          int*>);
   };
 }
