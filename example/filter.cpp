@@ -35,7 +35,7 @@ int main() {
   // clang-format off
   static_assert(std::tuple{2} == (
     [] { return tuple; }
-      | std::views::filter << ([](auto i) { return i > 1; })
+      | std::views::filter<<([](auto i) { return i > 1; })
       | std::views::reverse
       | std::views::drop(1_c)
   ));

@@ -354,11 +354,15 @@ template <template <class...> class T, class... Ts>
     return fn.template operator()<Ts...>();
   } else {
     constexpr auto make = [](const auto& vs) {
-      auto svs = detail::size_vs<sizeof...(Ts)>{std::size(vs)};
-      for (auto i = 0u; i < svs.size; ++i) {
-        svs.vs[i] = vs[i].index;
+      if constexpr (requires { std::size(vs); }) {
+        auto svs = detail::size_vs<sizeof...(Ts)>{std::size(vs)};
+        for (auto i = 0u; i < svs.size; ++i) {
+          svs.vs[i] = vs[i].index;
+        }
+        return svs;
+      } else {
+        return vs;
       }
-      return svs;
     };
     constexpr auto expr = [make](auto fn) {
       auto i = 0u;
@@ -372,10 +376,13 @@ template <template <class...> class T, class... Ts>
         return make(fn());
       }
     };
-    constexpr auto expr_fn = expr(fn);
-    return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
-      return T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>{};
-    }(std::make_index_sequence<expr_fn.size>{});
+    if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
+      return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
+        return T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>{};
+      }(std::make_index_sequence<expr_fn.size>{});
+    } else {
+      return expr_fn;
+    }
   }
 }
 
@@ -515,16 +522,30 @@ struct expr {
   constexpr auto operator()(boost::mp::concepts::meta auto types,
                             auto... args) const {
     const auto fns = std::array<bool, sizeof...(args)>{pred(args)...};
-    auto v = fn(types, [fns](auto type) { return fns[type]; });
-    return decltype(types){std::begin(v), std::end(v)};
+    if constexpr (auto v = fn(types, [fns](auto type) { return fns[type]; });
+                  requires {
+                    std::begin(v);
+                    std::end(v);
+                  }) {
+      return decltype(types){std::begin(v), std::end(v)};
+    } else {
+      return v;
+    }
   }
 
   template <class... Ts>
   constexpr auto operator()(boost::mp::concepts::meta auto types) const {
     const auto fns =
         std::array<bool, sizeof...(Ts)>{pred.template operator()<Ts>()...};
-    auto v = fn(types, [fns](auto type) { return fns[type]; });
-    return decltype(types){std::begin(v), std::end(v)};
+    if constexpr (auto v = fn(types, [fns](auto type) { return fns[type]; });
+                  requires {
+                    std::begin(v);
+                    std::end(v);
+                  }) {
+      return decltype(types){std::begin(v), std::end(v)};
+    } else {
+      return v;
+    }
   }
 };
 }  // namespace detail
