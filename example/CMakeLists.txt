@@ -13,6 +13,7 @@ endfunction()
 
 example(append)
 example(conditional)
+example(count_if)
 example(filter)
 example(insert)
 example(nth_pack_element)
