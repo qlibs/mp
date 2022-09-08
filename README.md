@@ -43,7 +43,6 @@ auto fn = [](auto&& tuple) {
 };
 
 static_assert(std::tuple{5, 3, 1} == fn([i] { return std::tuple{1, 2, 3, 4, 5, 6, 7}; }));
-}
 ```
 
 ---
@@ -97,7 +96,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 <details open><summary>Quick Start</summary>
 <p>
 
-> Try it out - https://godbolt.org/z/q91zvMaEf
+> Try it out - https://godbolt.org/z/T9Gh1MKn8
 
 ---
 
