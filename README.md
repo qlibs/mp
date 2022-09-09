@@ -42,7 +42,7 @@ auto fn = [](auto&& tuple) {
     | std::views::drop(1_c);
 };
 
-static_assert(std::tuple{5, 3, 1} == fn([i] { return std::tuple{1, 2, 3, 4, 5, 6, 7}; }));
+static_assert(std::tuple{5, 3, 1} == fn([] { return std::tuple{1, 2, 3, 4, 5, 6, 7}; }));
 ```
 
 ---
