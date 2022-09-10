@@ -1,7 +1,3 @@
-**Disclaimer** `MP` is not an official [Boost](https://www.boost.org/) library.
-
----
-
 <a href="https://github.com/boost-ext/mp/actions/workflows/linux.yml" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
 <a href="https://godbolt.org/z/T9Gh1MKn8">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
@@ -585,3 +581,7 @@ make <<benchmark>>
 
 </p>
 </details>
+
+---
+
+**Disclaimer** `MP` is not an official [Boost](https://www.boost.org/) library.
