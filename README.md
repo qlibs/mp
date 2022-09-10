@@ -346,6 +346,7 @@ Examples in the following section and the User-Guide.
 - <a href="https://github.com/boost-ext/mp/blob/main/example/to_tuple.cpp">to_tuple</a>
 - <a href="https://github.com/boost-ext/mp/blob/main/example/transform.cpp">transform</a>
 - <a href="https://github.com/boost-ext/mp/blob/main/example/unique.cpp">unique</a>
+- <a href="https://github.com/boost-ext/mp/blob/main/example">...</a>
 
 </p>
 </details>
