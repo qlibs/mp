@@ -18,7 +18,7 @@ constexpr auto split = mp::list<Str>() | []<auto... Cs> {
   auto list = mp::list<Cs...>();
   auto to_ct_string = []<auto... Vs> { return ct_string<Vs...>{}; };
   auto head = list | std::views::take(N) | to_ct_string;
-  auto tail = list | std::views::drop(mp::_c<N + 1>) | to_ct_string;
+  auto tail = list | std::views::drop(mp::const_t<N + 1>{}) | to_ct_string;
   return mp::list<head, tail>();
 };
 

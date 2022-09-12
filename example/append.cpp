@@ -10,13 +10,15 @@
 
 namespace mp = boost::mp;
 
-template <auto List, class... Ts>
-auto append = List | mp::list<Ts...>();
-
 // clang-format off
-static_assert(append<mp::list<int, double>(), void> == mp::list<int, double, void>());
-static_assert(append<mp::type<std::variant<int, double>>, float> == mp::type<std::variant<int, double, float>>);
-static_assert(std::is_same_v<decltype(*append<mp::type<std::variant<int, double>>, float>), std::variant<int, double, float>>);
+auto append = [](auto&& list, auto&& elements) {
+  using mp::operator|;
+  return list | elements;
+};
+
+static_assert(append(mp::list<int, double>(), boost::mp::list<short>()) == mp::list<int, double, short>());
+static_assert(std::is_same_v<mp::typeof<append, std::variant<int, double>, std::variant<short>>, std::variant<int, double, short>>);
+static_assert(std::tuple{1, 2, 3} == append(std::tuple{1, 2}, std::tuple{3}));
 // clang-format on
 
 int main() {}

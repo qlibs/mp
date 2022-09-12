@@ -12,19 +12,21 @@
 namespace mp = boost::mp;
 
 // clang-format off
-template <auto N, class... Ns>
-auto insert = [](auto list) {
+auto insert = [](auto&& list, const auto pos, auto&& elements) {
   using mp::operator|;
-
   return list
-    | std::views::take(N)
-    | mp::list<Ns...>()
-    | (list | std::views::drop(N));
+    | std::views::take(pos)
+    | elements
+    | (list | std::views::drop(pos));
 };
 
-using mp::operator""_c;
-static_assert(insert<1_c, short>(mp::list<int, double, float>()) == mp::list<int, short, double, float>());
-static_assert(insert<1_c, short>(mp::type<std::variant<int, double, float>>) == mp::type<std::variant<int, short, double, float>>);
-// clang-format on
+using boost::mp::operator""_c;
+static_assert(insert(mp::list<int, double>(), 1_c, boost::mp::list<short>()) == mp::list<int, short, double>());
+static_assert(std::is_same_v<mp::typeof<insert, std::variant<int, double>, decltype(1_c), std::variant<short>>, std::variant<int, short, double>>);
+static_assert(std::tuple{1, 2, 3, 4} == insert(std::tuple{1, 3, 4}, 1_c, std::tuple{2}));
 
-int main() {}
+#include <cassert>
+
+int main(int argc, const char**) {
+  assert((std::tuple{1, 3, argc, 4} == insert(std::tuple{1, 3, 4}, 2_c, std::tuple{argc})));
+}

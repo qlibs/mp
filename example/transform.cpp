@@ -13,8 +13,7 @@ namespace mp = boost::mp;
 // clang-format off
 template <auto List>
 auto transform = List
-  | mp::trait<std::add_pointer>()
-  | mp::trait([]<class T> { return mp::type<T const>; });
+  | []<class... Ts> { return mp::list<Ts* const...>(); };
 
 static_assert(transform<mp::list<int, double>()> == mp::list<int* const, double* const>());
 // clang-format on

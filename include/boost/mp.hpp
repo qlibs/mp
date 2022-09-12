@@ -109,6 +109,12 @@ template <auto T>
 
 namespace concepts {
 namespace detail {
+struct callable_base {
+  void operator()();
+};
+template <class T>
+struct callable : T, callable_base {};
+
 template <class T>
 concept meta = requires(T t) {
                  std::size_t{t.index};
@@ -117,11 +123,14 @@ concept meta = requires(T t) {
 }  // namespace detail
 
 template <class T>
+concept callable = not requires { &detail::callable<T>::operator(); };
+
+template <class T>
 concept meta = std::ranges::random_access_range<T> and
                detail::meta<typename T::value_type>;
 }  // namespace concepts
 
-struct meta final {
+struct meta {
   std::size_t index{};
   std::size_t size{};
 
@@ -130,45 +139,11 @@ struct meta final {
 };
 
 template <auto N>
-constexpr auto _c = std::integral_constant<decltype(N), N>{};
+using const_t = std::integral_constant<decltype(N), N>;
 using utility::operator""_c;
 
-namespace detail {
-template <class T>
-struct type {
-  using value_type = T;
-  static constexpr auto size = 1u;
-  [[nodiscard]] constexpr auto operator*() const -> value_type { return {}; }
-  constexpr auto operator==(type<T>) const -> bool { return true; }
-  template <class U>
-  constexpr auto operator==(type<U>) const -> bool {
-    return false;
-  }
-};
-template <template <class> class Trait>
-struct trait {
-  template <class T>
-  using fn = Trait<T>;
-};
-template <auto Fn>
-struct trait_expr {
-  template <class T>
-  using fn = decltype(Fn.template operator()<T>());
-};
-}  // namespace detail
-
-template <class T>
-constexpr detail::type<T> type{};
-
-template <template <class> class Trait>
-[[nodiscard]] constexpr auto trait() {
-  return detail::trait<Trait>{};
-}
-
-[[nodiscard]] constexpr auto trait(auto Fn) { return detail::trait_expr<Fn>{}; }
-
 template <class... Ts>
-struct type_list final {
+struct type_list {
   static constexpr auto size = sizeof...(Ts);
   constexpr auto operator==(type_list<Ts...>) const -> bool { return true; }
   template <class... Us>
@@ -181,7 +156,7 @@ struct type_list final {
 };
 
 template <auto... Vs>
-struct value_list final {
+struct value_list {
   static constexpr auto size = sizeof...(Vs);
   constexpr auto operator==(value_list<Vs...>) const -> bool { return true; }
   template <auto... Us>
@@ -194,7 +169,7 @@ struct value_list final {
 };
 
 template <std::size_t N>
-struct fixed_string final {
+struct fixed_string {
   static constexpr auto size = N;
 
   constexpr explicit(true) fixed_string(const auto... cs) : data{cs...} {}
@@ -221,26 +196,24 @@ template <class... Ts>
   return type_list<Ts...>{};
 }
 
-template <class... Ts>
-[[nodiscard]] constexpr auto list(auto fn) {
-  return type_list<Ts...>{} | fn;
-}
-
 template <auto... Vs>
+  requires(not(requires {
+                 Vs.data;
+                 Vs.size;
+               } or ...))
 [[nodiscard]] constexpr auto list() {
   return value_list<Vs...>{};
 }
 
-template <auto Str>
-  requires requires {
-             Str.data;
-             Str.size;
-           }
+template <fixed_string Str>
 [[nodiscard]] constexpr auto list() {
   return []<auto... Ns>(std::index_sequence<Ns...>) {
     return value_list<Str.data[Ns]...>{};
   }(std::make_index_sequence<Str.size>{});
 }
+
+template <auto expr, class... Ts>
+using typeof = decltype(expr(std::declval<Ts>()...));
 
 template <class T>
 constexpr auto to_list = [] /*[[nodiscard]]*/ {
@@ -322,28 +295,29 @@ template <class T>
 
 namespace detail {
 template <auto N>
-struct size_vs final {
+struct size_vs {
   std::size_t size{};
   std::array<std::size_t, N> vs{};
 };
 }  // namespace detail
 
-template <template <class...> class T, class... Ts, class... Us>
-[[nodiscard]] constexpr auto operator|(T<Ts...>, type_list<Us...>) {
-  return T<Ts..., Us...>{};
+template <class T>
+constexpr auto declval()
+    -> std::conditional_t<std::is_default_constructible_v<T>, T, T&&> {
+  return T{};
 }
 
 template <template <class...> class T, class... Ts, template <class...> class U,
           class... Us>
-[[nodiscard]] constexpr auto operator|(T<Ts...>, detail::type<U<Us...>>) {
-  return T<Ts..., Us...>{};
+  requires(not concepts::callable<U<Us...>>)
+[[nodiscard]] constexpr auto operator|(T<Ts...>, U<Us...>) {
+  return declval<T<Ts..., Us...>>();
 }
 
-template <template <class...> class T, class... Ts, template <class...> class U,
-          class... Us>
-[[nodiscard]] constexpr auto operator|(detail::type<T<Ts...>>,
-                                       detail::type<U<Us...>>) {
-  return type<T<Ts..., Us...>>;
+template <class... Ts, class... Us>
+[[nodiscard]] constexpr auto operator|(std::tuple<Ts...> lhs,
+                                       std::tuple<Us...> rhs) {
+  return std::tuple_cat(lhs, rhs);
 }
 
 template <template <class...> class T, class... Ts>
@@ -378,7 +352,8 @@ template <template <class...> class T, class... Ts>
     };
     if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
-        return T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>{};
+        return declval<
+            T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>();
       }(std::make_index_sequence<expr_fn.size>{});
     } else {
       return expr_fn;
@@ -490,29 +465,6 @@ template <class... Ts>
   }
 }
 
-template <template <class...> class T, class... Ts, class... Us>
-[[nodiscard]] constexpr auto operator|(detail::type<T<Ts...>>,
-                                       type_list<Us...>) {
-  return type<T<Ts..., Us...>>;
-}
-
-template <template <class...> class T, class... Ts>
-[[nodiscard]] constexpr auto operator|(detail::type<T<Ts...>>, auto fn) {
-  return type<decltype(std::declval<T<Ts...>>() | fn)>;
-}
-
-template <template <class...> class T, class... Ts,
-          template <class> class Trait>
-[[nodiscard]] constexpr auto operator|(T<Ts...>, detail::trait<Trait>) {
-  return T<typename detail::trait<Trait>::template fn<Ts>::type...>{};
-}
-
-template <template <class...> class T, class... Ts, auto Fn>
-[[nodiscard]] constexpr auto operator|(T<Ts...>, detail::trait_expr<Fn>) {
-  return T<
-      typename detail::trait_expr<Fn>::template fn<Ts>::type::value_type...>{};
-}
-
 namespace detail {
 template <class Fn, class Pred>
 struct expr {
@@ -522,6 +474,21 @@ struct expr {
   constexpr auto operator()(boost::mp::concepts::meta auto types,
                             auto... args) const {
     const auto fns = std::array<bool, sizeof...(args)>{pred(args)...};
+    if constexpr (auto v = fn(types, [fns](auto type) { return fns[type]; });
+                  requires {
+                    std::begin(v);
+                    std::end(v);
+                  }) {
+      return decltype(types){std::begin(v), std::end(v)};
+    } else {
+      return v;
+    }
+  }
+
+  template <auto... Vs>
+    requires(sizeof...(Vs) > 0u)
+  constexpr auto operator()(boost::mp::concepts::meta auto types) const {
+    const auto fns = std::array<bool, sizeof...(Vs)>{pred(Vs)...};
     if constexpr (auto v = fn(types, [fns](auto type) { return fns[type]; });
                   requires {
                     std::begin(v);
