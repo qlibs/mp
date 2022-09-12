@@ -9,12 +9,12 @@
 #include <ranges>
 
 namespace mp = boost::mp;
-using mp::operator<<;
 
 // clang-format off
-template <auto List>
-auto filter = List
-  | std::views::filter<<([]<class T> { return requires (T t) { t.value; }; });
+auto filter = [](auto list, auto fn){
+  using namespace boost::mp;
+  return list | std::views::filter<<(fn);
+};
 // clang-format on
 
 struct bar {};
@@ -23,21 +23,10 @@ struct foo {
 };
 
 // clang-format off
-static_assert(filter<mp::list<foo, bar>()> == mp::list<foo>());
+static_assert(mp::list<foo>() == filter(mp::list<foo, bar>(), []<class T> { return requires (T t) { t.value; };} ));
+static_assert(mp::list<2, 3>() == filter(mp::list<1, 2, 3>(), [](auto i) { return i > 1; }));
+static_assert(mp::list<"fbar">() == filter(mp::list<"foobar">(), [](auto c) { return c != 'o'; }));
+static_assert(std::tuple{2, 3} == filter([]{return std::tuple{1, 2, 3};}, [](auto i) { return i > 1; }));
 // clang-format on
 
-int main() {
-  using boost::mp::operator""_c;
-  using boost::mp::operator|;
-
-  static constexpr std::tuple tuple{1, 2, 3};
-
-  // clang-format off
-  static_assert(std::tuple{2} == (
-    [] { return tuple; }
-      | std::views::filter<<([](auto i) { return i > 1; })
-      | std::views::reverse
-      | std::views::drop(1_c)
-  ));
-  // clang-format on
-}
+int main() {}

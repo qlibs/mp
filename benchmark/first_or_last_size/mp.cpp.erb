@@ -9,14 +9,12 @@
 #include <bit>
 
 #if defined(METABENCH)
-template <auto List>
-auto first_or_last_size = List | [](boost::mp::concepts::meta auto types) {
-    return std::array{
-        types[0].size > types[types.size() - 1].size - 1 ?
-        boost::mp::meta{.index = 0} :
-        boost::mp::meta{.index = types.size()-1}
-    };
-};
+template <class List>
+using first_or_last_size = decltype(boost::mp::declval<List>() | [](boost::mp::concepts::meta auto types) {
+  auto first = types.front();
+  auto last = types.back();
+  return std::array{first.size < last.size ? last : first};
+});
 
 static_assert(1 ==
   first_or_last_size<boost::mp::type_list<
@@ -24,7 +22,7 @@ static_assert(1 ==
   <%= n % 2 == 0 ? 'std::byte[' + i.to_s + ']' : 'std::byte[' + (n-i).to_s + ']' %>
   <%= ',' if i < n-1 %>
   <% end %>
->{}>.size);
+>>::size);
 #endif
 
 int main() {}

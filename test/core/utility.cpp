@@ -59,7 +59,7 @@ int main() {
     expect(constant<42_c == 42>);
     expect(constant<1000000_c == 1'000'000>);
 
-    expect(type<std::integral_constant<int, 3>> == boost::mp::_c<1 + 2>);
+    expect(type<std::integral_constant<int, 3>> == boost::mp::const_t<1 + 2>{});
     expect(constant<1_c + 2_c == 3>);
     expect(constant<1_c + 2 == 3>);
   };
