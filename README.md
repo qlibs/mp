@@ -342,16 +342,16 @@ static_assert(add<mp::list<int, double>(), void> ==
 And what about transform? Let's add pointers to all our type in the list.
 
 ```cpp
-template <auto List>
-auto transform = List
-  | []<class... Ts> -> List<Ts...> {}
+auto transform = [](auto list){
+  return list | []<class... Ts> { return list<Ts* const...>;  };
+};
 ```
 
-+It's that easy, we just apply addition of `const pointer` to all `Ts...`.
+It's that easy, we just apply addition of `const pointer` to all `Ts...`.
 
 ```cpp
-static_assert(transform<mp::list<int, double>()> ==
-                        mp::list<int* const, double* const>());
+static_assert(transform(mp::list<int, double>) ==
+                        mp::list<int* const, double* const>);
 ```
 
 Okay, so what about the case when we need meta-types and Ts...?
