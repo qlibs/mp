@@ -58,9 +58,25 @@ constexpr auto nth_pack_element_v =
     nth_pack_element<N, std::integral_constant<decltype(Ns), Ns>...>::value;
 #endif
 
+template <auto N>
+struct integral_constant : std::integral_constant<decltype(N), N> {
+  [[nodiscard]] constexpr auto operator+(const auto value) const {
+    return integral_constant<N + value>{};
+  }
+  [[nodiscard]] constexpr auto operator-(const auto value) const {
+    return integral_constant<N - value>{};
+  }
+  [[nodiscard]] constexpr auto operator*(const auto value) const {
+    return integral_constant<N * value>{};
+  }
+  [[nodiscard]] constexpr auto operator/(const auto value) const {
+    return integral_constant<N / value>{};
+  }
+};
+
 template <char... Cs>
 [[nodiscard]] consteval auto operator""_c() {
-  return std::integral_constant<std::size_t, [] {
+  return integral_constant<[] {
     std::size_t result{};
     for (const auto c : std::array{Cs...}) {
       result = result * std::size_t(10) + std::size_t(c - '0');
@@ -139,7 +155,7 @@ struct meta {
 };
 
 template <auto N>
-using const_t = std::integral_constant<decltype(N), N>;
+using const_t = utility::integral_constant<N>;
 using utility::operator""_c;
 
 template <class... Ts>

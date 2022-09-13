@@ -1,5 +1,5 @@
 <a href="https://github.com/boost-ext/mp/actions/workflows/linux.yml" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
-<a href="https://godbolt.org/z/T9Gh1MKn8">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/8bcaxxYx4">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 # MP - ~~Template~~ Meta-Programming
 
@@ -19,13 +19,46 @@
 ```cpp
 #include <ranges>
 
-template <auto Begin, auto End, auto List>
-auto slice = List
- | std::views::drop(Begin) // use std.ranges
- | std::views::take(End);  // any library which can operate on containers is supported!
+// write once, use multiple times
+auto slice = [](auto list, auto begin, auto end) {
+  return list
+    | std::views::drop(begin)      // use std.ranges
+    | std::views::take(end - 1_c); // any library which can operate on containers is supported!
+};
+```
 
-static_assert(slice<1_c, 2_c, list<int, double, float>>
-                           == list<double, float>);
+```cpp
+// type_list
+static_assert(slice(mp::list<int, double, float, short>(), 1_c, 3_c) ==
+                    mp::list<double, float>());
+```
+
+```cpp
+// variant.type
+static_assert(std::is_same_v<
+    mp::typeof<slice, std::variant<int, double, float, short>, mp::const_t<1>, mp::const_t<3>>,
+                      std::variant<double, float>>
+);
+```
+
+```cpp
+// value_list
+static_assert(slice(mp::list<1, 2, 3, 4>(), 1_c, 3_c) ==
+                    mp::list<2, 3>());
+```
+
+// tuple of values
+static_assert(slice(std::tuple{1, 2, 3, 4}, 1_c, 3_c) ==
+                    std::tuple{2, 3});
+
+```cpp
+#include <cassert>
+
+int main(int argc, const char**) {
+  // run-time tuple of values
+  assert((slice(std::tuple{1, argc, 3, 4}, 1_c, 3_c) ==
+                std::tuple{argc, 3}));
+}
 ```
 
 ---
@@ -92,7 +125,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 <details open><summary>Quick Start</summary>
 <p>
 
-> Try it out - https://godbolt.org/z/T9Gh1MKn8
+> Try it out - https://godbolt.org/z/8bcaxxYx4
 
 ---
 

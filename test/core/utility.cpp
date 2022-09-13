@@ -53,14 +53,13 @@ int main() {
 
   "utility.<char...>_c"_test = [] {
     using boost::mp::operator""_c;
-    expect(std::is_same_v<std::integral_constant<std::size_t, 42>,
-                          decltype(42_c)>);
     expect(constant<0_c == 0>);
     expect(constant<42_c == 42>);
     expect(constant<1000000_c == 1'000'000>);
 
-    expect(type<std::integral_constant<int, 3>> == boost::mp::const_t<1 + 2>{});
+    expect(type<boost::mp::utility::integral_constant<3>> ==
+           boost::mp::const_t<1 + 2>{});
     expect(constant<1_c + 2_c == 3>);
-    expect(constant<1_c + 2 == 3>);
+    expect(constant<2_c - 1_c == 1>);
   };
 }
