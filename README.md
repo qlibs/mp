@@ -1,5 +1,5 @@
 <a href="https://github.com/boost-ext/mp/actions/workflows/linux.yml" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
-<a href="https://godbolt.org/z/8bcaxxYx4">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/bsvTTzxTE">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 # MP - ~~Template~~ Meta-Programming
 
@@ -45,6 +45,12 @@ static_assert(std::is_same_v<
 // value_list
 static_assert(slice(mp::list<1, 2, 3, 4>, 1_c, 3_c) ==
                     mp::list<2, 3>);
+```
+
+```cpp
+// fixed_string
+static_assert(slice(mp::list<"foobar">(), 1_c, 3_c) ==
+                    mp::list<"oo">());
 ```
 
 ```cpp
@@ -127,7 +133,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 <details open><summary>Quick Start</summary>
 <p>
 
-> Try it out - https://godbolt.org/z/8bcaxxYx4
+> Try it out - https://godbolt.org/z/bsvTTzxTE
 
 ---
 
