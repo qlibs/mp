@@ -329,11 +329,10 @@ And what about transform? Let's add pointers to all our type in the list.
 ```cpp
 template <auto List>
 auto transform = List
-  | mp::trait<std::add_pointer>()
-  | mp::trait([]<class T> { return mp::type<T const>; });
+  | []<class... Ts> -> List<Ts...> {}
 ```
 
-It's that easy, we just applied a std::add_pointer trait to the list, followed by adding const.
++It's that easy, we just apply addition of `const pointer` to all `Ts...`.
 
 ```cpp
 static_assert(transform<mp::list<int, double>()> ==
@@ -450,24 +449,6 @@ concept concepts::meta =
     std::size_t{t.index};
     std::size_t{t.size};
   };
-```
-
-```cpp
-/**
- * Variable template which represents single type
- * Useful for non-default constructible types
- */
-template<class T> unspecified<T> type{};
-```
-
-```cpp
-/**
- * Variable template which represents trait
- * static_assert(list<int, double> | trait<add::pointer>() == list<int*, double*>);
- * static_assert(list<int, double> | trait([]<class T> { return mp::type<T*>; })
- *            == list<int*, double*>);
- */
-template<template auto T> unspecified<T> trait()
 ```
 
 ```cpp
