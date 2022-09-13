@@ -29,28 +29,30 @@ auto slice = [](auto list, auto begin, auto end) {
 
 ```cpp
 // type_list
-static_assert(slice(mp::list<int, double, float, short>(), 1_c, 3_c) ==
-                    mp::list<double, float>());
+static_assert(slice(mp::list<int, double, float, short>, 1_c, 3_c) ==
+                    mp::list<double, float>);
 ```
 
 ```cpp
 // variant.type
 static_assert(std::is_same_v<
-    mp::typeof<slice, std::variant<int, double, float, short>, mp::const_t<1>, mp::const_t<3>>,
+    mp::typeof<slice, std::variant<int, double, float, short>, 1_c, 3_c>,
                       std::variant<double, float>>
 );
 ```
 
 ```cpp
 // value_list
-static_assert(slice(mp::list<1, 2, 3, 4>(), 1_c, 3_c) ==
-                    mp::list<2, 3>());
+static_assert(slice(mp::list<1, 2, 3, 4>, 1_c, 3_c) ==
+                    mp::list<2, 3>);
 ```
 
+```cpp
 // tuple of values
 static_assert(slice(std::tuple{1, 2, 3, 4}, 1_c, 3_c) ==
                     std::tuple{2, 3});
-
+```
+  
 ```cpp
 #include <cassert>
 
@@ -64,7 +66,7 @@ int main(int argc, const char**) {
 ---
 
 ```cpp
-auto fn = [](auto&& tuple) {
+auto fun_with_tuple = [](auto tuple) {
   return tuple
     | std::views::filter<<([](auto i) -> bool { return i % 2; })
     | std::views::reverse
