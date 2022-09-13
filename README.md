@@ -126,6 +126,21 @@ static_assert(sizeof(not_packed) == 12u);
 static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 ```
 
+---
+                                                        
+```cpp
+#include <concepts>
+#include <algorithm>
+
+auto rotate = [](std::ranges::range auto types) {
+    std::ranges::rotate(types, std::begin(types) + 1);
+    return types;
+};
+
+static_assert((boost::mp::list<int, double, float>() | rotate) ==
+               boost::mp::list<double, float, int>());
+```
+                                                        
 </p>
 </details>
 
