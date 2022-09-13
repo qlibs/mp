@@ -10,6 +10,8 @@
 
 namespace mp = boost::mp;
 
+using mp::operator""_c;
+
 template <auto...>
 struct ct_string {};
 
@@ -18,11 +20,10 @@ constexpr auto split = mp::list<Str>() | []<auto... Cs> {
   auto list = mp::list<Cs...>();
   auto to_ct_string = []<auto... Vs> { return ct_string<Vs...>{}; };
   auto head = list | std::views::take(N) | to_ct_string;
-  auto tail = list | std::views::drop(mp::const_t<N + 1>{}) | to_ct_string;
+  auto tail = list | std::views::drop(N + 1_c) | to_ct_string;
   return mp::list<head, tail>();
 };
 
-using mp::operator""_c;
 static_assert(split<"Hello World", 5_c> ==
               mp::list<ct_string<'H', 'e', 'l', 'l', 'o'>{},
                        ct_string<'W', 'o', 'r', 'l', 'd'>{}>());

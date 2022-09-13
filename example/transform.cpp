@@ -11,11 +11,11 @@
 namespace mp = boost::mp;
 
 // clang-format off
-template <auto List>
-auto transform = List
-  | []<class... Ts> { return mp::list<Ts* const...>(); };
+auto transform = [](auto list) {
+  return list | []<class... Ts> { return mp::list<Ts* const...>(); };
+};
 
-static_assert(transform<mp::list<int, double>()> == mp::list<int* const, double* const>());
+static_assert(transform(mp::list<int, double>()) == mp::list<int* const, double* const>());
 // clang-format on
 
 int main() {}
