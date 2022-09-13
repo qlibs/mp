@@ -49,8 +49,8 @@ static_assert(slice(mp::list<1, 2, 3, 4>, 1_c, 3_c) ==
 
 ```cpp
 // fixed_string
-static_assert(slice(mp::list<"foobar">(), 1_c, 3_c) ==
-                    mp::list<"oo">());
+static_assert(slice(mp::list<"foobar">, 1_c, 3_c) ==
+                    mp::list<"oo">);
 ```
 
 ```cpp
