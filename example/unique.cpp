@@ -22,7 +22,7 @@ auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 
 auto unique = []<class... Ts>(mp::concepts::meta auto types) {
   auto [first, last] = std::ranges::unique(
-      types, [ids = std::array{mp::utility::type_id<Ts>...}](
+      types, [ids = std::array{mp::reflection::type_id<Ts>...}](
                  auto lhs, auto rhs) { return ids[lhs] == ids[rhs]; });
   types.erase(first, last);
   return types;

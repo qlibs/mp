@@ -84,43 +84,6 @@ template <char... Cs>
     return result;
   }()>{};
 }
-namespace detail {
-template <class T>
-[[nodiscard]] consteval auto type_id() {
-  std::size_t result{};
-  for (const auto& c : BOOST_MP_PRETTY_FUNCTION) {
-    (result ^= c) <<= 1;
-  }
-  return result;
-}
-}  // namespace detail
-
-template <class T>
-constexpr auto type_id = detail::type_id<T>();
-
-#if defined(__clang__)
-#define BOOST_MP_TYPE_NAME_OFFSET 42
-#define BOOST_MP_TYPE_NAME_V_OFFSET 42
-#else
-#define BOOST_MP_TYPE_NAME_OFFSET 70
-#define BOOST_MP_TYPE_NAME_V_OFFSET 75
-#endif
-
-template <class T>
-[[nodiscard]] consteval auto type_name() {
-  return std::string_view{
-      &BOOST_MP_PRETTY_FUNCTION[BOOST_MP_TYPE_NAME_OFFSET],
-      sizeof(BOOST_MP_PRETTY_FUNCTION) - BOOST_MP_TYPE_NAME_OFFSET - 2};
-}
-
-template <auto T>
-[[nodiscard]] consteval auto type_name() {
-  return std::string_view{
-      &BOOST_MP_PRETTY_FUNCTION[BOOST_MP_TYPE_NAME_V_OFFSET],
-      sizeof(BOOST_MP_PRETTY_FUNCTION) - BOOST_MP_TYPE_NAME_V_OFFSET - 2};
-}
-
-#undef BOOST_MP_TYPE_NAME_OFFSET
 }  // namespace utility
 
 namespace concepts {
@@ -230,84 +193,6 @@ template <fixed_string Str>
 
 template <auto expr, class... Ts>
 using typeof = decltype(expr(std::declval<Ts>()...));
-
-template <class T>
-constexpr auto to_list = [] /*[[nodiscard]]*/ {
-  // clang-format off
-  if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = T{}; }; }) {
-    auto [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = T{};
-    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6), decltype(p7), decltype(p8), decltype(p9), decltype(p10)>{};
-  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6, p7, p8, p9] = T{}; }; }) {
-    auto [p1, p2, p3, p4, p5, p6, p7, p8, p9] = T{};
-    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6), decltype(p7), decltype(p8), decltype(p9)>{};
-  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6, p7, p8] = T{}; }; }) {
-    auto [p1, p2, p3, p4, p5, p6, p7, p8] = T{};
-    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6), decltype(p7), decltype(p8)>{};
-  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6, p7] = T{}; }; }) {
-    auto [p1, p2, p3, p4, p5, p6, p7] = T{};
-    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6), decltype(p7)>{};
-  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6] = T{}; }; }) {
-    auto [p1, p2, p3, p4, p5, p6] = T{};
-    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6)>{};
-  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5] = T{}; }; }) {
-    auto [p1, p2, p3, p4, p5] = T{};
-    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5)>{};
-  } else if constexpr (requires { [] { auto [p1, p2, p3, p4] = T{}; }; }) {
-    auto [p1, p2, p3, p4] = T{};
-    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4)>{};
-  } else if constexpr (requires { [] { auto [p1, p2, p3] = T{}; }; }) {
-    auto [p1, p2, p3] = T{};
-    return type_list<decltype(p1), decltype(p2), decltype(p3)>{};
-  } else if constexpr (requires { [] { auto [p1, p2] = T{}; }; }) {
-    auto [p1, p2] = T{};
-    return type_list<decltype(p1), decltype(p2)>{};
-  } else if constexpr (requires { [] { auto [p1] = T{}; }; }) {
-    auto [p1] = T{};
-    return type_list<decltype(p1)>{};
-  } else {
-    return type_list{};
-  }
-  // clang-format on
-}();
-
-template <class T>
-[[nodiscard]] constexpr auto to_tuple(T&& obj) {
-  // clang-format off
-  if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = obj; }; }) {
-    auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = std::forward<T>(obj);
-    return std::make_tuple(p1, p2, p3, p4, p5, p6, p7, p8, p8, p10);
-  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9] = obj; }; }) {
-    auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9] = std::forward<T>(obj);
-    return std::make_tuple(p1, p2, p3, p4, p5, p6, p7, p8, p9);
-  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6, p7, p8] = obj; }; }) {
-    auto&& [p1, p2, p3, p4, p5, p6, p7, p8] = std::forward<T>(obj);
-    return std::make_tuple(p1, p2, p3, p4, p5, p6, p7, p8);
-  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6, p7] = obj; }; }) {
-    auto&& [p1, p2, p3, p4, p5, p6, p7] = std::forward<T>(obj);
-    return std::make_tuple(p1, p2, p3, p4, p5, p6, p7);
-  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6] = obj; }; }) {
-    auto&& [p1, p2, p3, p4, p5, p6] = std::forward<T>(obj);
-    return std::make_tuple(p1, p2, p3, p4, p5, p6);
-  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5] = obj; }; }) {
-    auto&& [p1, p2, p3, p4, p5] = std::forward<T>(obj);
-    return std::make_tuple(p1, p2, p3, p4, p5);
-  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4] = obj; }; }) {
-    auto&& [p1, p2, p3, p4] = std::forward<T>(obj);
-    return std::make_tuple(p1, p2, p3, p4);
-  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3] = obj; }; }) {
-    auto&& [p1, p2, p3] = std::forward<T>(obj);
-    return std::make_tuple(p1, p2, p3);
-  } else if constexpr (requires { [&obj] { auto&& [p1, p2] = obj; }; }) {
-    auto&& [p1, p2] = std::forward<T>(obj);
-    return std::make_tuple(p1, p2);
-  } else if constexpr (requires { [&obj] { auto&& [p1] = obj; }; }) {
-    auto&& [p1] = std::forward<T>(obj);
-    return std::make_tuple(p1);
-  } else {
-    return std::make_tuple();
-  }
-  // clang-format on
-}
 
 namespace detail {
 template <auto N>
@@ -536,5 +421,124 @@ struct expr {
 constexpr auto operator<<(auto fn, auto pred) {
   return detail::expr<decltype(fn), decltype(pred)>{fn, pred};
 }
+
+namespace reflection {
+namespace detail {
+template <class T>
+[[nodiscard]] consteval auto type_id() {
+  std::size_t result{};
+  for (const auto& c : BOOST_MP_PRETTY_FUNCTION) {
+    (result ^= c) <<= 1;
+  }
+  return result;
+}
+}  // namespace detail
+
+template <class T>
+constexpr auto type_id = detail::type_id<T>();
+
+#if defined(__clang__)
+#define BOOST_MP_TYPE_NAME_OFFSET 45
+#define BOOST_MP_TYPE_NAME_V_OFFSET 45
+#else
+#define BOOST_MP_TYPE_NAME_OFFSET 73
+#define BOOST_MP_TYPE_NAME_V_OFFSET 78
+#endif
+
+template <class T>
+[[nodiscard]] consteval auto type_name() {
+  return std::string_view{
+      &BOOST_MP_PRETTY_FUNCTION[BOOST_MP_TYPE_NAME_OFFSET],
+      sizeof(BOOST_MP_PRETTY_FUNCTION) - BOOST_MP_TYPE_NAME_OFFSET - 2};
+}
+
+template <auto T>
+[[nodiscard]] consteval auto type_name() {
+  return std::string_view{
+      &BOOST_MP_PRETTY_FUNCTION[BOOST_MP_TYPE_NAME_V_OFFSET],
+      sizeof(BOOST_MP_PRETTY_FUNCTION) - BOOST_MP_TYPE_NAME_V_OFFSET - 2};
+}
+
+#undef BOOST_MP_TYPE_NAME_OFFSET
+
+template <class T>
+[[nodiscard]] constexpr auto to_tuple(T&& obj) {
+  // clang-format off
+  if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = obj; }; }) {
+    auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = std::forward<T>(obj);
+    return std::make_tuple(p1, p2, p3, p4, p5, p6, p7, p8, p8, p10);
+  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9] = obj; }; }) {
+    auto&& [p1, p2, p3, p4, p5, p6, p7, p8, p9] = std::forward<T>(obj);
+    return std::make_tuple(p1, p2, p3, p4, p5, p6, p7, p8, p9);
+  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6, p7, p8] = obj; }; }) {
+    auto&& [p1, p2, p3, p4, p5, p6, p7, p8] = std::forward<T>(obj);
+    return std::make_tuple(p1, p2, p3, p4, p5, p6, p7, p8);
+  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6, p7] = obj; }; }) {
+    auto&& [p1, p2, p3, p4, p5, p6, p7] = std::forward<T>(obj);
+    return std::make_tuple(p1, p2, p3, p4, p5, p6, p7);
+  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5, p6] = obj; }; }) {
+    auto&& [p1, p2, p3, p4, p5, p6] = std::forward<T>(obj);
+    return std::make_tuple(p1, p2, p3, p4, p5, p6);
+  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4, p5] = obj; }; }) {
+    auto&& [p1, p2, p3, p4, p5] = std::forward<T>(obj);
+    return std::make_tuple(p1, p2, p3, p4, p5);
+  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3, p4] = obj; }; }) {
+    auto&& [p1, p2, p3, p4] = std::forward<T>(obj);
+    return std::make_tuple(p1, p2, p3, p4);
+  } else if constexpr (requires { [&obj] { auto&& [p1, p2, p3] = obj; }; }) {
+    auto&& [p1, p2, p3] = std::forward<T>(obj);
+    return std::make_tuple(p1, p2, p3);
+  } else if constexpr (requires { [&obj] { auto&& [p1, p2] = obj; }; }) {
+    auto&& [p1, p2] = std::forward<T>(obj);
+    return std::make_tuple(p1, p2);
+  } else if constexpr (requires { [&obj] { auto&& [p1] = obj; }; }) {
+    auto&& [p1] = std::forward<T>(obj);
+    return std::make_tuple(p1);
+  } else {
+    return std::make_tuple();
+  }
+  // clang-format on
+}
+
+template <class T>
+constexpr auto to_list = [] /*[[nodiscard]]*/ {
+  // clang-format off
+  if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = T{}; }; }) {
+    auto [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10] = T{};
+    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6), decltype(p7), decltype(p8), decltype(p9), decltype(p10)>{};
+  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6, p7, p8, p9] = T{}; }; }) {
+    auto [p1, p2, p3, p4, p5, p6, p7, p8, p9] = T{};
+    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6), decltype(p7), decltype(p8), decltype(p9)>{};
+  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6, p7, p8] = T{}; }; }) {
+    auto [p1, p2, p3, p4, p5, p6, p7, p8] = T{};
+    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6), decltype(p7), decltype(p8)>{};
+  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6, p7] = T{}; }; }) {
+    auto [p1, p2, p3, p4, p5, p6, p7] = T{};
+    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6), decltype(p7)>{};
+  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5, p6] = T{}; }; }) {
+    auto [p1, p2, p3, p4, p5, p6] = T{};
+    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5), decltype(p6)>{};
+  } else if constexpr (requires { [] { auto [p1, p2, p3, p4, p5] = T{}; }; }) {
+    auto [p1, p2, p3, p4, p5] = T{};
+    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4), decltype(p5)>{};
+  } else if constexpr (requires { [] { auto [p1, p2, p3, p4] = T{}; }; }) {
+    auto [p1, p2, p3, p4] = T{};
+    return type_list<decltype(p1), decltype(p2), decltype(p3), decltype(p4)>{};
+  } else if constexpr (requires { [] { auto [p1, p2, p3] = T{}; }; }) {
+    auto [p1, p2, p3] = T{};
+    return type_list<decltype(p1), decltype(p2), decltype(p3)>{};
+  } else if constexpr (requires { [] { auto [p1, p2] = T{}; }; }) {
+    auto [p1, p2] = T{};
+    return type_list<decltype(p1), decltype(p2)>{};
+  } else if constexpr (requires { [] { auto [p1] = T{}; }; }) {
+    auto [p1] = T{};
+    return type_list<decltype(p1)>{};
+  } else {
+    return type_list{};
+  }
+  // clang-format on
+}();
+}  // namespace reflection
+
 }  // namespace boost::inline ext::mp::inline v0_0_1
 #undef BOOST_MP_PRETTY_FUNCTION

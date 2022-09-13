@@ -15,7 +15,7 @@ namespace mp = boost::mp;
 auto sort = [](auto list) {
   return list | []<class... Ts>(auto types) {
     std::ranges::sort(types,
-      [names = std::array{mp::utility::type_name<Ts>()...}]
+      [names = std::array{mp::reflection::type_name<Ts>()...}]
         (auto lhs, auto rhs) { return names[lhs] < names[rhs]; });
     return types;
   };

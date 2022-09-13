@@ -11,8 +11,8 @@
 
 namespace mp = boost::mp;
 
-using boost::mp::operator<<;
-using boost::mp::operator|;
+using mp::operator<<;
+using mp::operator|;
 
 // clang-format off
 template <auto List>
