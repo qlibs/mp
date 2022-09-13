@@ -20,7 +20,7 @@ auto sort = [](mp::concepts::meta auto types) {
 auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 
 template <class T>
-auto pack = mp::to_list<T> | sort<by_size> |
+auto pack = mp::reflection::to_list<T> | sort<by_size> |
             []<class... Ts> { return std::tuple<Ts...>{}; };
 
 struct not_packed {

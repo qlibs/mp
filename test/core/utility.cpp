@@ -29,28 +29,6 @@ int main() {
     expect(constant<3 == boost::mp::utility::nth_pack_element_v<2, 1, 2, 3>>);
   };
 
-  "utility.type_id"_test = [] {
-    expect(constant<boost::mp::utility::type_id<const void> !=
-                    boost::mp::utility::type_id<void>>);
-    expect(constant<boost::mp::utility::type_id<void> !=
-                    boost::mp::utility::type_id<int>>);
-    expect(constant<boost::mp::utility::type_id<int> !=
-                    boost::mp::utility::type_id<int&>>);
-
-    expect(constant<boost::mp::utility::type_id<void> ==
-                    boost::mp::utility::type_id<void>>);
-    expect(constant<boost::mp::utility::type_id<const int&> ==
-                    boost::mp::utility::type_id<const int&>>);
-  };
-
-  "utility.type_name"_test = [] {
-    std::cout << boost::mp::utility::type_name<void>() << std::endl;
-    expect("void" == boost::mp::utility::type_name<void>());
-    expect("const int" == boost::mp::utility::type_name<const int>());
-    expect("foo" == boost::mp::utility::type_name<foo>());
-    expect("42" == boost::mp::utility::type_name<42>());
-  };
-
   "utility.<char...>_c"_test = [] {
     using boost::mp::operator""_c;
     expect(constant<0_c == 0>);

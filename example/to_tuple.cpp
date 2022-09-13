@@ -20,7 +20,7 @@ auto sort = [](mp::concepts::meta auto types) {
 auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 
 using mp::operator|;
-constexpr auto pack = [](auto t) { return mp::to_tuple(t) | sort<by_size>; };
+constexpr auto pack = [](auto t) { return mp::reflection::to_tuple(t) | sort<by_size>; };
 
 struct not_packed {
   char c{};
