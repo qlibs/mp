@@ -20,7 +20,7 @@ example(nth_pack_element)
 example(reverse)
 example(rotate)
 example(slice)
-example(split)
+#example(split)
 example(transform)
 example(unique)
 
