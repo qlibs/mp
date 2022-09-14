@@ -58,7 +58,7 @@ static_assert(slice(mp::list<"foobar">, 1_c, 3_c) ==
 static_assert(slice(std::tuple{1, 2, 3, 4}, 1_c, 3_c) ==
                     std::tuple{2, 3});
 ```
-  
+
 ```cpp
 #include <cassert>
 
@@ -127,7 +127,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 ```
 
 ---
-                                                        
+
 ```cpp
 #include <concepts>
 #include <algorithm>
@@ -140,7 +140,7 @@ auto rotate = [](std::ranges::range auto types) {
 static_assert((boost::mp::list<int, double, float>() | rotate) ==
                boost::mp::list<double, float, int>());
 ```
-                                                        
+
 </p>
 </details>
 
@@ -538,7 +538,7 @@ constexpr auto to_tuple = []<class T>(T&& obj);
  * - []<class... Ts>(concepts::meta auto types)
  */
 template <template <class...> class T, class... Ts>
-[[nodiscard]] constexpr auto operator|(T<Ts...>, auto fn) {
+[[nodiscard]] constexpr auto operator|(T<Ts...>, auto fn);
 ```
 
 ```cpp
@@ -550,7 +550,7 @@ template <template <class...> class T, class... Ts>
  * - []<auto... Ts>(concepts::meta auto types)
  */
 template <template <auto...> class T, auto... Vs>
-[[nodiscard]] constexpr auto operator|(T<Vs...>, auto fn) {
+[[nodiscard]] constexpr auto operator|(T<Vs...>, auto fn);
 ```
 
 ```cpp
@@ -562,7 +562,7 @@ template <template <auto...> class T, auto... Vs>
  * - [](concepts::meta auto types, auto&&... args)
  */
 template <template <class...> class T, class... Ts>
-[[nodiscard]] constexpr auto operator|(std::tuple<Ts...>, auto fn) {
+[[nodiscard]] constexpr auto operator|(std::tuple<Ts...>, auto fn);
 ```
 
 ```cpp
