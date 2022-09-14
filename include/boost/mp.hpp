@@ -88,25 +88,25 @@ template <char... Cs>
 
 namespace concepts {
 namespace detail {
+template <class...>
+constexpr auto meta = false;
+template <template <class...> class T, class... Ts>
+constexpr auto meta<T<Ts...>> = true;
+template <template <auto...> class T, auto... Vs>
+constexpr auto meta<T<Vs...>> = true;
+
 struct callable_base {
   void operator()();
 };
 template <class T>
 struct callable : T, callable_base {};
-
-template <class T>
-concept meta = requires(T t) {
-                 std::size_t{t.index};
-                 std::size_t{t.size};
-               };
 }  // namespace detail
 
 template <class T>
 concept callable = not requires { &detail::callable<T>::operator(); };
 
 template <class T>
-concept meta = std::ranges::random_access_range<T> and
-               detail::meta<typename T::value_type>;
+concept meta = detail::meta<T>;
 }  // namespace concepts
 
 struct meta {
@@ -372,8 +372,7 @@ struct expr {
   Fn fn{};
   Pred pred{};
 
-  constexpr auto operator()(boost::mp::concepts::meta auto types,
-                            auto... args) const {
+  constexpr auto operator()(std::ranges::range auto types, auto... args) const {
     const auto fns = std::array<bool, sizeof...(args)>{pred(args)...};
     if constexpr (auto v = fn(types, [fns](auto type) { return fns[type]; });
                   requires {
@@ -388,7 +387,7 @@ struct expr {
 
   template <auto... Vs>
     requires(sizeof...(Vs) > 0u)
-  constexpr auto operator()(boost::mp::concepts::meta auto types) const {
+  constexpr auto operator()(std::ranges::range auto types) const {
     const auto fns = std::array<bool, sizeof...(Vs)>{pred(Vs)...};
     if constexpr (auto v = fn(types, [fns](auto type) { return fns[type]; });
                   requires {
@@ -402,7 +401,7 @@ struct expr {
   }
 
   template <class... Ts>
-  constexpr auto operator()(boost::mp::concepts::meta auto types) const {
+  constexpr auto operator()(std::ranges::range auto types) const {
     const auto fns =
         std::array<bool, sizeof...(Ts)>{pred.template operator()<Ts>()...};
     if constexpr (auto v = fn(types, [fns](auto type) { return fns[type]; });

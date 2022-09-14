@@ -13,14 +13,14 @@
 namespace mp = boost::mp;
 
 template <auto Fn>
-auto sort = []<class... Ts>(mp::concepts::meta auto types) {
+auto sort = []<class... Ts>(std::ranges::range auto types) {
   std::ranges::sort(types, Fn);
   return types;
 };
 
 auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 
-auto unique = []<class... Ts>(mp::concepts::meta auto types) {
+auto unique = []<class... Ts>(std::ranges::range auto types) {
   auto [first, last] = std::ranges::unique(
       types, [ids = std::array{mp::reflection::type_id<Ts>...}](
                  auto lhs, auto rhs) { return ids[lhs] == ids[rhs]; });

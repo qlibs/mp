@@ -12,7 +12,7 @@
 #if defined(METABENCH)
 template <auto v>
 auto sort_unique_reverse = [] {
-  auto sort = []<class... Ts>(boost::mp::concepts::meta auto types) {
+  auto sort = []<class... Ts>(std::ranges::range auto types) {
     std::sort(std::begin(types), std::end(types),
               [](auto lhs, auto rhs) {
                 return lhs.size < rhs.size;
@@ -20,7 +20,7 @@ auto sort_unique_reverse = [] {
     return types;
   };
 
-  auto unique = []<class... Ts>(boost::mp::concepts::meta auto types) {
+  auto unique = []<class... Ts>(std::ranges::range auto types) {
     types.erase(
         std::unique(std::begin(types), std::end(types),
                     [values = std::array{Ts::value...}](auto lhs, auto rhs) {

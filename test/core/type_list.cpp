@@ -23,23 +23,22 @@ int main() {
   };
 
   "type_list.(types)"_test = [] {
-    expect(constant<(boost::mp::type_list{} |
-                     [](boost::mp::concepts::meta auto types) {
-                       return types;
-                     }) == boost::mp::type_list{}>);
+    expect(
+        constant<(boost::mp::type_list{} | [](std::ranges::range auto types) {
+                   return types;
+                 }) == boost::mp::type_list{}>);
     expect(constant<(boost::mp::list<int, double>() |
-                     [](boost::mp::concepts::meta auto types) {
-                       return types;
-                     }) == boost::mp::list<int, double>()>);
+                     [](std::ranges::range auto types) { return types; }) ==
+                    boost::mp::list<int, double>()>);
   };
 
   "type_list.<Ts...>(types)"_test = [] {
     expect(constant<(boost::mp::type_list{} |
-                     []<class... Ts>(boost::mp::concepts::meta auto types) {
+                     []<class... Ts>(std::ranges::range auto types) {
                        return types;
                      }) == boost::mp::type_list{}>);
     expect(constant<(boost::mp::list<int, double>() |
-                     []<class... Ts>(boost::mp::concepts::meta auto types) {
+                     []<class... Ts>(std::ranges::range auto types) {
                        return types;
                      }) == boost::mp::list<int, double>()>);
   };

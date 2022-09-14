@@ -12,7 +12,7 @@
 namespace mp = boost::mp;
 
 // clang-format off
-auto insert = [](auto&& list, const auto pos, auto&& elements) {
+auto insert = [](mp::concepts::meta auto&& list, const auto pos, mp::concepts::meta auto&& elements) {
   using mp::operator|;
   return list
     | std::views::take(pos)

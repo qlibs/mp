@@ -22,29 +22,29 @@ int main() {
   };
 
   "value_list.(types)"_test = [] {
-    expect(constant<(boost::mp::value_list{} |
-                     [](boost::mp::concepts::meta auto types) {
-                       return types;
-                     }) == boost::mp::value_list{}>);
-    expect(constant<(boost::mp::list<1, 2>() |
-                     [](boost::mp::concepts::meta auto types) {
-                       return types;
-                     }) == boost::mp::list<1, 2>()>);
+    expect(
+        constant<(boost::mp::value_list{} | [](std::ranges::range auto types) {
+                   return types;
+                 }) == boost::mp::value_list{}>);
+    expect(
+        constant<(boost::mp::list<1, 2>() | [](std::ranges::range auto types) {
+                   return types;
+                 }) == boost::mp::list<1, 2>()>);
   };
 
   "value_list.<Vs...>(types)"_test = [] {
     expect(constant<(boost::mp::value_list{} |
-                     []<auto... Vs>(boost::mp::concepts::meta auto types) {
+                     []<auto... Vs>(std::ranges::range auto types) {
                        return types;
                      }) == boost::mp::value_list{}>);
     expect(constant<(boost::mp::list<1, 2>() |
-                     []<auto... Vs>(boost::mp::concepts::meta auto types) {
+                     []<auto... Vs>(std::ranges::range auto types) {
                        return types;
                      }) == boost::mp::list<1, 2>()>);
   };
 
   "value_list.compund"_test = [] {
-    auto sort = []<auto... Vs>(boost::mp::concepts::meta auto types) {
+    auto sort = []<auto... Vs>(std::ranges::range auto types) {
       std::sort(std::begin(types), std::end(types),
                 [values = std::array{Vs...}](auto lhs, auto rhs) {
                   return values[lhs] < values[rhs];
@@ -52,7 +52,7 @@ int main() {
       return types;
     };
 
-    auto unique = []<auto... Vs>(boost::mp::concepts::meta auto types) {
+    auto unique = []<auto... Vs>(std::ranges::range auto types) {
       types.erase(std::unique(std::begin(types), std::end(types),
                               [values = std::array{Vs...}](auto lhs, auto rhs) {
                                 return values[lhs] == values[rhs];
