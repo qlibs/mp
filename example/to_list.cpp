@@ -12,7 +12,7 @@
 namespace mp = boost::mp;
 
 template <auto Fn>
-auto sort = [](mp::concepts::meta auto types) {
+auto sort = [](std::ranges::range auto types) {
   std::sort(std::begin(types), std::end(types), Fn);
   return types;
 };

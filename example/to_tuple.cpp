@@ -12,7 +12,7 @@
 namespace mp = boost::mp;
 
 template <auto Fn>
-auto sort = [](mp::concepts::meta auto types) {
+auto sort = [](std::ranges::range auto types) {
   std::sort(std::begin(types), std::end(types), Fn);
   return types;
 };
@@ -20,7 +20,9 @@ auto sort = [](mp::concepts::meta auto types) {
 auto by_size = [](auto lhs, auto rhs) { return lhs.size < rhs.size; };
 
 using mp::operator|;
-constexpr auto pack = [](auto t) { return mp::reflection::to_tuple(t) | sort<by_size>; };
+constexpr auto pack = [](auto t) {
+  return mp::reflection::to_tuple(t) | sort<by_size>;
+};
 
 struct not_packed {
   char c{};

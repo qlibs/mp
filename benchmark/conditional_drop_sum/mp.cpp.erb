@@ -13,7 +13,7 @@
 template<auto N> constexpr auto div_by = [](auto value) { return value / N; };
 template<auto N>
 constexpr auto drop_last = std::ranges::views::take(N);
-constexpr auto unique = []<class... Ts>(boost::mp::concepts::meta auto types) {
+constexpr auto unique = []<class... Ts>(std::ranges::range auto types) {
     types.erase(
         std::unique(types.begin(), types.end(),
                     [vs = std::array<std::size_t, sizeof...(Ts)>{Ts{}...}](auto lhs, auto rhs) { return vs[lhs] == vs[rhs]; }),

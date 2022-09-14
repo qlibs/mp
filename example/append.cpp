@@ -11,7 +11,7 @@
 namespace mp = boost::mp;
 
 // clang-format off
-auto append = [](auto&& list, auto&& elements) {
+auto append = [](mp::concepts::meta auto&& list, mp::concepts::meta auto&& elements) {
   using mp::operator|;
   return list | elements;
 };

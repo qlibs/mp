@@ -10,7 +10,7 @@
 
 #if defined(METABENCH)
 template <auto Fn>
-auto filter = []<class... Ts>(boost::mp::concepts::meta auto types) {
+auto filter = []<class... Ts>(std::ranges::range auto types) {
   types.erase(std::remove_if(
                   std::begin(types), std::end(types),
                   [fn = std::array{Fn(Ts{})...}](auto type) { return not fn[type]; }),

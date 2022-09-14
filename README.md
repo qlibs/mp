@@ -87,7 +87,7 @@ static_assert(std::tuple{5, 3, 1} == fn([] { return std::tuple{1, 2, 3, 4, 5, 6,
 ```cpp
 #include <algorithm>
 
-auto sort_by_size = [](mp::concepts::meta auto types) {
+auto sort_by_size = [](std::ranges::range auto types) {
   std::sort(std::begin(types), std::end(types),
     [](auto lhs, auto rhs) { return lhs.size < rhs.size; });
   return types;
@@ -214,7 +214,7 @@ import boost.mp;
 First step is to add our new meta-function.
 
 ```cpp
-auto identity = [](mp::concepts::meta types) {
+auto identity = [](std::ranges::range types) {
   return types;
 };
 ```
@@ -284,7 +284,7 @@ Okay, coming back to our sort...
 
 ```cpp
 template <auto Fn>
-auto sort = [](mp::concepts::meta auto types) {
+auto sort = [](std::ranges::range auto types) {
   std::sort(std::begin(types), std::end(types), Fn);
   return types;
 };

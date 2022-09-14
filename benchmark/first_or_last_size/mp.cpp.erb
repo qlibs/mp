@@ -10,7 +10,7 @@
 
 #if defined(METABENCH)
 template <class List>
-using first_or_last_size = decltype(boost::mp::declval<List>() | [](boost::mp::concepts::meta auto types) {
+using first_or_last_size = decltype(boost::mp::declval<List>() | [](std::ranges::range auto types) {
   auto first = types.front();
   auto last = types.back();
   return std::array{first.size < last.size ? last : first};

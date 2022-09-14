@@ -10,7 +10,7 @@
 
 #if defined(METABENCH)
 template <auto List>
-auto first_middle_last = List | [](boost::mp::concepts::meta auto types) {
+auto first_middle_last = List | [](std::ranges::range auto types) {
     assert(std::size(types) >= 3);
     return std::array{
         boost::mp::meta{.index = 0},

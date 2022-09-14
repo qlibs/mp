@@ -10,7 +10,7 @@
 
 namespace mp = boost::mp;
 
-auto rotate = [](mp::concepts::meta auto types) {
+auto rotate = [](std::ranges::range auto types) {
   std::rotate(std::begin(types), std::begin(types) + 1, std::end(types));
   return types;
 };
