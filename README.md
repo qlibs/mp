@@ -18,15 +18,14 @@
 
 ```cpp
 auto hello_world = [](mp::concepts::meta auto list){
-  return list // int, foo, val, bar, double
-    std::views::take(4_c) // int, foo, val, bar
-  | std::views::drop(1_c) // foo, bar, val
-  | std::views::transform(
-      []<class T>()-> T const {}) // foo const, bar const, val const
-  | std::views::filter(
-      []<class T> { return requires(T t) { t.value; }; } // foo const, val const
-  | std::views::reverse; // val const, foo const
+  return list                                                             // int, foo, val, bar, double
+    std::views::take(4_c)                                                 // int, foo, val, bar
+  | std::views::drop(1_c)                                                 // foo, bar, val
+  | std::views::transform([]<class T> -> T const {})                      // foo const, bar const, val const
+  | std::views::filter([]<class T> { return requires(T t) { t.value; }; } // foo const, val const
+  | std::views::reverse;                                                  // val const, foo const
 };
+```
 
 ```cpp
 struct bar {};
