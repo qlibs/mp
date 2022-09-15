@@ -19,7 +19,7 @@
 ```cpp
 #include <ranges>
 
-auto hello_world = [](mp::concepts::meta auto list){
+auto hello_world = [](mp::concepts::meta auto list) {
  return list                                                               // int, foo, val, bar
   | std::views::drop(1_c)                                                  // foo, val, bar
   | std::views::reverse                                                    // bar, val, foo
