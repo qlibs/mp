@@ -6,16 +6,16 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include <boost/mp.hpp>
-#include <type_traits>
+#include <ranges>
 
 namespace mp = boost::mp;
 
 // clang-format off
 auto transform = [](auto list) {
-  return list | []<class... Ts> { return mp::list<Ts* const...>(); };
+  return list | std::views::transform([]<class T>() -> const T* { });
 };
 
-static_assert(transform(mp::list<int, double>()) == mp::list<int* const, double* const>());
+static_assert(transform(mp::list<int, double>()) == mp::list<const int*, const double*>());
 // clang-format on
 
 int main() {}
