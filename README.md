@@ -17,13 +17,15 @@
   If one knows how to use stl.algorithms/ranges one can consider themself a TMP expert now as well!
 
 ```cpp
+#include <ranges>
+
 auto hello_world = [](mp::concepts::meta auto list){
-  return list                                                             // int, foo, val, bar, double
-    std::views::take(4_c)                                                 // int, foo, val, bar
-  | std::views::drop(1_c)                                                 // foo, bar, val
-  | std::views::transform([]<class T> -> T const {})                      // foo const, bar const, val const
-  | std::views::filter([]<class T> { return requires(T t) { t.value; }; } // foo const, val const
-  | std::views::reverse;                                                  // val const, foo const
+ return list                                                               // int, foo, val, bar
+  | std::views::drop(1_c)                                                  // foo, val, bar
+  | std::views::reverse                                                    // bar, val, foo
+  | std::views::take(2_c)                                                  // bar, val
+  | std::views::transform([]<class T> -> T const {})                       // bar const, val const
+  | std::views::filter([]<class T> { return requires(T t) { t.value; }; }; // val const
 };
 ```
 
@@ -34,15 +36,14 @@ struct val { int value; };
 ```
 
 ```cpp
-static_assert(mp::list<val const, foo const>() ==
-  hello_world(mp::list<int, foo, val, bar, double>()));
+static_assert(mp::list<val const>() ==
+  hello_world(mp::list<int, foo, val, bar>())
+);
 ```
 
 ---
 
 ```cpp
-#include <ranges>
-
 // write once, use multiple times
 auto slice = [](auto list, auto begin, auto end) {
   return list
