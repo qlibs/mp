@@ -19,15 +19,23 @@
 ```cpp
 #include <ranges>
 
-auto hello_world = [](mp::concepts::meta auto list) {
- return list                                                               // int, foo, val, bar
-  | std::views::drop(1_c)                                                  // foo, val, bar
-  | std::views::reverse                                                    // bar, val, foo
-  | std::views::take(2_c)                                                  // bar, val
-  | std::views::transform([]<class T> -> T const {})                       // bar const, val const
-  | std::views::filter([]<class T> { return requires(T t) { t.value; }; }; // val const
+auto hello_world = [](auto list, auto add_const, auto has_value){
+ return list                          // int, foo, val, bar
+  | std::views::drop(1_c)             // foo, val, bar
+  | std::views::reverse               // bar, val, foo
+  | std::views::take(2_c)             // bar, val
+  | std::views::transform(add_const)  // bar const, val const
+  | std::views::filter(has_value)     // val const
+  ;
 };
 ```
+
+```cpp
+auto add_const = []<class T> -> T const {};
+auto has_value = []<class T> { return requires(T t) { t.value; }; };
+```
+
+---
 
 ```cpp
 struct bar {};
@@ -36,9 +44,19 @@ struct val { int value; };
 ```
 
 ```cpp
-static_assert(mp::list<val const>() ==
-  hello_world(mp::list<int, foo, val, bar>())
+static_assert(mp::list<val const> ==
+  hello_world(mp::list<int, foo, val, bar>, add_const, has_value)
 );
+```
+
+```cpp
+int main() {
+  "hello world"_test = [] {
+    std::vector list{"int", ...}; // generate, fuzz, ...
+    const auto result = hello_world(list, fake_add_const, fake_has_value);
+    expect(std::vector{...} == result);
+  };
+}
 ```
 
 ---
