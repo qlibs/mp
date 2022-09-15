@@ -131,8 +131,7 @@ static_assert(std::tuple{5, 3, 1} == fn([] { return std::tuple{1, 2, 3, 4, 5, 6,
 #include <algorithm>
 
 auto sort_by_size = [](std::ranges::range auto types) {
-  std::sort(std::begin(types), std::end(types),
-    [](auto lhs, auto rhs) { return lhs.size < rhs.size; });
+  std::ranges::sort(types, [](auto lhs, auto rhs) { return lhs.size < rhs.size; });
   return types;
 };
 
@@ -172,7 +171,7 @@ static_assert(sizeof(to_tuple(not_packed{}) | sort_by_size) == 8u);
 ---
 
 ```cpp
-#include <concepts>
+#include <ranges>
 #include <algorithm>
 
 auto rotate = [](std::ranges::range auto types) {
@@ -498,14 +497,12 @@ template <template auto T> [[nodiscard]] constexpr auto type_name()
 
 ```cpp
 /**
- * A meta concept which verifies meta range
- * static_assert(concepts::meta<vector<meta>>);
+ * A meta concept which verifies meta list
+ * static_assert(concepts::meta<list<>>>);
+ * static_assert(concepts::meta<list<int, double>>>);
+ * static_assert(concepts::meta<std::tuple<int, double>>>);
  */
-concept concepts::meta =
-  requires(T t) {
-    std::size_t{t.index};
-    std::size_t{t.size};
-  };
+concept concepts::meta;
 ```
 
 ```cpp
