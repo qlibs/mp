@@ -17,6 +17,31 @@
   If one knows how to use stl.algorithms/ranges one can consider themself a TMP expert now as well!
 
 ```cpp
+auto hello_world = [](mp::concepts::meta auto list){
+  return list // int, foo, val, bar, double
+    std::views::take(4_c) // int, foo, val, bar
+  | std::views::drop(1_c) // foo, bar, val
+  | std::views::transform(
+      []<class T>()-> T const {}) // foo const, bar const, val const
+  | std::views::filter(
+      []<class T> { return requires(T t) { t.value; }; } // foo const, val const
+  | std::views::reverse; // val const, foo const
+};
+
+```cpp
+struct bar {};
+struct foo { int value; };
+struct val { int value; };
+```
+
+```cpp
+static_assert(mp::list<val const, foo const>() ==
+  hello_world(mp::list<int, foo, val, bar, double>()));
+```
+
+---
+
+```cpp
 #include <ranges>
 
 // write once, use multiple times
@@ -74,7 +99,7 @@ int main(int argc, const char**) {
 ```cpp
 auto fun_with_tuple = [](auto tuple) {
   return tuple
-    | std::views::filter<<([](auto i) -> bool { return i % 2; })
+    | std::views::filter([](auto i) -> bool { return i % 2; })
     | std::views::reverse
     | std::views::drop(1_c);
 };
@@ -327,7 +352,7 @@ Okay, so far so good, but what about adding or removing from type_list?
 
 Removing is simple as we can just erase elements from the meta types as before.
 
-Dealing with new types/transforms it's a bit different but not difficult either.
+Dealing with new types it's a bit different but not difficult either.
 
 ```cpp
 template <auto List, class... Ts>
@@ -343,7 +368,7 @@ And what about transform? Let's add pointers to all our type in the list.
 
 ```cpp
 auto transform = [](auto list){
-  return list | []<class... Ts> { return list<Ts* const...>;  };
+  return list | std::views::transform([]<class T> -> Ts* const {})
 };
 ```
 
@@ -356,9 +381,8 @@ static_assert(transform(mp::list<int, double>) ==
 
 Okay, so what about the case when we need meta-types and Ts...?
 
-
 ```cpp
-auto filter = std::views::filter<<([]<class T> { return requires(T t) { t.value; }; });
+auto filter = std::views::filterclass T> { return requires(T t) { t.value; }; });
 ```
 
 > Notice handy `requires with lambda` pattern to verify ad-hoc concepts.
@@ -563,14 +587,6 @@ template <template <auto...> class T, auto... Vs>
  */
 template <template <class...> class T, class... Ts>
 [[nodiscard]] constexpr auto operator|(std::tuple<Ts...>, auto fn);
-```
-
-```cpp
-/**
- * Adapts ranges to meta type space
- * std::views::filter<<([]<class T> { return ...; })
- */
-constexpr auto operator<<(auto fn, auto... ts);
 ```
 
 ```cpp
