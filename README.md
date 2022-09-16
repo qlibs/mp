@@ -50,14 +50,36 @@ static_assert(mp::list<val const> ==
 ```
 
 ```cpp
-int main() {
+int main () {
+  struct stub_type{
+    std::size_t type{};
+    bool has_value{};
+    bool add_const{};
+    constexpr auto operator<=>(const stub_type&) const = default;
+  };
+
   "hello world"_test = [] {
-    std::vector list{"int", ...}; // generate, fuzz, ...
-    const auto result = hello_world(list, fake_add_const, fake_has_value);
-    expect(std::vector{...} == result);
+    // given
+    std::vector list{stub_type{.type = 0},
+                     stub_type{.type = 1, .has_value = true}};
+
+    auto add_const = [](auto& t) { t.add_const = true; return t; };
+    auto has_value = [](auto t)  { return t.has_value; };
+
+    // when
+    auto out = hello_world(list, add_const, has_value);
+    const std::vector<stub_type> result{std::begin(out), std::end(out)};
+
+    // then
+    expect(1_u == std::size(result));
+    expect(result[0] == stub_type{.type = 1,
+                                  .has_value = true,
+                                  .add_const = true});
   };
 }
 ```
+
+> https://godbolt.org/z/3T86zvcEn
 
 ---
 
@@ -111,6 +133,8 @@ int main(int argc, const char**) {
                 std::tuple{argc, 3}));
 }
 ```
+
+> https://godbolt.org/z/ePE9aqYTe
 
 ---
 
