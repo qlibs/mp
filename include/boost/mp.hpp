@@ -223,7 +223,7 @@ template <class... Ts, class... Us>
 
 namespace detail {
 template <class TFn, class TPred>
-struct execute {
+struct invoke {
   TFn fn{};
   TPred pred{};
 
@@ -279,47 +279,58 @@ struct execute {
   }
 };
 template <class>
-struct execute_t;
+struct invoke_t;
 
 template <template <class...> class T, template <class...> class U,
           template <class...> class F, class TFn, class TPred>
   requires concepts::callable<TFn> and concepts::callable<TPred>
-struct execute_t<T<U<TFn, F<TPred>>>> : execute<TFn, TPred> {};
+struct invoke_t<T<U<TFn, F<TPred>>>> : invoke<TFn, TPred> {};
 
 template <template <class...> class T, template <class...> class U, class TFn,
           class TPred>
   requires concepts::callable<TFn> and concepts::callable<TPred>
-struct execute_t<T<U<TFn, TPred>>> : execute<TFn, TPred> {};
+struct invoke_t<T<U<TFn, TPred>>> : invoke<TFn, TPred> {};
 
 template <template <class...> class T, class TFn, class TPred>
   requires concepts::callable<TFn> and concepts::callable<TPred>
-struct execute_t<T<TFn, TPred>> : execute<TFn, TPred> {};
+struct invoke_t<T<TFn, TPred>> : invoke<TFn, TPred> {};
 }  // namespace detail
 
+template <class... Ts, template <class...> class X, class T, class Pred>
+constexpr auto invoke(T fn, X<Ts...>, Pred) {
+  if constexpr (requires { detail::invoke<T, Pred>{}; }) {
+    auto i = 0u;
+    const std::vector<meta> types{meta{.index = i++, .size = sizeof(Ts)}...};
+    return detail::invoke<T, Pred>{}.template operator()<Ts...>(types);
+  } else {
+    return fn;
+  }
+}
+
 template <class... Ts, class T>
-constexpr auto execute(auto types, T fn)
+constexpr auto invoke(auto types, T fn)
   requires(sizeof...(Ts) > 0u)
 {
-  if constexpr (requires { detail::execute_t<T>{}; }) {
-    return detail::execute_t<T>{}.template operator()<Ts...>(types);
+  if constexpr (requires { detail::invoke_t<T>{}; }) {
+    return detail::invoke_t<T>{}.template operator()<Ts...>(types);
   } else {
     return fn;
   }
 }
 
 template <auto... Vs, class T>
-constexpr auto execute(auto types, T fn)
+constexpr auto invoke(auto types, T fn)
   requires(sizeof...(Vs) > 0u)
 {
-  if constexpr (requires { detail::execute_t<T>{}; }) {
-    return detail::execute_t<T>{}.template operator()<Vs...>(types);
+  if constexpr (requires { detail::invoke_t<T>{}; }) {
+    return detail::invoke_t<T>{}.template operator()<Vs...>(types);
   } else {
     return fn;
   }
 }
 
 template <class T>
-constexpr auto execute(auto, T fn, auto...) {
+constexpr auto invoke(auto, T fn, auto...) {
   return fn;
 }
 
@@ -346,14 +357,13 @@ template <template <class...> class T, class... Ts>
       if constexpr (const std::vector<meta> types{
                         meta{.index = i++, .size = sizeof(Ts)}...};
                     requires { fn.template operator()<Ts...>(types); }) {
-        return make(
-            execute<Ts...>(types, fn.template operator()<Ts...>(types)));
+        return make(invoke<Ts...>(types, fn.template operator()<Ts...>(types)));
       } else if constexpr (requires { fn(types); }) {
-        return make(execute<Ts...>(types, fn(types)));
+        return make(invoke<Ts...>(types, fn(types)));
       } else if constexpr (requires { fn(); }) {
-        return make(execute<Ts...>(types, fn()));
+        return make(invoke<Ts...>(types, fn()));
       } else {
-        return make(execute<Ts...>(types, fn));
+        return make(invoke<Ts...>(types, fn));
       }
     };
     if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
@@ -386,14 +396,13 @@ template <template <auto...> class T, auto... Vs>
       if constexpr (const std::vector<meta> types{
                         meta{.index = i++, .size = sizeof(Vs)}...};
                     requires { fn.template operator()<Vs...>(types); }) {
-        return make(
-            execute<Vs...>(types, fn.template operator()<Vs...>(types)));
+        return make(invoke<Vs...>(types, fn.template operator()<Vs...>(types)));
       } else if constexpr (requires { fn(types); }) {
-        return make(execute<Vs...>(types, fn(types)));
+        return make(invoke<Vs...>(types, fn(types)));
       } else if constexpr (requires { fn(); }) {
-        return make(execute<Vs...>(types, fn()));
+        return make(invoke<Vs...>(types, fn()));
       } else {
-        return make(execute<Vs...>(types, fn));
+        return make(invoke<Vs...>(types, fn));
       }
     };
     constexpr auto expr_fn = expr(fn);
@@ -425,14 +434,14 @@ template <class T>
           if constexpr (const std::vector<meta> types{
                             meta{.index = Ids, .size = sizeof(Ts)}...};
                         requires { fn(types, std::get<Ids>(t())...); }) {
-            return make(execute<std::get<Ids>(t())...>(
+            return make(invoke<std::get<Ids>(t())...>(
                 types, fn(types, std::get<Ids>(t())...)));
           } else if constexpr (requires { fn(types); }) {
-            return make(execute<std::get<Ids>(t())...>(types, fn(types)));
+            return make(invoke<std::get<Ids>(t())...>(types, fn(types)));
           } else if constexpr (requires { fn(); }) {
-            return make(execute<std::get<Ids>(t())...>(types, fn()));
+            return make(invoke<std::get<Ids>(t())...>(types, fn()));
           } else {
-            return make(execute<std::get<Ids>(t())...>(types, fn));
+            return make(invoke<std::get<Ids>(t())...>(types, fn));
           }
         }(std::make_index_sequence<sizeof...(Ts)>{});
       };
@@ -463,14 +472,13 @@ template <class... Ts>
       if constexpr (const std::vector<meta> types{
                         meta{.index = i++, .size = sizeof(Ts)}...};
                     requires { fn.template operator()<Ts...>(types); }) {
-        return make(
-            execute<Ts...>(types, fn.template operator()<Ts...>(types)));
+        return make(invoke<Ts...>(types, fn.template operator()<Ts...>(types)));
       } else if constexpr (requires { fn(types); }) {
-        return make(execute<Ts...>(types, fn(types)));
+        return make(invoke<Ts...>(types, fn(types)));
       } else if constexpr (requires { fn(); }) {
-        return make(execute<Ts...>(types, fn()));
+        return make(invoke<Ts...>(types, fn()));
       } else {
-        return make(execute<Ts...>(types, fn));
+        return make(invoke<Ts...>(types, fn));
       }
     };
     constexpr auto expr_fn = expr(fn);

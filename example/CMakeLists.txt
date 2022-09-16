@@ -13,7 +13,7 @@ endfunction()
 
 example(append)
 example(conditional)
-#example(count_if)
+example(count_if)
 example(filter)
 example(hello_world)
 example(insert)

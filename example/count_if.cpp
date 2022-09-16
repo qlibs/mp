@@ -11,14 +11,12 @@
 
 namespace mp = boost::mp;
 
-using mp::operator|;
-
 // clang-format off
-template <auto List>
-constexpr auto count_if = List
-  | std::ranges::count_if([]<class T> { return std::is_pointer_v<T>; });
-
-static_assert(count_if<mp::list<int*, double>()> == 1);
+static_assert(mp::invoke(
+  std::ranges::count_if,
+  mp::list<int*, double>(),
+  []<class T> { return std::is_pointer_v<T>; }
+) == 1);
 // clang-format on
 
 #endif
