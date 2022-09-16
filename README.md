@@ -87,8 +87,9 @@ int main () {
 // write once, use multiple times
 auto slice = [](auto list, auto begin, auto end) {
   return list
-    | std::views::drop(begin)      // use std.ranges
-    | std::views::take(end - 1_c); // any library which can operate on containers is supported!
+    | std::views::drop(begin)
+    | std::views::take(end - 1_c)
+    ;
 };
 ```
 
@@ -143,7 +144,8 @@ auto fun_with_tuple = [](auto tuple) {
   return tuple
     | std::views::filter([](auto i) -> bool { return i % 2; })
     | std::views::reverse
-    | std::views::drop(1_c);
+    | std::views::drop(1_c)
+    ;
 };
 
 static_assert(std::tuple{5, 3, 1} == fn([] { return std::tuple{1, 2, 3, 4, 5, 6, 7}; }));
