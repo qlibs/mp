@@ -20,13 +20,13 @@
 #include <ranges>
 
 auto hello_world = [](auto list, auto add_const, auto has_value){
- return list                          // int, foo, val, bar
-  | std::views::drop(1_c)             // foo, val, bar
-  | std::views::reverse               // bar, val, foo
-  | std::views::take(2_c)             // bar, val
-  | std::views::transform(add_const)  // bar const, val const
-  | std::views::filter(has_value)     // val const
-  ;
+  return list                          // int, foo, val, bar
+   | std::views::drop(1_c)             // foo, val, bar
+   | std::views::reverse               // bar, val, foo
+   | std::views::take(2_c)             // bar, val
+   | std::views::transform(add_const)  // bar const, val const
+   | std::views::filter(has_value)     // val const
+   ;
 };
 ```
 
