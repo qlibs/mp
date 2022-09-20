@@ -244,16 +244,22 @@ struct invoke {
   template <auto... Vs>
     requires(sizeof...(Vs) > 0u)
   constexpr auto operator()(std::ranges::range auto types) const {
-    const auto fns =
-        std::array<bool, sizeof...(Vs)>{pred.template operator()<Vs>()...};
-    if constexpr (auto v = fn(types, [fns](auto type) { return fns[type]; });
-                  requires {
-                    std::begin(v);
-                    std::end(v);
-                  }) {
-      return decltype(types){std::begin(v), std::end(v)};
+    if constexpr ((requires {
+                     { pred.template operator()<Vs>() } -> std::same_as<bool>;
+                   } or ...)) {
+      const auto fns =
+          std::array<bool, sizeof...(Vs)>{pred.template operator()<Vs>()...};
+      if constexpr (auto v = fn(types, [fns](auto type) { return fns[type]; });
+                    requires {
+                      std::begin(v);
+                      std::end(v);
+                    }) {
+        return decltype(types){std::begin(v), std::end(v)};
+      } else {
+        return v;
+      }
     } else {
-      return v;
+      return list<decltype(pred.template operator()<Vs>())...>();
     }
   }
 
@@ -366,6 +372,7 @@ template <template <class...> class T, class... Ts>
         return make(invoke<Ts...>(types, fn));
       }
     };
+
     if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
         return declval<
@@ -385,11 +392,15 @@ template <template <auto...> class T, auto... Vs>
     return fn.template operator()<Vs...>();
   } else {
     constexpr auto make = [](const auto& vs) {
-      auto svs = detail::size_vs<sizeof...(Vs)>{std::size(vs)};
-      for (auto i = 0u; i < svs.size; ++i) {
-        svs.vs[i] = vs[i].index;
+      if constexpr (requires { std::size(vs); }) {
+        auto svs = detail::size_vs<sizeof...(Vs)>{std::size(vs)};
+        for (auto i = 0u; i < svs.size; ++i) {
+          svs.vs[i] = vs[i].index;
+        }
+        return svs;
+      } else {
+        return vs;
       }
-      return svs;
     };
     constexpr auto expr = [make](auto fn) {
       auto i = 0u;
@@ -405,10 +416,14 @@ template <template <auto...> class T, auto... Vs>
         return make(invoke<Vs...>(types, fn));
       }
     };
-    constexpr auto expr_fn = expr(fn);
-    return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
-      return T<utility::nth_pack_element_v<expr_fn.vs[Ids], Vs...>...>{};
-    }(std::make_index_sequence<expr_fn.size>{});
+
+    if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
+      return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
+        return T<utility::nth_pack_element_v<expr_fn.vs[Ids], Vs...>...>{};
+      }(std::make_index_sequence<expr_fn.size>{});
+    } else {
+      return expr_fn;
+    }
   }
 }
 
@@ -605,6 +620,14 @@ constexpr auto to_list = [] /*[[nodiscard]]*/ {
   // clang-format on
 }();
 }  // namespace reflection
+
+template <template <class...> class T, class... Ts>
+constexpr auto for_each(auto expr, T<Ts...>) {
+  [&]<std::size_t... Ns>(std::index_sequence<Ns...>) {
+    (expr(std::integral_constant<std::size_t, Ns>{}, Ts{}) or ...);
+  }
+  (std::make_index_sequence<sizeof...(Ts)>{});
+}
 
 }  // namespace boost::inline ext::mp::inline v0_0_1
 #undef BOOST_MP_PRETTY_FUNCTION

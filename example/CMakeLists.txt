@@ -23,6 +23,7 @@ example(rotate)
 example(slice)
 example(sort)
 example(split)
+example(state_machine)
 example(transform)
 example(unique)
 
