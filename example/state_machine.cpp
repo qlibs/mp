@@ -104,14 +104,42 @@ class sm<TList<Transitions...>> {
     ;
 
  public:
-  constexpr explicit(false) sm(const TList<Transitions...>& transition_table) : transition_table_{transition_table} {}
+  constexpr explicit(false) sm(const TList<Transitions...>& transition_table)
+    : transition_table_{transition_table} {
+      states | [&]<mp::fixed_string... States> {
+        const auto states = std::array{std::string_view{States}...};
+        auto* current_state = &current_state_[0];
+        for (auto i = 0u; i < std::size(states); ++i) {
+          if (states[i][0] == '*') {
+            *current_state++ = i;
+          }
+        }
+      };
+  }
 
   template<class TEvent> constexpr auto process_event(const TEvent& event) -> void {
+    process_event(event, std::make_index_sequence<num_of_regions>{});
+  }
+
+  template<mp::fixed_string... States>
+  [[nodiscard]] constexpr auto is() const -> bool {
+    auto i = 0;
+    return ((state_id<States> == current_state_[i++]) and ...);
+  }
+
+ private:
+  template<class TEvent, auto... Rs>
+  constexpr auto process_event(const TEvent& event, std::index_sequence<Rs...>) -> void {
+    (dispatch<Rs>(event), ...);
+  }
+
+  template<auto N, class TEvent>
+  constexpr auto dispatch(const TEvent& event) -> void {
     [this, &event]<class T>(const std::pair<std::type_identity<TEvent>, T>& transitions) {
       auto& [_, ts] = transitions;
       mp::for_each([&](auto index, auto transition) {
-        if (index == current_state_) {
-          transition(event, current_state_, transition_table_);
+        if (index == current_state_[N]) {
+          transition(event, current_state_[N], transition_table_);
           return true;
         }
         return false;
@@ -119,18 +147,14 @@ class sm<TList<Transitions...>> {
     }(mappings | inherit);
   }
 
-  template<mp::fixed_string State>
-  [[nodiscard]] constexpr auto is() const {
-    return state_id<State> == current_state_;
-  }
-
- private:
-  std::size_t current_state_{
+  static constexpr auto num_of_regions =
     states | []<mp::fixed_string... States> {
-      const auto states = std::array{std::string_view{States}[0]...};
-      return std::distance(std::begin(states), std::ranges::find(states, '*'));
-    }
-  };
+      return ((std::string_view{States}[0] == '*') + ...);
+    };
+
+  static_assert(num_of_regions > 0, "At least one region is required!");
+
+  std::size_t current_state_[num_of_regions]{};
   [[no_unique_address]] TList<Transitions...> transition_table_{};
 };
 } // namespace back
@@ -205,22 +229,45 @@ struct sm : back::sm<decltype(std::declval<Fn>()())> {
 int main() {
   struct e {};
 
-  auto transitions = [] {
-    auto guard  = []([[maybe_unused]] const auto& event) { std::puts("guard"); return true; };
-    auto action = []([[maybe_unused]] const auto& event) { std::puts("action"); };
+  {
+    const auto transitions = [] {
+      auto guard  = []([[maybe_unused]] const auto& event) { std::puts("guard"); return true; };
+      auto action = []([[maybe_unused]] const auto& event) { std::puts("action"); };
 
-    return transition_table{
-     * "s1"_s + event<e> [ guard ] / action = "s2"_s,
-       "s2"_s + event<e> [ guard ] / action = "s1"_s,
+      return transition_table{
+       * "s1"_s + event<e> [ guard ] / action = "s2"_s,
+        "s2"_s + event<e> [ guard ] / action = "s1"_s,
+      };
     };
-  };
 
-  sm sm{transitions};
+    sm sm{transitions};
 
-  assert(sm.is<"s1">());
-  sm.process_event(e{});
-  assert(sm.is<"s2">());
-  sm.process_event(e{});
-  assert(sm.is<"s1">());
+    assert(sm.is<"s1">());
+    sm.process_event(e{});
+    assert(sm.is<"s2">());
+    sm.process_event(e{});
+    assert(sm.is<"s1">());
+  }
+
+  {
+    const auto transitions = [] {
+      auto guard  = []([[maybe_unused]] const auto& event) { std::puts("guard"); return true; };
+      auto action = []([[maybe_unused]] const auto& event) { std::puts("action"); };
+
+      return transition_table{
+       * "s1"_s + event<e> [ guard ] / action = "s3"_s,
+       * "s2"_s + event<e> [ guard ] / action = "s4"_s,
+         "s4"_s + event<e> [ guard ] / action = "s5"_s,
+      };
+    };
+
+    sm sm{transitions};
+
+    assert((sm.is<"s1", "s2">()));
+    sm.process_event(e{});
+    assert((sm.is<"s3", "s4">()));
+    sm.process_event(e{});
+    assert((sm.is<"s3", "s5">()));
+  }
 }
 // clang-format on
