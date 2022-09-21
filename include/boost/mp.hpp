@@ -170,6 +170,19 @@ template <std::size_t N>
 fixed_string(const char (&str)[N]) -> fixed_string<N - 1>;
 fixed_string(const auto... Cs) -> fixed_string<sizeof...(Cs)>;
 
+template <auto Lhs, auto Rhs>
+[[nodiscard]] constexpr auto operator+(const fixed_string<Lhs>& lhs,
+                                       const fixed_string<Rhs>& rhs) {
+  fixed_string<Lhs + Rhs> str{};
+  for (auto i = 0u; i < Lhs; ++i) {
+    str.data[i] = lhs.data[i];
+  }
+  for (auto i = 0u; i < Rhs; ++i) {
+    str.data[i + Lhs] = rhs.data[i];
+  }
+  return str;
+}
+
 template <class... Ts>
 [[nodiscard]] constexpr auto list() {
   return type_list<Ts...>{};
