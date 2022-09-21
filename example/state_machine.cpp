@@ -41,12 +41,16 @@ constexpr auto unique_v = []<mp::fixed_string... Ts>(auto types) {
   return types;
 };
 
+constexpr auto name = [](std::string_view name) {
+  return name[0] == '*' ? name.substr(1) : name;
+};
+
 constexpr auto by_type = []<class... TEvents> {
   return std::array{mp::reflection::type_id<TEvents>...};
 };
 
 constexpr auto by_name = []<mp::fixed_string... Names> {
-  return std::array{std::string_view{Names}...};
+  return std::array{name(Names)...};
 };
 
 namespace back {
@@ -67,7 +71,7 @@ class sm<TList<Transitions...>> {
   template<mp::fixed_string State>
   static constexpr auto state_id = states
     | []<mp::fixed_string... States> {
-      const auto states = std::array{std::string_view{States}...};
+      const auto states = std::array{name(States)...};
       return std::distance(std::begin(states), std::ranges::find(states, State));
     }
     ;
@@ -121,7 +125,12 @@ class sm<TList<Transitions...>> {
   }
 
  private:
-  std::size_t current_state_{};
+  std::size_t current_state_{
+    states | []<mp::fixed_string... States> {
+      const auto states = std::array{std::string_view{States}[0]...};
+      return std::distance(std::begin(states), std::ranges::find(states, '*'));
+    }
+  };
   [[no_unique_address]] TList<Transitions...> transition_table_{};
 };
 } // namespace back
@@ -153,7 +162,7 @@ struct transition {
   }
 
   [[nodiscard]] constexpr auto operator*() const {
-    return *this;
+    return transition<mp::fixed_string{"*"} + Src, TEvent, TGuard, TAction, Dst>{.guard = guard, .action = action};
   }
 
   [[nodiscard]] constexpr auto execute(const auto& event) -> bool {
@@ -201,8 +210,8 @@ int main() {
     auto action = []([[maybe_unused]] const auto& event) { std::puts("action"); };
 
     return transition_table{
-     *"s1"_s + event<e> [ guard ] / action = "s2"_s,
-      "s2"_s + event<e> [ guard ] / action = "s1"_s,
+     * "s1"_s + event<e> [ guard ] / action = "s2"_s,
+       "s2"_s + event<e> [ guard ] / action = "s1"_s,
     };
   };
 
