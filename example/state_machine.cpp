@@ -246,7 +246,7 @@ template <mp::fixed_string Str> constexpr auto operator""_s() {
 }
 [[nodiscard]] constexpr auto operator or(const concepts::invokable auto& lhs, const concepts::invokable auto& rhs) {
   return [=](const auto& event) {
-    return invoke(lhs, event) and invoke(rhs, event);
+    return invoke(lhs, event) or invoke(rhs, event);
   };
 }
 [[nodiscard]] constexpr auto operator not(const concepts::invokable auto& t) {
