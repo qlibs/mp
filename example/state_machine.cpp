@@ -88,7 +88,7 @@ class sm<TList<Transitions...>> {
   static constexpr auto transition = []<class... Ts> {
     return [](const auto& event, auto& current_state, auto& transitions) {
       return (... or [&] {
-        if (static_cast<Ts&>(transitions).execute(event)) {
+        if (static_cast<Ts&>(transitions)(event)) {
           current_state = state_id<Ts::dst>;
           return true;
         }
@@ -140,7 +140,7 @@ class sm<TList<Transitions...>> {
 
   template<auto N, class TEvent>
   constexpr auto dispatch(const TEvent& event, const auto& transitions) -> void {
-      mp::for_each([&](auto index, auto transition) {
+      mp::for_each([&](const auto index, const auto& transition) {
         if (index == current_state_[N]) {
           transition(event, current_state_[N], transition_table_);
           return true;
@@ -162,15 +162,34 @@ class sm<TList<Transitions...>> {
 } // namespace back
 
 namespace front {
-struct none {};
-template<mp::fixed_string Src = "", class TEvent = none, class TGuard = none, class TAction = none, mp::fixed_string Dst = "">
+namespace concepts {
+struct invokable_base { void operator()(); };
+template <class T> struct invokable_impl : T, invokable_base { };
+template <class T> concept invokable = not requires { &invokable_impl<T>::operator(); };
+} // namespace concepts
+
+constexpr auto invoke(const concepts::invokable auto& fn, const auto& event) {
+  if constexpr (requires { fn(event); }) {
+    return fn(event);
+  } else if constexpr (requires { fn(); }) {
+    return fn();
+  }
+}
+
+namespace detail {
+constexpr auto none = []{};
+constexpr auto always = []{ return true; };
+} // namespace detail
+
+template<mp::fixed_string Src = "",
+        class TEvent = decltype(detail::none),
+        class TGuard = decltype(detail::always),
+        class TAction = decltype(detail::none),
+        mp::fixed_string Dst = "">
 struct transition {
   static constexpr auto src = Src;
   static constexpr auto dst = Dst;
   using event = TEvent;
-
-  [[no_unique_address]] TGuard guard;
-  [[no_unique_address]] TAction action;
 
   [[nodiscard]] constexpr auto operator*() const {
     return transition<mp::fixed_string{"*"} + Src, TEvent, TGuard, TAction, Dst>{.guard = guard, .action = action};
@@ -183,7 +202,7 @@ struct transition {
 
   template<class T>
   [[nodiscard]] constexpr auto operator[](const T& guard) const {
-    return transition<Src, TEvent, T>{.guard = guard, .action = none{}};
+    return transition<Src, TEvent, T>{.guard = guard, .action = action};
   }
 
   template<class T>
@@ -196,24 +215,16 @@ struct transition {
     return transition<src, TEvent, TGuard, TAction, T::src>{.guard = guard, .action = action};
   }
 
-  [[nodiscard]] constexpr auto execute(const auto& event) -> bool {
-    if (call(guard, event)) [[likely]] {
-      call(action, event);
+  [[nodiscard]] constexpr auto operator()(const auto& event) -> bool {
+    if (invoke(guard, event)) [[likely]] {
+      invoke(action, event);
       return true;
     }
     return false;
   }
 
- private:
-  static constexpr auto call(const auto& fn, const auto& event) {
-    if constexpr (requires { fn(event); }) {
-      return fn(event);
-    } else if constexpr (requires { fn(); }) {
-      return fn();
-    } else {
-      return true;
-    }
-  }
+  [[no_unique_address]] TGuard guard;
+  [[no_unique_address]] TAction action;
 };
 
 template<class TEvent> constexpr auto event = transition<"", TEvent>{};
@@ -221,20 +232,47 @@ template <mp::fixed_string Str> constexpr auto operator""_s() {
   static_assert(not std::empty(std::string_view(Str)), "State requires a name!");
   return transition<Str>{};
 }
+
+[[nodiscard]] constexpr auto operator,(const concepts::invokable auto& lhs, const concepts::invokable auto& rhs) {
+  return [=](const auto& event) {
+    invoke(lhs, event);
+    invoke(rhs, event);
+  };
+}
+[[nodiscard]] constexpr auto operator and(const concepts::invokable auto& lhs, const concepts::invokable auto& rhs) {
+  return [=](const auto& event) {
+    return invoke(lhs, event) and invoke(rhs, event);
+  };
+}
+[[nodiscard]] constexpr auto operator or(const concepts::invokable auto& lhs, const concepts::invokable auto& rhs) {
+  return [=](const auto& event) {
+    return invoke(lhs, event) and invoke(rhs, event);
+  };
+}
+[[nodiscard]] constexpr auto operator not(const concepts::invokable auto& t) {
+  return [=](const auto& event) {
+    return not invoke(t, event);
+  };
+}
 } // namespace front
-
-template<class... Ts> struct transition_table : pool<Ts...> {
-  constexpr explicit(false) transition_table(Ts... ts) : pool<Ts...>{std::move(ts)...} {}
-};
-
-using front::event;
-using front::operator""_s;
 
 template<class Fn>
 struct sm : back::sm<decltype(std::declval<Fn>()())> {
   constexpr explicit(false) sm(Fn fn) : back::sm<decltype(std::declval<Fn>()())>{fn()} {}
 };
 template<class Fn> sm(Fn&&) -> sm<Fn>;
+
+namespace dsl {
+template<class... Ts> struct transition_table : pool<Ts...> {
+  constexpr explicit(false) transition_table(Ts... ts) : pool<Ts...>{std::move(ts)...} {}
+};
+using front::event;
+using front::operator""_s;
+using front::operator,;
+using front::operator not;
+using front::operator and;
+using front::operator or;
+} // namespace dsl
 
 #include <cstdio>
 
@@ -251,6 +289,7 @@ struct Connection {
     constexpr auto is_valid = [](const auto& event) { return event.valid; };
     constexpr auto resetTimeout = [] { std::puts("resetTimeout"); };
 
+    using namespace dsl;
     return transition_table{
       * "Disconnected"_s + event<connect> / establish               = "Connecting"_s,
         "Connecting"_s   + event<established>                       = "Connected"_s,
