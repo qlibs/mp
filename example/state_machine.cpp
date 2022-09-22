@@ -14,13 +14,8 @@
 namespace mp = boost::mp;
 
 // clang-format off
-template<class... Ts> struct pool : Ts...{
+template<class... Ts> struct pool : Ts... {
   constexpr explicit(true) pool(Ts... ts) : Ts{std::move(ts)}... {}
-};
-
-constexpr auto inherit = []<class... Ts> {
-  struct : Ts... { } _;
-  return _;
 };
 
 template<auto Fn>
@@ -46,11 +41,11 @@ constexpr auto name = [](std::string_view name) {
 };
 
 constexpr auto by_type = []<class... TEvents> {
-  return std::array{mp::reflection::type_id<TEvents>...};
+  return std::array{mp::reflection::type_name<TEvents>()...};
 };
 
 constexpr auto by_name = []<mp::fixed_string... Names> {
-  return std::array{name(Names)...};
+  return std::array{std::string_view{Names}...};
 };
 
 namespace back {
@@ -58,6 +53,7 @@ template<class> class sm;
 template<template<class...> class TList, class... Transitions>
 class sm<TList<Transitions...>> {
   static constexpr auto transitions = mp::list<Transitions...>();
+
   static constexpr auto events = transitions
     | std::views::transform([]<class T>() -> typename T::event {})
     | unique<by_type>
@@ -89,19 +85,9 @@ class sm<TList<Transitions...>> {
     };
   };
 
-  static constexpr auto mappings = events
-    | std::views::transform([]<class TEvent> {
-        return std::pair{std::type_identity<TEvent>{}, states
-          | std::views::transform([]<mp::fixed_string State> {
-              return transitions
-                | std::views::filter([]<class T> {
-                    return std::string_view{T::src} == State and
-                           std::same_as<typename T::event, TEvent>; })
-                | transition;
-            })
-        };
-      })
-    ;
+  template<class TEvent>
+  static constexpr auto event_transitions = transitions
+    | std::views::filter([]<class T> { return std::same_as<typename T::event, TEvent>; });
 
  public:
   constexpr explicit(false) sm(const TList<Transitions...>& transition_table)
@@ -130,21 +116,24 @@ class sm<TList<Transitions...>> {
  private:
   template<class TEvent, auto... Rs>
   constexpr auto process_event(const TEvent& event, std::index_sequence<Rs...>) -> void {
-    (dispatch<Rs>(event), ...);
+    constexpr auto transitions = states
+      | std::views::transform([]<mp::fixed_string State> {
+          return event_transitions<TEvent>
+            | std::views::filter([]<class T> { return std::string_view(T::src) == State; })
+            | transition;
+        });
+    (dispatch<Rs>(event, transitions), ...);
   }
 
   template<auto N, class TEvent>
-  constexpr auto dispatch(const TEvent& event) -> void {
-    [this, &event]<class T>(const std::pair<std::type_identity<TEvent>, T>& transitions) {
-      auto& [_, ts] = transitions;
+  constexpr auto dispatch(const TEvent& event, const auto& transitions) -> void {
       mp::for_each([&](auto index, auto transition) {
         if (index == current_state_[N]) {
           transition(event, current_state_[N], transition_table_);
           return true;
         }
         return false;
-      }, ts);
-    }(mappings | inherit);
+      }, transitions);
   }
 
   static constexpr auto num_of_regions =
@@ -236,7 +225,7 @@ int main() {
 
       return transition_table{
        * "s1"_s + event<e> [ guard ] / action = "s2"_s,
-        "s2"_s + event<e> [ guard ] / action = "s1"_s,
+         "s2"_s + event<e> [ guard ] / action = "s1"_s,
       };
     };
 
