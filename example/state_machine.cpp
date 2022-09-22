@@ -7,7 +7,6 @@
 //
 #include <algorithm>
 #include <boost/mp.hpp>
-#include <cstdio>
 #include <ranges>
 #include <string_view>
 
@@ -16,6 +15,19 @@ namespace mp = boost::mp;
 // clang-format off
 template<class... Ts> struct pool : Ts... {
   constexpr explicit(true) pool(Ts... ts) : Ts{std::move(ts)}... {}
+};
+
+constexpr auto filter = [](auto pred) {
+  return [pred]<class... Ts>(auto types) {
+    const auto fns = std::array{pred.template operator()<Ts>()...};
+    decltype(types) ret{};
+    for (const auto& m : types) {
+      if (fns[m]) {
+        ret.push_back(m);
+      }
+    }
+    return ret;
+  };
 };
 
 template<auto Fn>
@@ -120,17 +132,7 @@ class sm<TList<Transitions...>> {
     constexpr auto transitions = states
       | std::views::transform([]<mp::fixed_string State> {
           return event_transitions<TEvent>
-            //| std::views::filter([]<class T> { return  true; })
-            | []<class... Ts>(auto types) {
-              const auto fns = std::array{(std::string_view(Ts::src) == State)...};
-              decltype(types) r{};
-              for (const auto& m : types) {
-                if (fns[m]) {
-                  r.push_back(m);
-                }
-              }
-              return r;
-            }
+            | filter([]<class T> { return (std::string_view(T::src) == State); })
             | transition;
         });
     (dispatch<Rs>(event, transitions), ...);
@@ -160,8 +162,7 @@ class sm<TList<Transitions...>> {
 } // namespace back
 
 namespace front {
-struct none {
-};
+struct none {};
 template<mp::fixed_string Src = "", class TEvent = none, class TGuard = none, class TAction = none, mp::fixed_string Dst = "">
 struct transition {
   static constexpr auto src = Src;
@@ -204,7 +205,7 @@ struct transition {
   }
 
  private:
-  static constexpr auto call(auto fn, const auto& event) {
+  static constexpr auto call(const auto& fn, const auto& event) {
     if constexpr (requires { fn(event); }) {
       return fn(event);
     } else if constexpr (requires { fn(); }) {
@@ -216,8 +217,10 @@ struct transition {
 };
 
 template<class TEvent> constexpr auto event = transition<"", TEvent>{};
-
-template <mp::fixed_string Str> constexpr auto operator""_s() { return transition<Str>{}; }
+template <mp::fixed_string Str> constexpr auto operator""_s() {
+  static_assert(not std::empty(std::string_view(Str)), "State requires a name!");
+  return transition<Str>{};
+}
 } // namespace front
 
 template<class... Ts> struct transition_table : pool<Ts...> {
@@ -229,8 +232,9 @@ using front::operator""_s;
 
 template<class Fn>
 struct sm : back::sm<decltype(std::declval<Fn>()())> {
-  constexpr explicit(false) sm(Fn fn = {}) : back::sm<decltype(std::declval<Fn>()())>{fn()} {}
+  constexpr explicit(false) sm(Fn fn) : back::sm<decltype(std::declval<Fn>()())>{fn()} {}
 };
+template<class Fn> sm(Fn&&) -> sm<Fn>;
 
 #include <cstdio>
 
@@ -250,15 +254,15 @@ struct Connection {
     return transition_table{
       * "Disconnected"_s + event<connect> / establish               = "Connecting"_s,
         "Connecting"_s   + event<established>                       = "Connected"_s,
-         "Connected"_s   + event<ping> [ is_valid ] / resetTimeout,
-         "Connected"_s   + event<timeout> / establish               = "Connecting"_s,
-         "Connected"_s   + event<disconnect> / close                = "Disconnected"_s,
+        "Connected"_s    + event<ping> [ is_valid ] / resetTimeout,
+        "Connected"_s    + event<timeout> / establish               = "Connecting"_s,
+        "Connected"_s    + event<disconnect> / close                = "Disconnected"_s,
     };
   }
 };
 
 int main() {
-  sm<Connection> connection{};
+  sm connection{Connection{}};
 
   connection.process_event(connect{});
   connection.process_event(established{});
