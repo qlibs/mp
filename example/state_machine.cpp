@@ -36,7 +36,7 @@ constexpr auto unique_v = []<mp::fixed_string... Ts>(auto types) {
   return types;
 };
 
-constexpr auto name = [](std::string_view name) {
+constexpr auto name = [](const std::string_view name) {
   return name[0] == '*' ? name.substr(1) : name;
 };
 
@@ -61,6 +61,7 @@ class sm<TList<Transitions...>> {
 
   static constexpr auto states = transitions
     | []<class... Ts>() { return mp::value_list<Ts::src..., Ts::dst...>(); }
+    | std::views::filter([]<mp::fixed_string State> { return not std::empty(std::string_view(State)); })
     | unique_v<by_name>
     ;
 
@@ -119,7 +120,17 @@ class sm<TList<Transitions...>> {
     constexpr auto transitions = states
       | std::views::transform([]<mp::fixed_string State> {
           return event_transitions<TEvent>
-            | std::views::filter([]<class T> { return std::string_view(T::src) == State; })
+            //| std::views::filter([]<class T> { return  true; })
+            | []<class... Ts>(auto types) {
+              const auto fns = std::array{(std::string_view(Ts::src) == State)...};
+              decltype(types) r{};
+              for (const auto& m : types) {
+                if (fns[m]) {
+                  r.push_back(m);
+                }
+              }
+              return r;
+            }
             | transition;
         });
     (dispatch<Rs>(event, transitions), ...);
@@ -149,7 +160,8 @@ class sm<TList<Transitions...>> {
 } // namespace back
 
 namespace front {
-struct none {};
+struct none {
+};
 template<mp::fixed_string Src = "", class TEvent = none, class TGuard = none, class TAction = none, mp::fixed_string Dst = "">
 struct transition {
   static constexpr auto src = Src;
@@ -159,9 +171,18 @@ struct transition {
   [[no_unique_address]] TGuard guard;
   [[no_unique_address]] TAction action;
 
+  [[nodiscard]] constexpr auto operator*() const {
+    return transition<mp::fixed_string{"*"} + Src, TEvent, TGuard, TAction, Dst>{.guard = guard, .action = action};
+  }
+
   template<class T>
   [[nodiscard]] constexpr auto operator+(const T& t) const {
     return transition<Src, typename T::event, decltype(T::guard), decltype(T::action)>{.guard = t.guard, .action = t.action};
+  }
+
+  template<class T>
+  [[nodiscard]] constexpr auto operator[](const T& guard) const {
+    return transition<Src, TEvent, T>{.guard = guard, .action = none{}};
   }
 
   template<class T>
@@ -174,29 +195,27 @@ struct transition {
     return transition<src, TEvent, TGuard, TAction, T::src>{.guard = guard, .action = action};
   }
 
-  [[nodiscard]] constexpr auto operator*() const {
-    return transition<mp::fixed_string{"*"} + Src, TEvent, TGuard, TAction, Dst>{.guard = guard, .action = action};
-  }
-
   [[nodiscard]] constexpr auto execute(const auto& event) -> bool {
-    if (guard(event)) [[likely]] {
-      action(event);
+    if (call(guard, event)) [[likely]] {
+      call(action, event);
       return true;
     }
     return false;
   }
-};
 
-namespace detail {
-template<class T> struct event {
-  template<class TGuard>
-  [[nodiscard]] constexpr auto operator[](const TGuard& guard) const {
-    return transition<"", T, TGuard>{.guard = guard, .action = none{}};
+ private:
+  static constexpr auto call(auto fn, const auto& event) {
+    if constexpr (requires { fn(event); }) {
+      return fn(event);
+    } else if constexpr (requires { fn(); }) {
+      return fn();
+    } else {
+      return true;
+    }
   }
 };
-} // namespace detail
 
-template<class T> constexpr auto event = detail::event<T>{};
+template<class TEvent> constexpr auto event = transition<"", TEvent>{};
 
 template <mp::fixed_string Str> constexpr auto operator""_s() { return transition<Str>{}; }
 } // namespace front
@@ -210,53 +229,39 @@ using front::operator""_s;
 
 template<class Fn>
 struct sm : back::sm<decltype(std::declval<Fn>()())> {
-  constexpr explicit(false) sm(Fn fn) : back::sm<decltype(std::declval<Fn>()())>{fn()} {}
+  constexpr explicit(false) sm(Fn fn = {}) : back::sm<decltype(std::declval<Fn>()())>{fn()} {}
 };
 
-#include <cassert>
+#include <cstdio>
+
+struct connect {};
+struct ping { bool valid = false; };
+struct established {};
+struct timeout {};
+struct disconnect {};
+
+struct Connection {
+  constexpr auto operator()() const {
+    constexpr auto establish = []{ std::puts("establish"); };
+    constexpr auto close = []{ std::puts("close"); };
+    constexpr auto is_valid = [](const auto& event) { return event.valid; };
+    constexpr auto resetTimeout = [] { std::puts("resetTimeout"); };
+
+    return transition_table{
+      * "Disconnected"_s + event<connect> / establish               = "Connecting"_s,
+        "Connecting"_s   + event<established>                       = "Connected"_s,
+         "Connected"_s   + event<ping> [ is_valid ] / resetTimeout,
+         "Connected"_s   + event<timeout> / establish               = "Connecting"_s,
+         "Connected"_s   + event<disconnect> / close                = "Disconnected"_s,
+    };
+  }
+};
 
 int main() {
-  struct e {};
+  sm<Connection> connection{};
 
-  {
-    const auto transitions = [] {
-      auto guard  = []([[maybe_unused]] const auto& event) { std::puts("guard"); return true; };
-      auto action = []([[maybe_unused]] const auto& event) { std::puts("action"); };
-
-      return transition_table{
-       * "s1"_s + event<e> [ guard ] / action = "s2"_s,
-         "s2"_s + event<e> [ guard ] / action = "s1"_s,
-      };
-    };
-
-    sm sm{transitions};
-
-    assert(sm.is<"s1">());
-    sm.process_event(e{});
-    assert(sm.is<"s2">());
-    sm.process_event(e{});
-    assert(sm.is<"s1">());
-  }
-
-  {
-    const auto transitions = [] {
-      auto guard  = []([[maybe_unused]] const auto& event) { std::puts("guard"); return true; };
-      auto action = []([[maybe_unused]] const auto& event) { std::puts("action"); };
-
-      return transition_table{
-       * "s1"_s + event<e> [ guard ] / action = "s3"_s,
-       * "s2"_s + event<e> [ guard ] / action = "s4"_s,
-         "s4"_s + event<e> [ guard ] / action = "s5"_s,
-      };
-    };
-
-    sm sm{transitions};
-
-    assert((sm.is<"s1", "s2">()));
-    sm.process_event(e{});
-    assert((sm.is<"s3", "s4">()));
-    sm.process_event(e{});
-    assert((sm.is<"s3", "s5">()));
-  }
+  connection.process_event(connect{});
+  connection.process_event(established{});
+  connection.process_event(ping{true});
+  connection.process_event(disconnect{});
 }
-// clang-format on
