@@ -10,9 +10,9 @@
 #include <ranges>
 #include <string_view>
 
+// clang-format off
 namespace mp = boost::mp;
 
-// clang-format off
 template<class... Ts> struct pool : Ts... {
   constexpr explicit(true) pool(Ts... ts) : Ts{std::move(ts)}... {}
 };
@@ -56,24 +56,27 @@ class sm<TList<Transitions...>> {
   static constexpr auto state_id = states
     | []<mp::fixed_string... States> {
       constexpr auto name = [](const std::string_view name) {
-        return name[0] == '*' ? name.substr(1) : name;
+        return not std::empty(name) and name[0] == '*' ? name.substr(1) : name;
       };
       constexpr auto states = std::array{name(States)...};
-      return std::distance(std::begin(states), std::ranges::find(states, State));
+      return std::distance(std::begin(states), std::ranges::find(states, name(State)));
     }
     ;
 
   static constexpr auto transition = []<class... Ts> {
     return [](const auto& event, auto& current_state, auto& transitions) {
-      return (... or [&]<auto StateId = state_id<Ts::dst>>(auto& transition) {
+      [[maybe_unused]] const auto impl = [&]<class T>(T& transition) {
         if constexpr (requires { transition(event); }) {
           if (transition(event)) {
-            current_state = StateId;
+            if constexpr (not std::empty(std::string_view{T::dst})) {
+              current_state = state_id<T::dst>;
+            }
             return true;
           }
         }
         return false;
-      }(static_cast<Ts&>(transitions)));
+      };
+      return (... or impl(static_cast<Ts&>(transitions)));
     };
   };
 
@@ -88,25 +91,21 @@ class sm<TList<Transitions...>> {
  public:
   constexpr explicit(true) sm(const TList<Transitions...>& transition_table)
     : transition_table_{transition_table} {
-      states | [&]<mp::fixed_string... States> {
-        const auto states = std::array{std::string_view{States}...};
-        auto* current_state = &current_state_[0];
-        for (auto i = 0u; i < std::size(states); ++i) {
-          if (const auto is_initial = states[i][0] == '*'; is_initial) {
-            *current_state++ = i;
-          }
-        }
-      };
+      states
+        | std::views::filter([]<mp::fixed_string State>{ return std::string_view{State}[0] == '*'; })
+        | [this]<mp::fixed_string... States> {
+            auto i = 0u;
+            ((current_state_[i++] = state_id<States>), ...);
+          };
   }
 
   constexpr auto process_event(const auto& event) -> void {
     process_event(event, std::make_index_sequence<num_of_regions>{});
   }
 
-  template<mp::fixed_string... States>
-  [[nodiscard]] constexpr auto is() const -> bool {
+  [[nodiscard]] constexpr auto is(auto... states) const -> bool {
     auto i = 0;
-    return ((state_id<States> == current_state_[i++]) and ...);
+    return ((state_id<states.src> == current_state_[i++]) and ...);
   }
 
  private:
@@ -234,11 +233,11 @@ template <mp::fixed_string Str> constexpr auto operator""_s() {
 }
 } // namespace front
 
-template<class Fn>
-struct sm : back::sm<decltype(std::declval<Fn>()())> {
-  constexpr explicit(false) sm(Fn fn) : back::sm<decltype(std::declval<Fn>()())>{fn()} {}
+template<class T>
+struct sm final : back::sm<decltype(std::declval<T>()())> {
+  constexpr explicit(false) sm(T t) : back::sm<decltype(std::declval<T>()())>{t()} {}
 };
-template<class Fn> sm(Fn&&) -> sm<Fn>;
+template<class T> sm(T&&) -> sm<T>;
 
 namespace dsl {
 template<class... Ts> struct transition_table : pool<Ts...> {
@@ -263,26 +262,40 @@ struct disconnect {};
 struct Connection {
   constexpr auto operator()() const {
     constexpr auto establish = []{ std::puts("establish"); };
-    constexpr auto close = []{ std::puts("close"); };
-    constexpr auto is_valid = [](const auto& event) { return event.valid; };
-    constexpr auto resetTimeout = [] { std::puts("resetTimeout"); };
+    constexpr auto close     = []{ std::puts("close"); };
+    constexpr auto is_valid  = [](const auto& event) { return event.valid; };
+    constexpr auto setup     = [] { std::puts("setup"); };
 
     using namespace dsl;
+    /**
+     * src_state + event [ guard ] / action = dst_state
+     */
     return transition_table{
-      * "Disconnected"_s + event<connect> / establish               = "Connecting"_s,
-        "Connecting"_s   + event<established>                       = "Connected"_s,
-        "Connected"_s    + event<ping> [ is_valid ] / resetTimeout,
-        "Connected"_s    + event<timeout> / establish               = "Connecting"_s,
-        "Connected"_s    + event<disconnect> / close                = "Disconnected"_s,
+      * "Disconnected"_s + event<connect>           / establish   = "Connecting"_s,
+        "Connecting"_s   + event<established>                     = "Connected"_s,
+        "Connected"_s    + event<ping> [ is_valid ] / setup,
+        "Connected"_s    + event<timeout>           / establish   = "Connecting"_s,
+        "Connected"_s    + event<disconnect>        / close       = "Disconnected"_s,
     };
   }
 };
 
+#include <cassert>
+
 int main() {
   sm connection{Connection{}};
 
+  using dsl::operator""_s;
   connection.process_event(connect{});
+  assert(connection.is("Connecting"_s));
+
   connection.process_event(established{});
+  assert(connection.is("Connected"_s));
+
   connection.process_event(ping{true});
+  assert(connection.is("Connected"_s));
+
   connection.process_event(disconnect{});
+  assert(connection.is("Disconnected"_s));
 }
+// clang-format on
