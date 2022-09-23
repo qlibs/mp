@@ -65,16 +65,13 @@ class sm<TList<Transitions...>> {
 
   static constexpr auto transition = []<class... Ts> {
     return [](const auto& event, auto& current_state, auto& transitions) {
-      [[maybe_unused]] const auto impl = [&]<class T>(T& transition) {
-        if constexpr (requires { transition(event); }) {
-          if (transition(event)) {
-            if constexpr (not std::empty(std::string_view{T::dst})) {
-              current_state = state_id<T::dst>;
-            }
-            return true;
-          }
+      [[maybe_unused]] const auto impl = [&](auto& transition) {
+        if constexpr (const auto update_state = [&]<mp::fixed_string State> { current_state = state_id<State>; };
+            requires { transition(event, update_state); }) {
+          return transition(event, update_state);
+        } else {
+          return false;
         }
-        return false;
       };
       return (... or impl(static_cast<Ts&>(transitions)));
     };
@@ -111,11 +108,11 @@ class sm<TList<Transitions...>> {
  private:
   template<auto... Rs>
   constexpr auto process_event(const auto& event, std::index_sequence<Rs...>) -> void {
-    (dispatch<Rs>(event, state_transitions), ...);
+    (dispatch<Rs>(event), ...);
   }
 
   template<auto N>
-  constexpr auto dispatch(const auto& event, const auto& state_transitions) -> void {
+  constexpr auto dispatch(const auto& event) -> void {
       mp::for_each([&](const auto index, const auto& state_transition) {
         if (index == current_state_[N]) {
           return state_transition(event, current_state_[N], transition_table_);
@@ -191,9 +188,12 @@ struct transition {
     return transition<src, TEvent, TGuard, TAction, T::src>{.guard = guard, .action = action};
   }
 
-  [[nodiscard]] constexpr auto operator()(const TEvent& event) -> bool {
-    if (invoke(guard, event)) [[likely]] {
+  [[nodiscard]] constexpr auto operator()(const TEvent& event, auto update_state) -> bool {
+    if (invoke(guard, event)) {
       invoke(action, event);
+      if constexpr (not std::empty(std::string_view{dst})) {
+        update_state.template operator()<dst>();
+      }
       return true;
     } else {
       return false;
@@ -283,9 +283,11 @@ struct Connection {
 #include <cassert>
 
 int main() {
-  sm connection{Connection{}};
-
   using dsl::operator""_s;
+
+  sm connection{Connection{}};
+  assert(connection.is("Disconnected"_s));
+
   connection.process_event(connect{});
   assert(connection.is("Connecting"_s));
 
