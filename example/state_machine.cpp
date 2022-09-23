@@ -17,19 +17,6 @@ template<class... Ts> struct pool : Ts... {
   constexpr explicit(true) pool(Ts... ts) : Ts{std::move(ts)}... {}
 };
 
-constexpr auto filter = [](auto pred) {
-  return [pred]<class... Ts>(auto types) {
-    const auto fns = std::array{pred.template operator()<Ts>()...};
-    decltype(types) ret{};
-    for (const auto& m : types) {
-      if (fns[m]) {
-        ret.push_back(m);
-      }
-    }
-    return ret;
-  };
-};
-
 template<auto Fn>
 constexpr auto unique = []<class... Ts>(auto types) {
   auto fns = Fn.template operator()<Ts...>();
@@ -87,23 +74,28 @@ class sm<TList<Transitions...>> {
 
   static constexpr auto transition = []<class... Ts> {
     return [](const auto& event, auto& current_state, auto& transitions) {
-      return (... or [&] {
-        if (static_cast<Ts&>(transitions)(event)) {
-          current_state = state_id<Ts::dst>;
-          return true;
+      return (... or [&]<auto StateId = state_id<Ts::dst>>(auto& transition) {
+        if constexpr (requires { transition(event); }) {
+          if (transition(event)) {
+            current_state = StateId;
+            return true;
+          }
         }
         return false;
-      }());
-      return false;
+      }(static_cast<Ts&>(transitions)));
     };
   };
 
-  template<class TEvent>
-  static constexpr auto event_transitions = transitions
-    | std::views::filter([]<class T> { return std::same_as<typename T::event, TEvent>; });
+  static constexpr auto state_transitions = states |
+    std::views::transform([]<mp::fixed_string State> {
+      return transitions
+        | std::views::filter([]<class T> { return std::string_view{T::src} == State; })
+        | transition
+        ;
+    });
 
  public:
-  constexpr explicit(false) sm(const TList<Transitions...>& transition_table)
+  constexpr explicit(true) sm(const TList<Transitions...>& transition_table)
     : transition_table_{transition_table} {
       states | [&]<mp::fixed_string... States> {
         const auto states = std::array{std::string_view{States}...};
@@ -116,7 +108,7 @@ class sm<TList<Transitions...>> {
       };
   }
 
-  template<class TEvent> constexpr auto process_event(const TEvent& event) -> void {
+  constexpr auto process_event(const auto& event) -> void {
     process_event(event, std::make_index_sequence<num_of_regions>{});
   }
 
@@ -127,26 +119,20 @@ class sm<TList<Transitions...>> {
   }
 
  private:
-  template<class TEvent, auto... Rs>
-  constexpr auto process_event(const TEvent& event, std::index_sequence<Rs...>) -> void {
-    constexpr auto transitions = states
-      | std::views::transform([]<mp::fixed_string State> {
-          return event_transitions<TEvent>
-            | filter([]<class T> { return (std::string_view(T::src) == State); })
-            | transition;
-        });
-    (dispatch<Rs>(event, transitions), ...);
+  template<auto... Rs>
+  constexpr auto process_event(const auto& event, std::index_sequence<Rs...>) -> void {
+    (dispatch<Rs>(event, state_transitions), ...);
   }
 
-  template<auto N, class TEvent>
-  constexpr auto dispatch(const TEvent& event, const auto& transitions) -> void {
-      mp::for_each([&](const auto index, const auto& transition) {
+  template<auto N>
+  constexpr auto dispatch(const auto& event, const auto& state_transitions) -> void {
+      mp::for_each([&](const auto index, const auto& state_transition) {
         if (index == current_state_[N]) {
-          transition(event, current_state_[N], transition_table_);
-          return true;
+          return state_transition(event, current_state_[N], transition_table_);
+        } else {
+          return false;
         }
-        return false;
-      }, transitions);
+      }, state_transitions);
   }
 
   static constexpr auto num_of_regions =
@@ -215,12 +201,13 @@ struct transition {
     return transition<src, TEvent, TGuard, TAction, T::src>{.guard = guard, .action = action};
   }
 
-  [[nodiscard]] constexpr auto operator()(const auto& event) -> bool {
+  [[nodiscard]] constexpr auto operator()(const TEvent& event) -> bool {
     if (invoke(guard, event)) [[likely]] {
       invoke(action, event);
       return true;
+    } else {
+      return false;
     }
-    return false;
   }
 
   [[no_unique_address]] TGuard guard;
