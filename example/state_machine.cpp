@@ -6,6 +6,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include <algorithm>
+#include <array>
 #include <boost/mp.hpp>
 #include <ranges>
 #include <string_view>
@@ -73,7 +74,7 @@ class sm<TList<Transitions...>> {
           return false;
         }
       };
-      return (... or impl(static_cast<Ts&>(transitions)));
+      return (impl(static_cast<Ts&>(transitions)) or ...);
     };
   };
 
@@ -87,14 +88,12 @@ class sm<TList<Transitions...>> {
 
  public:
   constexpr explicit(true) sm(const TList<Transitions...>& transition_table)
-    : transition_table_{transition_table} {
-      states
-        | std::views::filter([]<mp::fixed_string State>{ return std::string_view{State}[0] == '*'; })
-        | [this]<mp::fixed_string... States> {
-            auto i = 0u;
-            ((current_state_[i++] = state_id<States>), ...);
-          };
-  }
+    : transition_table_{transition_table}
+    , current_state_{states
+        | std::views::filter([]<mp::fixed_string State>{ return std::string_view{State}[0] == '*'; } )
+        | []<mp::fixed_string... States> { return std::array<std::size_t, sizeof...(States)>{state_id<States>...};  }
+      }
+  {  }
 
   constexpr auto process_event(const auto& event) -> void {
     process_event(event, std::make_index_sequence<num_of_regions>{});
@@ -129,8 +128,8 @@ class sm<TList<Transitions...>> {
 
   static_assert(num_of_regions > 0, "At least one region is required!");
 
-  std::size_t current_state_[num_of_regions]{};
   [[no_unique_address]] TList<Transitions...> transition_table_{};
+  std::array<std::size_t, num_of_regions> current_state_{};
 };
 } // namespace back
 
@@ -191,7 +190,7 @@ struct transition {
   [[nodiscard]] constexpr auto operator()(const TEvent& event, auto update_state) -> bool {
     if (invoke(guard, event)) {
       invoke(action, event);
-      if constexpr (not std::empty(std::string_view{dst})) {
+      if constexpr (constexpr auto has_dst_state = not std::empty(std::string_view{dst}); has_dst_state) {
         update_state.template operator()<dst>();
       }
       return true;
@@ -264,7 +263,7 @@ struct Connection {
     constexpr auto establish = []{ std::puts("establish"); };
     constexpr auto close     = []{ std::puts("close"); };
     constexpr auto is_valid  = [](const auto& event) { return event.valid; };
-    constexpr auto setup     = [] { std::puts("setup"); };
+    constexpr auto setup     = []{ std::puts("setup"); };
 
     using namespace dsl;
     /**
