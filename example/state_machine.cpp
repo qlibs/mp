@@ -18,34 +18,22 @@ template<class... Ts> struct pool : Ts... {
 };
 
 template<auto Fn>
-constexpr auto unique = []<class... Ts>(auto types) {
-  auto fns = Fn.template operator()<Ts...>();
-  std::ranges::sort(types, [&](auto lhs, auto rhs) { return fns[lhs] < fns[rhs]; });
-  auto [first, last] = std::ranges::unique(types, [&]( auto lhs, auto rhs) { return fns[lhs] == fns[rhs]; });
-  types.erase(first, last);
-  return types;
-};
+constexpr auto unique = [] {
+  constexpr auto impl = [](const auto& fns, auto types) {
+    std::ranges::sort(types, [&](auto lhs, auto rhs) { return fns[lhs] < fns[rhs]; });
+    auto [first, last] = std::ranges::unique(types, [&]( auto lhs, auto rhs) { return fns[lhs] == fns[rhs]; });
+    types.erase(first, last);
+    return types;
+  };
 
-template<auto Fn>
-constexpr auto unique_v = []<mp::fixed_string... Ts>(auto types) {
-  auto fns = Fn.template operator()<Ts...>();
-  std::ranges::sort(types, [&](auto lhs, auto rhs) { return fns[lhs] < fns[rhs]; });
-  auto [first, last] = std::ranges::unique(types, [&]( auto lhs, auto rhs) { return fns[lhs] == fns[rhs]; });
-  types.erase(first, last);
-  return types;
-};
+  return mp::overloaded{
+    [impl]<mp::fixed_string... Ts>(auto types) { return impl(Fn.template operator()<Ts...>(), types); },
+    [impl]<class... Ts>           (auto types) { return impl(Fn.template operator()<Ts...>(), types); },
+  };
+}();
 
-constexpr auto name = [](const std::string_view name) {
-  return name[0] == '*' ? name.substr(1) : name;
-};
-
-constexpr auto by_type = []<class... TEvents> {
-  return std::array{mp::reflection::type_name<TEvents>()...};
-};
-
-constexpr auto by_name = []<mp::fixed_string... Names> {
-  return std::array{std::string_view{Names}...};
-};
+constexpr auto by_type = []<class... TEvents>          { return std::array{mp::reflection::type_name<TEvents>()...}; };
+constexpr auto by_name = []<mp::fixed_string... Names> { return std::array{std::string_view{Names}...}; };
 
 namespace back {
 template<class> class sm;
@@ -61,13 +49,16 @@ class sm<TList<Transitions...>> {
   static constexpr auto states = transitions
     | []<class... Ts>() { return mp::value_list<Ts::src..., Ts::dst...>(); }
     | std::views::filter([]<mp::fixed_string State> { return not std::empty(std::string_view(State)); })
-    | unique_v<by_name>
+    | unique<by_name>
     ;
 
   template<mp::fixed_string State>
   static constexpr auto state_id = states
     | []<mp::fixed_string... States> {
-      const auto states = std::array{name(States)...};
+      constexpr auto name = [](const std::string_view name) {
+        return name[0] == '*' ? name.substr(1) : name;
+      };
+      constexpr auto states = std::array{name(States)...};
       return std::distance(std::begin(states), std::ranges::find(states, State));
     }
     ;
@@ -101,7 +92,7 @@ class sm<TList<Transitions...>> {
         const auto states = std::array{std::string_view{States}...};
         auto* current_state = &current_state_[0];
         for (auto i = 0u; i < std::size(states); ++i) {
-          if (states[i][0] == '*') {
+          if (const auto is_initial = states[i][0] == '*'; is_initial) {
             *current_state++ = i;
           }
         }
@@ -168,8 +159,8 @@ constexpr auto always = []{ return true; };
 } // namespace detail
 
 template<mp::fixed_string Src = "",
-        class TEvent = decltype(detail::none),
-        class TGuard = decltype(detail::always),
+        class TEvent  = decltype(detail::none),
+        class TGuard  = decltype(detail::always),
         class TAction = decltype(detail::none),
         mp::fixed_string Dst = "">
 struct transition {
