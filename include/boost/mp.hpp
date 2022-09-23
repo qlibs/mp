@@ -642,8 +642,12 @@ constexpr auto for_each(auto expr, T<Ts...>) {
   (std::make_index_sequence<sizeof...(Ts)>{});
 }
 
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+template <class... Ts>
+struct overloaded : Ts... {
+  using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
 
 }  // namespace boost::inline ext::mp::inline v0_0_1
 #undef BOOST_MP_PRETTY_FUNCTION
