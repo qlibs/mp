@@ -635,11 +635,17 @@ constexpr auto to_list = [] /*[[nodiscard]]*/ {
 }  // namespace reflection
 
 template <template <class...> class T, class... Ts>
-constexpr auto for_each(auto expr, T<Ts...>) {
-  [&]<std::size_t... Ns>(std::index_sequence<Ns...>) {
-    (expr(std::integral_constant<std::size_t, Ns>{}, Ts{}) or ...);
+constexpr auto for_each(const T<Ts...>&, auto expr) {
+  if constexpr (requires {
+                  expr(std::integral_constant<std::size_t, 0u>{}, (Ts{}, ...));
+                }) {
+    [&]<std::size_t... Ns>(std::index_sequence<Ns...>) {
+      (expr(std::integral_constant<std::size_t, Ns>{}, Ts{}) or ...);
+    }
+    (std::make_index_sequence<sizeof...(Ts)>{});
+  } else {
+    (expr(Ts{}) or ...);
   }
-  (std::make_index_sequence<sizeof...(Ts)>{});
 }
 
 template <class... Ts>
