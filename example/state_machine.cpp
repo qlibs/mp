@@ -112,13 +112,13 @@ class sm<TList<Transitions...>> {
 
   template<auto N>
   constexpr auto dispatch(const auto& event) -> void {
-      mp::for_each([&](const auto index, const auto& state_transition) {
+      mp::for_each(state_transitions, [&](const auto index, const auto& state_transition) {
         if (index == current_state_[N]) {
           return state_transition(event, current_state_[N], transition_table_);
         } else {
           return false;
         }
-      }, state_transitions);
+      });
   }
 
   static constexpr auto num_of_regions =
