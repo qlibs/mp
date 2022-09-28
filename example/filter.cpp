@@ -29,4 +29,7 @@ static_assert(mp::list<"fbar">() == filter(mp::list<"foobar">(), []<auto c> { re
 static_assert(std::tuple{2, 3} == filter([]{return std::tuple{1, 2, 3};}, []<auto i> { return i > 1; }));
 // clang-format on
 
+using namespace mp;
+static_assert(2 == (filter([]{return std::tuple{1, 2, 3};}, []<auto i> { return i > 1; }) | std::views::take(1_c) | [](auto&& t) { return t; }));
+
 int main() {}
