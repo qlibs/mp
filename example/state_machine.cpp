@@ -11,6 +11,52 @@
 #include <ranges>
 #include <string_view>
 
+#include <iostream>
+template<class...> struct q;
+
+template<class T, unsigned N>
+struct reader {
+    friend auto counted_flag(reader<T, N>);
+};
+
+
+template<class T, unsigned N>
+struct setter {
+    friend auto counted_flag(reader<T, N>) {}
+
+    static constexpr unsigned n = N;
+};
+
+
+template<
+    class T,
+    auto Tag,
+    unsigned NextVal = 0
+>
+[[nodiscard]]
+consteval auto counter_impl() {
+    constexpr bool counted_past_value = requires(reader<T, NextVal> r) {
+        counted_flag(r);
+    };
+
+    if constexpr (counted_past_value) {
+        return counter_impl<T, Tag, NextVal + 1>();
+    }
+    else {
+        setter<T, NextVal> s;
+        return s.n;
+    }
+}
+
+
+template<
+   class T,
+    auto Tag = []{},
+    auto Val = counter_impl<T, Tag>()
+>
+constexpr auto counter = Val;
+
+
 // clang-format off
 namespace mp = boost::mp;
 
@@ -33,8 +79,10 @@ constexpr auto unique = [] {
   };
 }();
 
-constexpr auto by_type = []<class... TEvents>          { return std::array{mp::reflection::type_name<TEvents>()...}; };
+//constexpr auto by_type = []<class... TEvents>          { return std::array{mp::reflection::type_name<TEvents>()...}; };
 constexpr auto by_name = []<mp::fixed_string... Names> { return std::array{std::string_view{Names}...}; };
+
+template<int, class, class> struct foo {};
 
 namespace back {
 template<class> class sm;
@@ -42,10 +90,11 @@ template<template<class...> class TList, class... Transitions>
 class sm<TList<Transitions...>> {
   static constexpr auto transitions = mp::list<Transitions...>();
 
-  static constexpr auto events = transitions
-    | std::views::transform([]<class T>() -> typename T::event {})
-    | unique<by_type>
-    ;
+  static constexpr auto mappings = transitions
+    | []<class... Ts> {
+        struct : foo<counter<typename Ts::event>, typename Ts::event, Ts>... { } _;
+        return _;
+      };
 
   static constexpr auto states = transitions
     | []<class... Ts>() { return mp::value_list<Ts::src..., Ts::dst...>(); }
@@ -63,28 +112,6 @@ class sm<TList<Transitions...>> {
       return std::distance(std::begin(states), std::ranges::find(states, name(State)));
     }
     ;
-
-  static constexpr auto transition = []<class... Ts> {
-    return [](const auto& event, auto& current_state, auto& transitions) {
-      [[maybe_unused]] const auto impl = [&](auto& transition) {
-        if constexpr (const auto update_state = [&]<mp::fixed_string State> { current_state = state_id<State>; };
-            requires { transition(event, update_state); }) {
-          return transition(event, update_state);
-        } else {
-          return false;
-        }
-      };
-      return (impl(static_cast<Ts&>(transitions)) or ...);
-    };
-  };
-
-  static constexpr auto state_transitions = states |
-    std::views::transform([]<mp::fixed_string State> {
-      return transitions
-        | std::views::filter([]<class T> { return std::string_view{T::src} == State; })
-        | transition
-        ;
-    });
 
  public:
   constexpr explicit(true) sm(const TList<Transitions...>& transition_table)
@@ -107,19 +134,21 @@ class sm<TList<Transitions...>> {
  private:
   template<auto... Rs>
   constexpr auto process_event(const auto& event, std::index_sequence<Rs...>) -> void {
-    (dispatch<Rs>(event), ...);
+    (dispatch<Rs, 0>(event, &mappings), ...);
   }
 
-  template<auto N>
-  constexpr auto dispatch(const auto& event) -> void {
-      mp::for_each(state_transitions, [&](const auto index, const auto& state_transition) {
-        if (index == current_state_[N]) {
-          return state_transition(event, current_state_[N], transition_table_);
-        } else {
-          return false;
+  template<auto N, auto I, class TEvent, class T>
+  constexpr auto dispatch(const TEvent& event, const foo<I, TEvent, T>*) -> void {
+      if (state_id<T::src> == current_state_[N]) {
+        if (not static_cast<T&>(transition_table_)(event, [&]<auto State> { current_state_[N] = state_id<State>; })) {
+          dispatch<N, I + 1>(event, &mappings);
         }
-      });
+      } else {
+        dispatch<N, I + 1>(event, &mappings);
+      }
   }
+
+  template<auto...> constexpr auto dispatch(...) -> void { }
 
   static constexpr auto num_of_regions =
     states | []<mp::fixed_string... States> {

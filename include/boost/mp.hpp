@@ -440,6 +440,49 @@ template <template <auto...> class T, auto... Vs>
   }
 }
 
+template <template <class, auto...> class T, class R, auto... Vs>
+[[nodiscard]] constexpr auto operator|(T<R, Vs...>, auto fn) {
+  if constexpr (requires { fn.template operator()<T, Vs...>(); }) {
+    return fn.template operator()<T, Vs...>();
+  } else if constexpr (requires { fn.template operator()<Vs...>(); }) {
+    return fn.template operator()<Vs...>();
+  } else {
+    constexpr auto make = [](const auto& vs) {
+      if constexpr (requires { std::size(vs); }) {
+        auto svs = detail::size_vs<sizeof...(Vs)>{std::size(vs)};
+        for (auto i = 0u; i < svs.size; ++i) {
+          svs.vs[i] = vs[i].index;
+        }
+        return svs;
+      } else {
+        return vs;
+      }
+    };
+    constexpr auto expr = [make](auto fn) {
+      auto i = 0u;
+      if constexpr (const std::vector<meta> types{
+                        meta{.index = i++, .size = sizeof(Vs)}...};
+                    requires { fn.template operator()<Vs...>(types); }) {
+        return make(invoke<Vs...>(types, fn.template operator()<Vs...>(types)));
+      } else if constexpr (requires { fn(types); }) {
+        return make(invoke<Vs...>(types, fn(types)));
+      } else if constexpr (requires { fn(); }) {
+        return make(invoke<Vs...>(types, fn()));
+      } else {
+        return make(invoke<Vs...>(types, fn));
+      }
+    };
+
+    if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
+      return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
+        return T<R, utility::nth_pack_element_v<expr_fn.vs[Ids], Vs...>...>{};
+      }(std::make_index_sequence<expr_fn.size>{});
+    } else {
+      return expr_fn;
+    }
+  }
+}
+
 template <class T>
 [[nodiscard]] constexpr auto operator|(T t, auto fn)
   requires requires { t(); }
@@ -645,6 +688,20 @@ constexpr auto for_each(const T<Ts...>&, auto expr) {
     (std::make_index_sequence<sizeof...(Ts)>{});
   } else {
     (expr(Ts{}) or ...);
+  }
+}
+
+template <template <auto...> class T, auto... Ts>
+constexpr auto for_each(const T<Ts...>&, auto expr) {
+  if constexpr (requires {
+                  expr(std::integral_constant<std::size_t, 0u>{}, (Ts, ...));
+                }) {
+    [&]<std::size_t... Ns>(std::index_sequence<Ns...>) {
+      (expr(std::integral_constant<std::size_t, Ns>{}, Ts) or ...);
+    }
+    (std::make_index_sequence<sizeof...(Ts)>{});
+  } else {
+    (expr(Ts) or ...);
   }
 }
 
