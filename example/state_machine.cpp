@@ -5,17 +5,74 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include <algorithm>
-#include <array>
-#include <boost/mp.hpp>
-#include <ranges>
-#include <string_view>
+
+#pragma GCC diagnostic ignored "-Wnon-template-friend"
+
+template <int...>
+struct index_sequence {
+  using type = index_sequence;
+};
+#if __has_builtin(__make_integer_seq)
+template <class T, T...>
+struct integer_sequence;
+template <int... Ns>
+struct integer_sequence<int, Ns...> {
+  using type = index_sequence<Ns...>;
+};
+template <int N>
+struct make_index_sequence_impl {
+  using type = typename __make_integer_seq<integer_sequence, int, N>::type;
+};
+#else
+template <class, class>
+struct concat;
+template <int... I1, int... I2>
+struct concat<index_sequence<I1...>, index_sequence<I2...>> : index_sequence<I1..., (sizeof...(I1) + I2)...> {};
+template <int N>
+struct make_index_sequence_impl
+    : concat<typename make_index_sequence_impl<N / 2>::type, typename make_index_sequence_impl<N - N / 2>::type>::type {};
+template <>
+struct make_index_sequence_impl<0> : index_sequence<> {};
+template <>
+struct make_index_sequence_impl<1> : index_sequence<0> {};
+#endif
+template <int N>
+using make_index_sequence = typename make_index_sequence_impl<N>::type;
+
+template <auto N>
+struct fixed_string {
+  static constexpr auto size = N;
+
+  constexpr explicit(true) fixed_string(const auto... cs) : data{cs...} {}
+  constexpr explicit(false) fixed_string(const char (&str)[N + 1]) {
+    for (auto i = 0u; i <= N; ++i) {
+      data[i] = str[i];
+    }
+  }
+
+  char data[N + 1]{};
+};
+
+template <auto N>
+fixed_string(const char (&str)[N]) -> fixed_string<N - 1>;
+
+template <auto Lhs, auto Rhs>
+[[nodiscard]] constexpr auto operator+(const fixed_string<Lhs>& lhs,
+                                       const fixed_string<Rhs>& rhs) {
+  fixed_string<Lhs + Rhs> str{};
+  for (auto i = 0u; i < Lhs; ++i) {
+    str.data[i] = lhs.data[i];
+  }
+  for (auto i = 0u; i < Rhs; ++i) {
+    str.data[i + Lhs] = rhs.data[i];
+  }
+  return str;
+}
 
 template<class T, unsigned N>
 struct reader {
     friend auto counted_flag(reader<T, N>);
 };
-
 
 template<class T, unsigned N>
 struct setter {
@@ -55,81 +112,43 @@ constexpr auto counter = Val;
 
 
 // clang-format off
-namespace mp = boost::mp;
 
 template<class... Ts> struct pool : Ts... {
-  constexpr explicit(true) pool(Ts... ts) : Ts{std::move(ts)}... {}
+  constexpr explicit(true) pool(Ts... ts) : Ts{ts}... {}
 };
-
-template<auto Fn>
-constexpr auto unique = [] {
-  constexpr auto impl = [](const auto& fns, auto types) {
-    std::ranges::sort(types, [&](auto lhs, auto rhs) { return fns[lhs] < fns[rhs]; });
-    auto [first, last] = std::ranges::unique(types, [&]( auto lhs, auto rhs) { return fns[lhs] == fns[rhs]; });
-    types.erase(first, last);
-    return types;
-  };
-
-  return mp::overloaded{
-    [impl]<mp::fixed_string... Ts>(auto types) { return impl(Fn.template operator()<Ts...>(), types); },
-    [impl]<class... Ts>           (auto types) { return impl(Fn.template operator()<Ts...>(), types); },
-  };
-}();
-
-constexpr auto by_name = []<mp::fixed_string... Names> { return std::array{std::string_view{Names}...}; };
 
 template<int, class, class> struct foo {};
 
+template <fixed_string Str>
+[[nodiscard]] consteval auto type_id() {
+  int result{};
+  for (auto i =0; i < Str.size; ++i ){
+    (result ^= Str.data[i]) <<= 1;
+  }
+  return result;
+}
+
+template<class... Ts> struct inherit : Ts... {};
 namespace back {
 template<class> class sm;
 template<template<class...> class TList, class... Transitions>
 class sm<TList<Transitions...>> {
-  static constexpr auto transitions = mp::list<Transitions...>();
-
-  static constexpr auto mappings = transitions
-    | []<class... Ts> {
-        struct : foo<counter<typename Ts::event>, typename Ts::event, Ts>... { } _;
-        return _;
-      };
-
-  static constexpr auto states = transitions
-    | []<class... Ts>() { return mp::value_list<Ts::src..., Ts::dst...>(); }
-    | std::views::filter([]<mp::fixed_string State> { return not std::empty(std::string_view(State)); })
-    | unique<by_name>
-    ;
-
-  template<mp::fixed_string State>
-  static constexpr auto state_id = states
-    | []<mp::fixed_string... States> {
-      constexpr auto name = [](const std::string_view name) {
-        return not std::empty(name) and name[0] == '*' ? name.substr(1) : name;
-      };
-      constexpr auto states = std::array{name(States)...};
-      return std::distance(std::begin(states), std::ranges::find(states, name(State)));
-    }
-    ;
+  static constexpr auto mappings = inherit<foo<counter<typename Transitions::event>, typename Transitions::event, Transitions>...>{};
+  template<fixed_string State> static constexpr auto state_id = type_id<State>();
 
  public:
   constexpr explicit(true) sm(const TList<Transitions...>& transition_table)
     : transition_table_{transition_table}
-    , current_state_{states
-        | std::views::filter([]<mp::fixed_string State>{ return std::string_view{State}[0] == '*'; } )
-        | []<mp::fixed_string... States> { return std::array<std::size_t, sizeof...(States)>{state_id<States>...};  }
-      }
+    , current_state_{state_id<"*Disconnected">}
   {  }
 
   constexpr auto process_event(const auto& event) -> void {
-    process_event(event, std::make_index_sequence<num_of_regions>{});
-  }
-
-  [[nodiscard]] constexpr auto is(auto... states) const -> bool {
-    auto i = 0;
-    return ((state_id<states.src> == current_state_[i++]) and ...);
+    process_event(event, make_index_sequence<1>{});
   }
 
  private:
   template<auto... Rs>
-  constexpr auto process_event(const auto& event, std::index_sequence<Rs...>) -> void {
+  constexpr auto process_event(const auto& event, index_sequence<Rs...>) -> void {
     (dispatch<Rs, 0>(event, &mappings), ...);
   }
 
@@ -146,15 +165,8 @@ class sm<TList<Transitions...>> {
 
   template<auto...> constexpr auto dispatch(...) -> void { }
 
-  static constexpr auto num_of_regions =
-    states | []<mp::fixed_string... States> {
-      return ((std::string_view{States}[0] == '*') + ...);
-    };
-
-  static_assert(num_of_regions > 0, "At least one region is required!");
-
   [[no_unique_address]] TList<Transitions...> transition_table_{};
-  std::array<std::size_t, num_of_regions> current_state_{};
+  int current_state_[1]{};
 };
 } // namespace back
 
@@ -178,18 +190,18 @@ constexpr auto none = []{};
 constexpr auto always = []{ return true; };
 } // namespace detail
 
-template<mp::fixed_string Src = "",
+template<fixed_string Src = "",
         class TEvent  = decltype(detail::none),
         class TGuard  = decltype(detail::always),
         class TAction = decltype(detail::none),
-        mp::fixed_string Dst = "">
+        fixed_string Dst = "">
 struct transition {
   static constexpr auto src = Src;
   static constexpr auto dst = Dst;
   using event = TEvent;
 
   [[nodiscard]] constexpr auto operator*() const {
-    return transition<mp::fixed_string{"*"} + Src, TEvent, TGuard, TAction, Dst>{.guard = guard, .action = action};
+    return transition<fixed_string{"*"} + Src, TEvent, TGuard, TAction, Dst>{.guard = guard, .action = action};
   }
 
   template<class T>
@@ -215,7 +227,7 @@ struct transition {
   [[nodiscard]] constexpr auto operator()(const TEvent& event, auto update_state) -> bool {
     if (invoke(guard, event)) {
       invoke(action, event);
-      if constexpr (constexpr auto has_dst_state = not std::empty(std::string_view{dst}); has_dst_state) {
+      if constexpr (dst.size) {
         update_state.template operator()<dst>();
       }
       return true;
@@ -229,8 +241,7 @@ struct transition {
 };
 
 template<class TEvent> constexpr auto event = transition<"", TEvent>{};
-template <mp::fixed_string Str> constexpr auto operator""_s() {
-  static_assert(not std::empty(std::string_view(Str)), "State requires a name!");
+template <fixed_string Str> constexpr auto operator""_s() {
   return transition<Str>{};
 }
 
@@ -258,14 +269,17 @@ template <mp::fixed_string Str> constexpr auto operator""_s() {
 } // namespace front
 
 template<class T>
-struct sm final : back::sm<decltype(std::declval<T>()())> {
-  constexpr explicit(false) sm(T t) : back::sm<decltype(std::declval<T>()())>{t()} {}
+T& declval();
+
+template<class T>
+struct sm final : back::sm<decltype(declval<T>()())> {
+  constexpr explicit(false) sm(T t) : back::sm<decltype(declval<T>()())>{t()} {}
 };
 template<class T> sm(T&&) -> sm<T>;
 
 namespace dsl {
 template<class... Ts> struct transition_table : pool<Ts...> {
-  constexpr explicit(false) transition_table(Ts... ts) : pool<Ts...>{std::move(ts)...} {}
+  constexpr explicit(false) transition_table(Ts... ts) : pool<Ts...>{ts...} {}
 };
 using front::event;
 using front::operator""_s;
@@ -334,12 +348,15 @@ struct e48{};
 struct e49{};
 struct e50{};
 
+
+#include <cstdio>
+
 struct Connection {
   constexpr auto operator()() const {
-    //constexpr auto establish = []{ std::puts("establish"); };
-    //constexpr auto close     = []{ std::puts("close"); };
-    //constexpr auto is_valid  = [](const auto& event) { return event.valid; };
-    //constexpr auto setup     = []{ std::puts("setup"); };
+    constexpr auto establish = []{ std::puts("establish"); };
+    constexpr auto close     = []{ std::puts("close"); };
+    constexpr auto is_valid  = [](const auto& event) { return event.valid; };
+    constexpr auto setup     = []{ std::puts("setup"); };
 
     constexpr auto guard = [] { return true; };
     constexpr auto action = [] {};
@@ -349,12 +366,12 @@ struct Connection {
      * src_state + event [ guard ] / action = dst_state
      */
     return transition_table{
-      //* "Disconnected"_s + event<connect>           / establish   = "Connecting"_s,
-        //"Connecting"_s   + event<established>                     = "Connected"_s,
-        //"Connected"_s    + event<ping> [ is_valid ] / setup,
-        //"Connected"_s    + event<timeout>           / establish   = "Connecting"_s,
-        //"Connected"_s    + event<disconnect>        / close       = "Disconnected"_s,
-      *"s1"_s + event<e1> [ guard ] / action = "s2"_s,
+      * "Disconnected"_s + event<connect>           / establish   = "Connecting"_s,
+        "Connecting"_s   + event<established>                     = "Connected"_s,
+        "Connected"_s    + event<ping> [ is_valid ] / setup,
+        "Connected"_s    + event<timeout>           / establish   = "Connecting"_s,
+        "Connected"_s    + event<disconnect>        / close       = "s1"_s,
+      "s1"_s + event<e1> [ guard ] / action = "s2"_s,
       "s2"_s + event<e2> [ guard ] / action = "s3"_s,
       "s3"_s + event<e3> [ guard ] / action = "s4"_s,
       "s4"_s + event<e4> [ guard ] / action = "s5"_s,
@@ -414,6 +431,12 @@ int main() {
   using dsl::operator""_s;
 
   sm sm{Connection{}};
+
+  sm.process_event(connect{});
+  sm.process_event(established{});
+  sm.process_event(ping{true});
+  sm.process_event(disconnect{});
+
   sm.process_event(e1{});
   sm.process_event(e2{});
   sm.process_event(e3{});
@@ -464,20 +487,5 @@ int main() {
   sm.process_event(e48{});
   sm.process_event(e49{});
   sm.process_event(e50{});
-
-  //sm connection{Connection{}};
-  //assert(connection.is("Disconnected"_s));
-
-  //connection.process_event(connect{});
-  //assert(connection.is("Connecting"_s));
-
-  //connection.process_event(established{});
-  //assert(connection.is("Connected"_s));
-
-  //connection.process_event(ping{true});
-  //assert(connection.is("Connected"_s));
-
-  //connection.process_event(disconnect{});
-  //assert(connection.is("Disconnected"_s));
 }
 // clang-format on
