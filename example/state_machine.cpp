@@ -5,7 +5,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-
 #pragma GCC diagnostic ignored "-Wnon-template-friend"
 
 template <int...>
@@ -147,23 +146,23 @@ class sm<TList<Transitions...>> {
   }
 
  private:
-  template<auto... Rs>
-  constexpr auto process_event(const auto& event, index_sequence<Rs...>) -> void {
-    (dispatch<Rs, 0>(event, &mappings), ...);
+  template<auto... Rs, class TEvent>
+  constexpr auto process_event(const TEvent& event, index_sequence<Rs...>) -> void {
+    (dispatch<Rs, 0, TEvent>(event, &mappings), ...);
   }
 
   template<auto N, auto I, class TEvent, class T>
   constexpr auto dispatch(const TEvent& event, const foo<I, TEvent, T>*) -> void {
       if (state_id<T::src> == current_state_[N]) {
         if (not static_cast<T&>(transition_table_)(event, [&]<auto State> { current_state_[N] = state_id<State>; })) {
-          dispatch<N, I + 1>(event, &mappings);
+          dispatch<N, I + 1, TEvent>(event, &mappings);
         }
       } else {
-        dispatch<N, I + 1>(event, &mappings);
+        dispatch<N, I + 1, TEvent>(event, &mappings);
       }
   }
 
-  template<auto...> constexpr auto dispatch(...) -> void { }
+  template<auto, auto, class> constexpr auto dispatch(const auto&, ...) -> void { }
 
   [[no_unique_address]] TList<Transitions...> transition_table_{};
   int current_state_[1]{};
