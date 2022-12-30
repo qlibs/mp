@@ -22,8 +22,9 @@ if(PROJECT_IS_TOP_LEVEL)
 endif()
 
 add_library(mp INTERFACE)
-add_library(mp::mp ALIAS mp)
+add_library(Boost::mp ALIAS mp)
 target_compile_features(mp INTERFACE cxx_std_20)
+target_compile_definitions(mp INTERFACE $<INSTALL_INTERFACE:BOOST_MP_DISABLE_MODULE>)
 target_sources(mp
   INTERFACE
   FILE_SET mp_headers

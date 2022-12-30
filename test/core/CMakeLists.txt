@@ -7,7 +7,7 @@
 function(test name)
   add_executable(${name}_test ${name}.cpp)
   target_include_directories(${name}_test PRIVATE ${CMAKE_SOURCE_DIR}/vendor/ut/include)
-  target_link_libraries(${name}_test mp::mp)
+  target_link_libraries(${name}_test Boost::mp)
   add_test(NAME ${name}_test COMMAND ./${name}_test)
 endfunction()
 
