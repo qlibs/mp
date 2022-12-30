@@ -22,6 +22,7 @@ if(PROJECT_IS_TOP_LEVEL)
 endif()
 
 add_library(mp INTERFACE)
+add_library(mp::mp ALIAS mp)
 target_compile_features(mp INTERFACE cxx_std_20)
 target_sources(mp
   INTERFACE
