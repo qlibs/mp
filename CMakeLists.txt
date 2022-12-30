@@ -12,8 +12,6 @@ project(
 )
 
 set(INCLUDE_INSTALL_DIR include/${PROJECT_NAME}-${PROJECT_VERSION}/include)
-option(CMAKE_CXX_STANDARD_REQUIRED "Default value for CXX_STANDARD_REQUIRED property of targets." YES)
-option(CMAKE_CXX_EXTENSIONS "Default value for CXX_EXTENSIONS property of targets." NO)
 option(BOOST_MP_BUILD_EXAMPLES "Build the examples" ${MASTER_PROJECT})
 option(BOOST_MP_BUILD_TESTS "Build the tests" ${MASTER_PROJECT})
 option(BOOST_MP_DISABLE_MODULE "Disable mp module" OFF)
