@@ -4,14 +4,13 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.23)
 project(
   mp
   VERSION 0.0.1
   LANGUAGES CXX
 )
 
-set(INCLUDE_INSTALL_DIR include/${PROJECT_NAME}-${PROJECT_VERSION}/include)
 option(BOOST_MP_BUILD_EXAMPLES "Build the examples" OFF)
 option(BOOST_MP_BUILD_TESTS "Build the tests" OFF)
 option(BOOST_MP_DISABLE_MODULE "Disable mp module" OFF)
@@ -23,8 +22,13 @@ if(PROJECT_IS_TOP_LEVEL)
 endif()
 
 add_library(mp INTERFACE)
-target_include_directories(mp INTERFACE ${CMAKE_SOURCE_DIR}/include)
 target_compile_features(mp INTERFACE cxx_std_20)
+target_sources(mp
+  INTERFACE
+  FILE_SET mp_headers
+  TYPE HEADERS
+  BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+  FILES "${PROJECT_SOURCE_DIR}/include/boost/mp.hpp")
 
 if(PROJECT_IS_TOP_LEVEL)
   if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
@@ -53,3 +57,5 @@ if(BOOST_MP_BUILD_TESTS)
   enable_testing()
   add_subdirectory(test)
 endif()
+
+include("cmake/mpInstall.cmake")
