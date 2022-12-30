@@ -32,10 +32,11 @@ target_sources(mp
 
 if(PROJECT_IS_TOP_LEVEL)
   if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(mp INTERFACE -stdlib=libc++ -Wall -Wextra -Wpedantic -Werror)
-    target_link_options(mp INTERFACE -stdlib=libc++)
+    target_compile_options(mp INTERFACE
+      $<BUILD_INTERFACE:-stdlib=libc++ -Wall -Wextra -Wpedantic -Werror>)
+    target_link_options(mp INTERFACE $<BUILD_INTERFACE:-stdlib=libc++>)
   elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    target_compile_options(mp INTERFACE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(mp INTERFACE $<BUILD_INTERFACE:-Wall -Wextra -Wpedantic -Werror>)
   endif()
 endif()
 
