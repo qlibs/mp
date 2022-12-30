@@ -41,12 +41,6 @@ if(PROJECT_IS_TOP_LEVEL)
   endif()
 endif()
 
-add_custom_target(style)
-add_custom_command(
-  TARGET style COMMAND find ${CMAKE_CURRENT_LIST_DIR}/benchmark ${CMAKE_CURRENT_LIST_DIR}/example ${CMAKE_CURRENT_LIST_DIR}/include
-                       ${CMAKE_CURRENT_LIST_DIR}/test -iname "*.hpp" -or -iname "*.cpp" | xargs clang-format -i
-)
-
 if(BOOST_MP_DISABLE_MODULE)
   target_compile_definitions(mp INTERFACE BOOST_MP_DISABLE_MODULE)
 endif()
@@ -61,3 +55,5 @@ if(BOOST_MP_BUILD_TESTS)
 endif()
 
 include("cmake/mpInstall.cmake")
+include("cmake/mpStyleTarget.cmake")
+mp_create_style_target(style)
