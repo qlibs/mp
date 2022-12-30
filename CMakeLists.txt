@@ -17,9 +17,9 @@ option(BOOST_MP_BUILD_TESTS "Build the tests" ${MASTER_PROJECT})
 option(BOOST_MP_DISABLE_MODULE "Disable mp module" OFF)
 
 if(PROJECT_IS_TOP_LEVEL)
-  set(CMAKE_CXX_STANDARD 20)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF)
+  set(CMAKE_CXX_STANDARD CACHE STRING "Default value for CXX_STANDARD of targets." 20)
+  option(CMAKE_CXX_STANDARD_REQUIRED "Default value for CXX_STANDARD_REQUIRED property of targets." ON)
+  option(CMAKE_CXX_EXTENSIONS "Default value for CXX_EXTENSIONS property of targets." OFF)
 endif()
 
 add_library(mp INTERFACE)
