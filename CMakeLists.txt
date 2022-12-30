@@ -12,8 +12,8 @@ project(
 )
 
 set(INCLUDE_INSTALL_DIR include/${PROJECT_NAME}-${PROJECT_VERSION}/include)
-option(BOOST_MP_BUILD_EXAMPLES "Build the examples" ${MASTER_PROJECT})
-option(BOOST_MP_BUILD_TESTS "Build the tests" ${MASTER_PROJECT})
+option(BOOST_MP_BUILD_EXAMPLES "Build the examples" OFF)
+option(BOOST_MP_BUILD_TESTS "Build the tests" OFF)
 option(BOOST_MP_DISABLE_MODULE "Disable mp module" OFF)
 
 if(PROJECT_IS_TOP_LEVEL)
