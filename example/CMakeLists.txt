@@ -7,7 +7,7 @@
 function(example name)
   add_executable(${name}_example ${name}.cpp)
   target_include_directories(${name}_example PRIVATE ${CMAKE_SOURCE_DIR}/vendor/ut/include)
-  target_link_libraries(${name}_example mp)
+  target_link_libraries(${name}_example Boost::mp)
   add_test(NAME ${name}_example COMMAND ./${name}_example)
 endfunction()
 
@@ -28,6 +28,6 @@ example(transform)
 example(unique)
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-example(to_list)
-example(to_tuple)
+  example(to_list)
+  example(to_tuple)
 endif()
