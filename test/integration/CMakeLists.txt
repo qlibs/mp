@@ -25,10 +25,7 @@ function(create_use_mp_test consumption_type)
       "-DCMAKE_CXX_EXTENSIONS=OFF"
     --test-command "${CMAKE_CTEST_COMMAND}" --verbose --output-on-failure)
 
-  set_tests_properties(${test_name}
-    PROPERTIES
-      RESOURCE_LOCK "use-mp-lock"
-      FIXTURES_REQUIRED install-mp-fixture)
+  set_tests_properties(${test_name} PROPERTIES RESOURCE_LOCK "use-mp-lock")
 endfunction()
 
 add_test(
@@ -40,8 +37,8 @@ add_test(
   --config $<CONFIG>
   --verbose)
 
-set_tests_properties(install-mp PROPERTIES
-  FIXTURES_SETUP install-mp-fixture)
-
 create_use_mp_test("find")
 create_use_mp_test("add")
+
+set_tests_properties(install-mp PROPERTIES FIXTURES_SETUP install-mp-fixture)
+set_tests_properties(find-use-mp PROPERTIES FIXTURES_REQUIRED install-mp-fixture)
