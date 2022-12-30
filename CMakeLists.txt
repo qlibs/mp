@@ -26,6 +26,7 @@ endif()
 
 add_library(mp INTERFACE)
 target_include_directories(mp INTERFACE ${CMAKE_SOURCE_DIR}/include)
+target_compile_features(mp INTERFACE cxx_std_20)
 
 if(PROJECT_IS_TOP_LEVEL)
   if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
