@@ -16,15 +16,14 @@ option(BOOST_MP_BUILD_TESTS "Build the tests" OFF)
 option(BOOST_MP_DISABLE_MODULE "Disable mp module" OFF)
 
 if(PROJECT_IS_TOP_LEVEL)
-  set(CMAKE_CXX_STANDARD 20 CACHE STRING "Default value for CXX_STANDARD target property.")
-  option(CMAKE_CXX_STANDARD_REQUIRED "Default value for CXX_STANDARD_REQUIRED target property" ON)
   option(CMAKE_CXX_EXTENSIONS "Default value for CXX_EXTENSIONS target property." OFF)
 endif()
 
 add_library(mp INTERFACE)
 add_library(Boost::mp ALIAS mp)
 target_compile_features(mp INTERFACE cxx_std_20)
-target_compile_definitions(mp INTERFACE $<INSTALL_INTERFACE:BOOST_MP_DISABLE_MODULE>)
+target_compile_definitions(mp
+  INTERFACE $<INSTALL_INTERFACE:BOOST_MP_DISABLE_MODULE>)
 target_sources(mp
   INTERFACE
   FILE_SET mp_headers
