@@ -626,8 +626,6 @@ make <<benchmark>>
 <details open><summary>FAQ</summary>
 <p>
 
-> [CONTRIBUTING](.github/CONTRIBUTING.md)
-
 </p>
 </details>
 
