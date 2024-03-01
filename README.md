@@ -7,7 +7,7 @@
 
 | [Motivation](#motivation) | [Tutorial](#tutorial) | [Examples](#examples) | [API](#api) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
 
-- Single C++20 header ([clang++16+ [libc++-16+], g++12+ [libstdc++-12+]](https://godbolt.org/z/73fv5vfMM))
+- Single C++20 header ([clang++16+, g++12+](https://godbolt.org/z/73fv5vfMM))
 - Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
 - Easy debugging (meta-functions can be simply run at run-time!)
 - Same interface for `types/values/tuples`
