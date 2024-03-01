@@ -5,7 +5,7 @@
 
 # MP - ~~Template~~ Meta-Programming
 
-| [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [User Guide](#user-guide) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
+| [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [API](#api) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
 
 <details open><summary>C++ <b>single header</b> C++20 Meta-Programming Library</summary>
 <p>
@@ -419,7 +419,7 @@ static_assert(mp::list<foo>() ==
 ```
 
 That's it for now, for more let's take a look at more
-Examples in the following section and the User-Guide.
+Examples in the following section and the API.
 </p>
 </details>
 
@@ -448,8 +448,8 @@ Examples in the following section and the User-Guide.
 </p>
 </details>
 
-<a name="user-guide"></a>
-<details open><summary>User-Guide</summary>
+<a name="api"></a>
+<details open><summary>API</summary>
 <p>
 
 ```cpp
@@ -469,24 +469,6 @@ struct meta {
   std::size_t size{};
   //...
 }
-```
-
-```cpp
-/**
- * Returns unique integral (std::size_t) representation of type
- * Should only be used for comparison
- * static_assert(type_id<void> ! = type_id<int>);
- */
-template <class T> constexpr auto type_id;
-```
-
-```cpp
-/**
- * Returns type/value name as string_view
- * static_assert(type_name<void>() == "void");
- * static_assert(type_name<42>() == "42");
- */
-template <template auto T> [[nodiscard]] constexpr auto type_name()
 ```
 
 ```cpp

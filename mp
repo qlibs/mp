@@ -18,7 +18,7 @@
 
 namespace mp::inline v1_0_0 {
 namespace utility {
-#if __has_builtin(__type_pack_element)
+#if __has_builtin(__type_pack_element) and defined(__clang__)
 template <auto N, class... Ts>
 using nth_pack_element = __type_pack_element<N, Ts...>;
 
@@ -658,7 +658,7 @@ static_assert(([] {
   // tuple.reverse
   static_assert((std::tuple{1} | std::views::reverse) == std::tuple{1});
   static_assert((std::tuple{1, 2} | std::views::reverse) == std::tuple{2, 1});
-  static_assert((std::tuple{1, 2., "3"} | std::views::reverse) == std::tuple{"3", 2., 1});
+  static_assert((std::tuple{1, 2., '3'} | std::views::reverse) == std::tuple{'3', 2., 1});
 
   // tuple.take
   static_assert((std::tuple{1, 2, 3} | std::views::take(1_c)) == std::tuple{1});
