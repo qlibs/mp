@@ -26,16 +26,15 @@ constexpr auto nth_pack_element_v =
     __type_pack_element<N, std::integral_constant<decltype(Ns), Ns>...>::value;
 #else
 namespace detail {
-template <class T, std::size_t N>
-struct any {};
+template <class, std::size_t> struct type_id {};
 template <class... Ts>
 struct inherit : Ts... {};
 template <auto N, class T>
-auto nth_pack_element_impl(any<T, N>) -> T;
+auto nth_pack_element_impl(type_id<T, N>) -> T;
 template <auto N, class... Ts, std::size_t... Ns>
 auto nth_pack_element(std::index_sequence<Ns...>)
     -> decltype(nth_pack_element_impl<N>(
-        inherit<any<std::type_identity<Ts>, Ns>...>{}));
+        inherit<type_id<std::type_identity<Ts>, Ns>...>{}));
 }  // namespace detail
 
 template <auto N, class... Ts>
