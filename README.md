@@ -454,16 +454,9 @@ Examples in the following section and the User-Guide.
 
 ```cpp
 /**
- * Library version for example 1'0'0
+ * Current library version
  */
-#define MP_VERSION
-```
-
-```cpp
-/**
- * Forces using includes even if modules are supported
- */
-#define MP_DISABLE_MODULE
+#define MP_VERSION 1'0'0
 ```
 
 ```cpp
