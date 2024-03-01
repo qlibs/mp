@@ -579,7 +579,6 @@ static_assert(([] {
   static_assert(not mp::concepts::meta<int>);
   static_assert(mp::concepts::meta<std::tuple<>>);
 
-
   // make fixed_string
   static_assert(0u == mp::fixed_string{}.size);
   static_assert(""sv == mp::fixed_string{""});
