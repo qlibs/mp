@@ -102,6 +102,8 @@ struct meta {
   [[nodiscard]] constexpr auto operator==(const meta&) const -> bool = default;
 };
 
+template <auto N> using const_t = utility::integral_constant<N>;
+
 using utility::operator""_c;
 
 template <class... Ts>
@@ -130,9 +132,10 @@ struct value_list {
   }
 };
 
-template <std::size_t Size>
+template <std::size_t Size = {}>
 struct fixed_string {
   static constexpr auto size = Size;
+  constexpr fixed_string() = default;
   constexpr explicit(false) fixed_string(const char* str) {
     for (auto i = 0u; i < Size; ++i) { data[i] = str[i]; }
   }
@@ -578,6 +581,7 @@ static_assert(([] {
 
 
   // make fixed_string
+  static_assert(0u == mp::fixed_string{}.size);
   static_assert(""sv == mp::fixed_string{""});
   static_assert("Foo"sv == mp::fixed_string{"Foo"});
 
