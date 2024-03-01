@@ -5,15 +5,27 @@
 
 # MP - ~~Template~~ Meta-Programming
 
+> https://en.wikipedia.org/wiki/Metaprogramming
+
+---
+
 | [Motivation](#motivation) | [Tutorial](#tutorial) | [Examples](#examples) | [API](#api) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
 
-- Single C++20 header ([clang++16+, g++12+](https://godbolt.org/z/73fv5vfMM))
+### Features
+
+- Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp)
 - Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
 - Easy debugging (meta-functions can be simply run at run-time!)
 - Same interface for `types/values/tuples`
 - Declarative by design (composable using pipe operator, support for ranges)
 - Verifies itself upon include (aka runs all tests via static_asserts)
 - Fast compilation times (see [benchmarks](#benchmarks))
+
+### Requirements
+
+- C++20 ( ([clang++16+, g++12+](https://godbolt.org/z/73fv5vfMM))
+
+---
 
 <p>
 
