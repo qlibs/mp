@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <bit>
-#include <boost/mp.hpp>
+#include <mp>
 
 namespace mp = boost::mp;
 

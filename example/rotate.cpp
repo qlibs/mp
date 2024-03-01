@@ -6,7 +6,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include <algorithm>
-#include <boost/mp.hpp>
+#include <mp>
 
 namespace mp = boost::mp;
 

@@ -205,8 +205,8 @@ auto rotate = [](std::ranges::range auto types) {
     return types;
 };
 
-static_assert((boost::mp::list<int, double, float>() | rotate) ==
-               boost::mp::list<double, float, int>());
+static_assert((mp::list<int, double, float>() | rotate) ==
+               mp::list<double, float, int>());
 ```
 
 </p>
@@ -217,28 +217,6 @@ static_assert((boost::mp::list<int, double, float>() | rotate) ==
 <p>
 
 > Try it out - https://godbolt.org/z/ePE9aqYTe
-
----
-
-> Locally
-
-```sh
-docker build . -t dev # or docker pull krisjusiak/dev
-docker run -it -v "$(pwd)":/mp --privileged dev:latest
-```
-
-```sh
-mkdir build && cd build
-CXX={clan}g++ cmake .. -DBOOST_MP_BUILD_TESTS=ON -DBOOST_MP_BUILD_EXAMPLES=ON
-```
-
-```sh
-cmake --build . -j
-```
-
-```sh
-ctest --output-on-failure
-```
 
 </p>
 </details>
@@ -267,14 +245,14 @@ ctest --output-on-failure
 <details open><summary>Tutorial</summary>
 <p>
 
-> Firstly include or import `boost.mp`
+> Firstly include or import `mp`
 
 ```cpp
-#include <boost/mp.hpp>
+#include <mp>
 ```
 or
 ```cpp
-import boost.mp;
+import mp;
 ```
 
 > Okay, let's write a hello world, shall we?
@@ -369,12 +347,11 @@ Let's apply it then
 ```cpp
 using mp::operator|;
 auto pack = [](auto t) {
-  return mp::to_tuple(t) | sort<by_size>;
+  return reflect::to<std::tuple>(t) | sort<by_size>;
 }
 ```
 
-> Note: We used `to_tuple` which converts a struct into a tuple using reflection.
-        There is also `to_list` available which produces `type_list`.
+> Note: We used https://github.com/boost-ext/reflect reflection library to convert a struct into a tuple.
 
 As usual, we use pipe (|) to compose functionality.
 
@@ -481,14 +458,14 @@ Examples in the following section and the User-Guide.
 /**
  * Library version for example 1'0'0
  */
-#define BOOST_MP_VERSION
+#define MP_VERSION
 ```
 
 ```cpp
 /**
  * Forces using includes even if modules are supported
  */
-#define BOOST_MP_DISABLE_MODULE
+#define MP_DISABLE_MODULE
 ```
 
 ```cpp
@@ -578,24 +555,6 @@ template<template auto... Vs> [[nodiscard]] constexpr auto list();
 
 ```cpp
 /**
- * Converts type into a type_list by reflecting fields
- * 0-10 number of reflected fields is supported
- * @tparam T type to be reflected
- */
-template<class T> [[nodiscard]] constexpr auto to_list;
-```
-
-```cpp
-/**
- * Converts type into a std::tuple by reflecting fields
- * 0-10 number of reflected fields is supported
- * @param obj object to be reflected
- */
-constexpr auto to_tuple = []<class T>(T&& obj);
-```
-
-```cpp
-/**
  * Composability pipe operator for types
  * @param fn functor to be applied
  * - [](concepts::meta auto types)
@@ -658,7 +617,7 @@ template <char... Cs> [[nodiscard]] consteval auto operator""_c();
 ```cpp
 cd benchmark
 mkdir build && cd build
-CXX={clang}g++ cmake ..
+cmake ..
 make <<benchmark>>
 ```
 

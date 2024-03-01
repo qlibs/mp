@@ -7,7 +7,7 @@
 //
 #include <algorithm>
 #include <array>
-#include <boost/mp.hpp>
+#include <mp>
 #include <ranges>
 #include <string_view>
 
