@@ -65,8 +65,8 @@ struct val { int value; };
 ```
 
 ```cpp
-static_assert(mp::list<val const> ==
-  hello_world(mp::list<int, foo, val, bar>, add_const, has_value)
+static_assert(mp::list<val const>() ==
+  hello_world(mp::list<int, foo, val, bar>(), add_const, has_value)
 );
 ```
 
@@ -116,8 +116,8 @@ auto slice = [](auto list, auto begin, auto end) {
 
 ```cpp
 // type_list
-static_assert(slice(mp::list<int, double, float, short>, 1_c, 3_c) ==
-                    mp::list<double, float>);
+static_assert(slice(mp::list<int, double, float, short>(), 1_c, 3_c) ==
+                    mp::list<double, float>());
 ```
 
 ```cpp
@@ -130,14 +130,14 @@ static_assert(std::is_same_v<
 
 ```cpp
 // value_list
-static_assert(slice(mp::list<1, 2, 3, 4>, 1_c, 3_c) ==
-                    mp::list<2, 3>);
+static_assert(slice(mp::list<1, 2, 3, 4>(), 1_c, 3_c) ==
+                    mp::list<2, 3>());
 ```
 
 ```cpp
 // fixed_string
-static_assert(slice(mp::list<"foobar">, 1_c, 3_c) ==
-                    mp::list<"oo">);
+static_assert(slice(mp::list<"foobar">(), 1_c, 3_c) ==
+                    mp::list<"oo">());
 ```
 
 ```cpp
