@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
-<a href="https://godbolt.org/z/73fv5vfMM">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/341T3K6cs">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/Wch96eT53">![build](https://img.shields.io/badge/build-blue.svg)</a>
+<a href="https://godbolt.org/z/Wch96eT53">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 # MP - ~~Template~~ Meta-Programming
 
