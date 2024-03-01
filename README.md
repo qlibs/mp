@@ -5,9 +5,21 @@
 
 # MP - ~~Template~~ Meta-Programming
 
-| [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [API](#api) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
+| [Motivation](#motivation) | [Tutorial](#tutorial) | [Examples](#examples) | [API](#api) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
 
 <details open><summary>C++ <b>single header</b> C++20 Meta-Programming Library</summary>
+
+- Single C++20 header ([clang++16+ [libc++-16+], g++12+ [libstdc++-12+]](https://godbolt.org/z/73fv5vfMM))
+- Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
+- Easy debugging (meta-functions can be simply run at run-time!)
+- Same interface for `types/values/tuples`
+- Declarative by design (composable using pipe operator, support for ranges)
+- Verifies itself upon include (aka runs all tests via static_asserts)
+- Fast compilation times (see [benchmarks](#benchmarks))
+
+</p>
+</details>
+
 <p>
 
 <a name="motivation"></a>
@@ -210,36 +222,6 @@ auto rotate = [](std::ranges::range auto types) {
 static_assert((mp::list<int, double, float>() | rotate) ==
                mp::list<double, float, int>());
 ```
-
-</p>
-</details>
-
-<a name="quick-start"></a>
-<details open><summary>Quick Start</summary>
-<p>
-
-> Try it out - https://godbolt.org/z/341T3K6cs
-
-</p>
-</details>
-
-<a name="overview"></a>
-<details open><summary>Overview</summary>
-<p>
-
-- Single C++20 header
-- Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
-- Easy debugging (meta-functions can be simply run at run-time!)
-- Same interface for `types/values/tuples`
-- Declarative by design (composable using pipe operator, support for ranges)
-- Verifies itself upon include (aka runs all tests via static_asserts)
-- Fast compilation times (see [benchmarks](#benchmarks))
-
-> Requirements ([Dockerfile](Dockerfile))
-
-- C++20
-  - clang++16+ [libc++-16+] (✔️)
-  - g++12+ [libstdc++-12+] (✔️)
 
 </p>
 </details>
