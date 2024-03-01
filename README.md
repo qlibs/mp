@@ -81,7 +81,7 @@ int main () {
 }
 ```
 
-> https://godbolt.org/z/3T86zvcEn
+> https://godbolt.org/z/3zrrcddY7
 
 ---
 
@@ -137,7 +137,7 @@ int main(int argc, const char**) {
 }
 ```
 
-> https://godbolt.org/z/ePE9aqYTe
+> https://godbolt.org/z/cz3vrqY5v
 
 ---
 
@@ -458,6 +458,13 @@ Examples in the following section and the API.
  * Current library version
  */
 #define MP_VERSION 1'0'0
+```
+
+```cpp
+/**
+ * If defined static asserts tests arent executed upon include (enabled by default)
+ */
+#define MP_DISABLE_STATIC_ASSERT_TESTS
 ```
 
 ```cpp
