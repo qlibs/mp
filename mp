@@ -83,11 +83,8 @@ constexpr auto meta<T<Ts...>> = true;
 template <template <auto...> class T, auto... Vs>
 constexpr auto meta<T<Vs...>> = true;
 
-struct callable_base {
-  void operator()();
-};
-template <class T>
-struct callable : T, callable_base {};
+struct callable_base { void operator()(); };
+template <class T> struct callable : T, callable_base {};
 }  // namespace detail
 
 template <class T>
@@ -105,8 +102,6 @@ struct meta {
   [[nodiscard]] constexpr auto operator==(const meta&) const -> bool = default;
 };
 
-template <auto N>
-using const_t = utility::integral_constant<N>;
 using utility::operator""_c;
 
 template <class... Ts>
@@ -135,28 +130,20 @@ struct value_list {
   }
 };
 
-template <std::size_t N>
+template <std::size_t Size>
 struct fixed_string {
-  static constexpr auto size = N;
-
-  constexpr explicit(true) fixed_string(const auto... cs) : data{cs...} {}
-  constexpr explicit(false) fixed_string(const char (&str)[N + 1]) {
-    for (auto i = 0u; i <= N; ++i) {
-      data[i] = str[i];
-    }
+  static constexpr auto size = Size;
+  constexpr explicit(false) fixed_string(const char* str) {
+    for (auto i = 0u; i < Size; ++i) { data[i] = str[i]; }
   }
-
   [[nodiscard]] constexpr auto operator<=>(const fixed_string&) const = default;
   [[nodiscard]] constexpr explicit(false) operator std::string_view() const {
-    return {std::data(data), N};
+    return {std::data(data), Size};
   }
 
-  std::array<char, N + 1> data{};
+  std::array<char, Size> data{};
 };
-
-template <std::size_t N>
-fixed_string(const char (&str)[N]) -> fixed_string<N - 1>;
-fixed_string(const auto... Cs) -> fixed_string<sizeof...(Cs)>;
+template <std::size_t Size> fixed_string(const char (&)[Size]) -> fixed_string<Size-1>;
 
 template <auto Lhs, auto Rhs>
 [[nodiscard]] constexpr auto operator+(const fixed_string<Lhs>& lhs,
@@ -177,10 +164,7 @@ template <class... Ts>
 }
 
 template <auto... Vs>
-  requires(not(requires {
-                 Vs.data;
-                 Vs.size;
-               } or ...))
+  requires(not(requires { Vs.data; Vs.size; } or ...))
 [[nodiscard]] constexpr auto list() {
   return value_list<Vs...>{};
 }
@@ -201,19 +185,14 @@ struct size_vs {
   std::size_t size{};
   std::array<std::size_t, N> vs{};
 };
+template<class T> extern const T ext{};
 }  // namespace detail
-
-template <class T>
-constexpr auto declval()
-    -> std::conditional_t<std::is_default_constructible_v<T>, T, T&&> {
-  return T{};
-}
 
 template <template <class...> class T, class... Ts, template <class...> class U,
           class... Us>
   requires(not concepts::callable<U<Us...>>)
 [[nodiscard]] constexpr auto operator|(T<Ts...>, U<Us...>) {
-  return declval<T<Ts..., Us...>>();
+  return detail::ext<T<Ts..., Us...>>;
 }
 
 template <class... Ts, class... Us>
@@ -376,8 +355,7 @@ template <template <class...> class T, class... Ts>
 
     if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
-        return declval<
-            T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>();
+        return detail::ext<T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>;
       }(std::make_index_sequence<expr_fn.size>{});
     } else {
       return expr_fn;
@@ -602,11 +580,6 @@ static_assert(([] {
   // make fixed_string
   static_assert(""sv == mp::fixed_string{""});
   static_assert("Foo"sv == mp::fixed_string{"Foo"});
-
-  // make fixed_string with characters
-  static_assert(std::string_view{mp::fixed_string{}}.empty());
-  static_assert("abc"sv == mp::fixed_string{'a', 'b', 'c'});
-  static_assert("abc"sv == mp::fixed_string{'a', 'b', 'c'});
 
   // compare
   constexpr auto foo = mp::fixed_string{"Foo"};
