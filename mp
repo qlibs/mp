@@ -132,7 +132,7 @@ struct value_list {
   }
 };
 
-template <std::size_t Size = {}>
+template <std::size_t Size>
 struct fixed_string {
   static constexpr auto size = Size;
   constexpr fixed_string() = default;
@@ -580,7 +580,7 @@ static_assert(([] {
   static_assert(mp::concepts::meta<std::tuple<>>);
 
   // make fixed_string
-  static_assert(0u == mp::fixed_string{}.size);
+  static_assert(0u == mp::fixed_string<0>{}.size);
   static_assert(""sv == mp::fixed_string{""});
   static_assert("Foo"sv == mp::fixed_string{"Foo"});
 
