@@ -1,11 +1,11 @@
-<a href="https://github.com/boost-ext/mp/actions/workflows/linux.yml" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
-<a href="https://godbolt.org/z/ePE9aqYTe">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/KqEe4baTe" target="_blank">![Linux](https://github.com/boost-ext/mp/actions/workflows/linux.yml/badge.svg)</a>
+<a href="https://godbolt.org/z/341T3K6cs">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 # MP - ~~Template~~ Meta-Programming
 
 | [Motivation](#motivation) | [Quick Start](#quick-start) | [Overview](#overview) | [Tutorial](#tutorial) | [Examples](#examples) | [User Guide](#user-guide) | [Benchmarks](#benchmarks) | [FAQ](#faq) |
 
-<details open><summary>C++ <b>single header/single module</b> C++20 Meta-Programming Library</summary>
+<details open><summary>C++ <b>single header</b> C++20 Meta-Programming Library</summary>
 <p>
 
 <a name="motivation"></a>
@@ -216,7 +216,7 @@ static_assert((mp::list<int, double, float>() | rotate) ==
 <details open><summary>Quick Start</summary>
 <p>
 
-> Try it out - https://godbolt.org/z/ePE9aqYTe
+> Try it out - https://godbolt.org/z/341T3K6cs
 
 </p>
 </details>
