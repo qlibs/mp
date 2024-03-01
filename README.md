@@ -247,14 +247,10 @@ static_assert((mp::list<int, double, float>() | rotate) ==
 <details open><summary>Tutorial</summary>
 <p>
 
-> Firstly include or import `mp`
+> Firstly include `mp`
 
 ```cpp
 #include <mp>
-```
-or
-```cpp
-import mp;
 ```
 
 > Okay, let's write a hello world, shall we?
@@ -283,7 +279,7 @@ static_assert(magic == mp::list<int, double, float>());
 Yay, we have the first meta-function done. Notice the pipe (|)
 operator. By using it multiple meta-functions can be combined together.
 
-For the next example including/importing ranges will be required
+For the next example including ranges will be required
 
 ```cpp
 #include <ranges>
