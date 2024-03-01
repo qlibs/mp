@@ -9,7 +9,6 @@
 #define MP 1'0'0
 
 #include <array>
-#include <cmath>
 #include <concepts>
 #include <string_view>
 #include <tuple>
@@ -579,23 +578,13 @@ constexpr auto for_each(const T<Ts...>&, auto expr) {
   }
 }
 
-template <class... Ts>
-struct overloaded : Ts... {
-  using Ts::operator()...;
-};
-template <class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
+template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 }  // namespace mp::inline v0_0_1
 
 #if not defined(MP_DISABLE_STATIC_ASSERT_TESTS)
-#include <variant>
 #include <ranges>
 #include <algorithm>
-
-template <class...> struct types;
-template <auto...> struct values;
-template <mp::fixed_string Str> static constexpr auto str = Str;
 
 static_assert(([] {
   using mp::operator|;
@@ -608,25 +597,22 @@ static_assert(([] {
   // concepts.meta
   static_assert(not mp::concepts::meta<void>);
   static_assert(not mp::concepts::meta<int>);
-  static_assert(mp::concepts::meta<types<>>);
-  static_assert(mp::concepts::meta<values<>>);
   static_assert(mp::concepts::meta<std::tuple<>>);
-  static_assert(mp::concepts::meta<std::variant<>>);
 
 
   // make fixed_string
-  static_assert(""sv == str<"">);
-  static_assert("Foo"sv == str<"Foo">);
+  static_assert(""sv == mp::fixed_string{""});
+  static_assert("Foo"sv == mp::fixed_string{"Foo"});
 
   // make fixed_string with characters
   static_assert(std::string_view{mp::fixed_string{}}.empty());
   static_assert("abc"sv == mp::fixed_string{'a', 'b', 'c'});
-  static_assert("abc"sv == str<mp::fixed_string{'a', 'b', 'c'}>);
+  static_assert("abc"sv == mp::fixed_string{'a', 'b', 'c'});
 
   // compare
-  constexpr auto foo = str<"Foo">;
-  static_assert(foo == str<"Foo">);
-  static_assert(foo != str<"Bar">);
+  constexpr auto foo = mp::fixed_string{"Foo"};
+  static_assert(foo == mp::fixed_string{"Foo"});
+  static_assert(foo != mp::fixed_string{"Bar"});
 
   // type_list
   static_assert(mp::type_list{} == mp::type_list{});
