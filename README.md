@@ -23,7 +23,7 @@
 
 ### Requirements
 
-- C++20 ( ([clang++16+, g++12+](https://godbolt.org/z/73fv5vfMM))
+- C++20 ([clang++16+, g++12+](https://godbolt.org/z/73fv5vfMM))
 
 ---
 
@@ -421,19 +421,21 @@ Examples in the following section and the API.
 <details open><summary>Examples</summary>
 <p>
 
-- <a href="https://github.com/boost-ext/mp/blob/main/example/append.cpp">append</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/conditional.cpp">conditional</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/filter.cpp">filter</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/insert.cpp">insert</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/nth_pack_element.cpp">nth_pack_element</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/reverse.cpp">reverse</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/rotate.cpp">rotate</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/slice.cpp">slice</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/to_list.cpp">to_list</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/to_tuple.cpp">to_tuple</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/transform.cpp">transform</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example/unique.cpp">unique</a>
-- <a href="https://github.com/boost-ext/mp/blob/main/example">...</a>
+- <a href="https://godbolt.org/z/14Wjb7hWe">append</a>
+- <a href="https://godbolt.org/z/oWfWMGKsz">conditional</a>
+- <a href="https://godbolt.org/z/jEsW46KWz">count_if</a>
+- <a href="https://godbolt.org/z/TsnTs4Koe">filter</a>
+- <a href="https://godbolt.org/z/sqW5Y3v91">insert</a>
+- <a href="https://godbolt.org/z/KWM6s9shx">nth_pack_element</a>
+- <a href="https://godbolt.org/z/c8o11qdx4">reverse</a>
+- <a href="https://godbolt.org/z/5nfncnja7">rotate</a>
+- <a href="https://godbolt.org/z/YWbEbrq9W">slice</a>
+- <a href="https://godbolt.org/z/645avsWfd">sort</a>
+- <a href="https://godbolt.org/z/jssqYa343">split</a>
+- <a href="https://godbolt.org/z/9hxds4ro6">pack</a>
+- <a href="https://godbolt.org/z/bP9a1Kd66">transform</a>
+- <a href="https://godbolt.org/z/jbx87ccKe">unique</a>
+- <a href="https://godbolt.org/z/hs79W63P9">state_machine</a>
 
 </p>
 </details>
