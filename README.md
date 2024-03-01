@@ -1,6 +1,6 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
-<a href="https://godbolt.org/z/KqEe4baTe">![build](https://img.shields.io/badge/build-blue.svg)</a>
+<a href="https://godbolt.org/z/73fv5vfMM">![build](https://img.shields.io/badge/build-blue.svg)</a>
 <a href="https://godbolt.org/z/341T3K6cs">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 # MP - ~~Template~~ Meta-Programming
@@ -227,17 +227,18 @@ static_assert((mp::list<int, double, float>() | rotate) ==
 <details open><summary>Overview</summary>
 <p>
 
-- Single C++20 header/module
+- Single C++20 header
 - Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
 - Easy debugging (meta-functions can be simply run at run-time!)
 - Same interface for `types/values/tuples`
 - Declarative by design (composable using pipe operator, support for ranges)
+- Verifies itself upon include (aka runs all tests via static_asserts)
 - Fast compilation times (see [benchmarks](#benchmarks))
 
 > Requirements ([Dockerfile](Dockerfile))
 
-- C++20 compliant compiler (STL with support for `constexpr std::vector`)
-  - clang++15+ [libc++-15+] (✔️)
+- C++20
+  - clang++16+ [libc++-16+] (✔️)
   - g++12+ [libstdc++-12+] (✔️)
 
 </p>
