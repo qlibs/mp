@@ -5,8 +5,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#if not defined(BOOST_MP_VERSION)
-#define BOOST_MP_VERSION 1'0'0
+#if not defined(MP_VERSION)
+#define MP_VERSION 1'0'0
 
 #include <array>
 #include <cmath>
