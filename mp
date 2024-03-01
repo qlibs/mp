@@ -700,7 +700,7 @@ static_assert(([] {
   static_assert((mp::value_list{} | []<auto... Vs>(std::ranges::range auto types) { return types; }) == mp::value_list{});
   static_assert((mp::list<1, 2>() | []<auto... Vs>(std::ranges::range auto types) { return types; }) == mp::list<1, 2>());
 
-  // value_listcompund
+  // value_list.compund
   auto sort = []<auto... Vs>(std::ranges::range auto types) {
     std::sort(std::begin(types), std::end(types), [values = std::array{Vs...}](auto lhs, auto rhs) { return values[lhs] < values[rhs]; });
     return types;
