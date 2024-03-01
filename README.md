@@ -448,7 +448,7 @@ Examples in the following section and the API.
 /**
  * Current library version
  */
-#define MP_VERSION 1'0'0
+#define MP 1'0'0
 ```
 
 ```cpp
