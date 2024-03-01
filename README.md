@@ -578,11 +578,12 @@ template <char... Cs> [[nodiscard]] consteval auto operator""_c();
 <details open><summary>Benchmarks</summary>
 <p>
 
-Checkout https://github.com/boost-ext/mp/tree/benchmark branch
 
 > To build/run benchmarks
 
 ```cpp
+git clone https://github.com/boost-ext/mp
+git co benchmark
 cd benchmark
 mkdir build && cd build
 cmake ..
