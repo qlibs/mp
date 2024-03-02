@@ -109,9 +109,8 @@ struct meta {
   std::size_t size{};
 };
 
-template <auto N> using const_t = utility::integral_constant<N>;
-
 using utility::operator""_c;
+template <auto N> constexpr auto _c = utility::integral_constant<N>{};
 
 template <class... Ts>
 struct type_list {
@@ -690,6 +689,11 @@ static_assert(([] {
   static_assert(1000000_c == 1'000'000);
   static_assert(1_c + 2_c == 3);
   static_assert(2_c - 1_c == 1);
+
+  // utility._c
+  static_assert(_c<0> == 0_c);
+  static_assert(42_c == _c<42>);
+  static_assert(2_c - _c<1> == 1);
 
   // value_list<Vs...>
   static_assert((mp::value_list{} | []<auto... Vs> { return mp::value_list<Vs...>{}; }) == mp::value_list{});
