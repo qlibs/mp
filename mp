@@ -555,35 +555,7 @@ template <class... Ts>
     }(std::make_index_sequence<expr_fn.size>{});
   }
 }
-
-template <template <class...> class T, class... Ts>
-constexpr auto for_each(const T<Ts...>&, auto expr) {
-  if constexpr (requires {
-                  expr(std::integral_constant<std::size_t, 0u>{}, (Ts{}, ...));
-                }) {
-    [&]<std::size_t... Ns>(std::index_sequence<Ns...>) {
-      (expr(std::integral_constant<std::size_t, Ns>{}, Ts{}) or ...);
-    }
-    (std::make_index_sequence<sizeof...(Ts)>{});
-  } else {
-    (expr(Ts{}) or ...);
-  }
-}
-
-template <template <auto...> class T, auto... Ts>
-constexpr auto for_each(const T<Ts...>&, auto expr) {
-  if constexpr (requires {
-                  expr(std::integral_constant<std::size_t, 0u>{}, (Ts, ...));
-                }) {
-    [&]<std::size_t... Ns>(std::index_sequence<Ns...>) {
-      (expr(std::integral_constant<std::size_t, Ns>{}, Ts) or ...);
-    }
-    (std::make_index_sequence<sizeof...(Ts)>{});
-  } else {
-    (expr(Ts) or ...);
-  }
-}
-}  // namespace mp::inline v0_0_1
+}  // namespace mp::inline v1_0_0
 
 #if not defined(MP_DISABLE_STATIC_ASSERT_TESTS)
 #include <ranges>
