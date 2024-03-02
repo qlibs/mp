@@ -19,6 +19,10 @@
 #define __has_builtin(...) 0
 #endif
 
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wundefined-var-template"
+#endif
+
 namespace mp::inline v1_0_0 {
 namespace utility {
 #if defined(__clang__) and __has_builtin(__type_pack_element)
@@ -97,6 +101,8 @@ concept callable = not requires { &detail::callable<T>::operator(); };
 template <class T>
 concept meta = detail::meta<T>;
 }  // namespace concepts
+
+template<class T> extern T type;
 
 struct meta {
   constexpr meta() = default;
@@ -196,13 +202,11 @@ constexpr auto default_construct(std::type_identity<T<Fn, Ts...>>){ return T<Fn,
 template <class T> constexpr auto default_construct(std::type_identity<T>) { return T{}; }
 }  // namespace detail
 
-template<class T> extern T typeof;
-
 template <template <class...> class T, class... Ts, template <class...> class U,
           class... Us>
   requires(not concepts::callable<U<Us...>>)
 [[nodiscard]] constexpr auto operator|(T<Ts...>, U<Us...>) {
-  return typeof<T<Ts..., Us...>>;
+  return type<T<Ts..., Us...>>;
 }
 
 template <class... Ts, class... Us>
@@ -370,7 +374,7 @@ template <template <class...> class T, class... Ts>
 #endif
     if constexpr (requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
-        return typeof<T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>;
+        return type<T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>;
       }(std::make_index_sequence<expr_fn.size>{});
     } else {
       return expr_fn;
@@ -562,10 +566,11 @@ template <class... Ts>
 #include <algorithm>
 #include <variant>
 
-static_assert(([] {
-  using namespace std::literals;
-  using namespace mp;
+namespace MP_TEST {
+using namespace std::literals;
+using namespace mp;
 
+static_assert(([] {
   struct foo {};
   struct structural {};
 
@@ -694,14 +699,13 @@ static_assert(([] {
   static_assert((mp::list<1, 3, 2>() | sort | unique) == mp::list<1, 2, 3>());
   static_assert((mp::list<2, 2, 1, 1, 3>() | sort | unique) == mp::list<1, 2, 3>());
 
-  using mp::operator""_c;
-
   auto slice = [](auto list, auto begin, auto end) {
     return list
       | std::views::drop(begin)
       | std::views::take(end - 1_c);
   };
-  static_assert(std::is_same_v<decltype(slice(typeof<std::variant<int, double, float, short>>, 1_c, 3_c)), std::variant<double, float>>);
+  static_assert(std::is_same_v<decltype(slice(type<std::variant<int, double, float, short>>, 1_c, 3_c)), std::variant<double, float>>);
 }(), true));
+} // namespace
 #endif
 #endif // MP
