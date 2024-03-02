@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
 <a href="https://godbolt.org/z/3eMh3jc9E">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://gcc.godbolt.org/z/qvoGnanzx">![msvc-wip](https://img.shields.io/badge/build-blue.svg)</a>
+<a href="https://gcc.godbolt.org/z/6s3ss6vrz">![msvc](https://img.shields.io/badge/build_msvc-blue.svg)</a>
 <a href="https://godbolt.org/z/hzvf7Y1xr">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 # MP - ~~Template~~ Meta-Programming
@@ -24,7 +24,7 @@
 
 ### Requirements
 
-- C++20 ([clang++16+, g++12+, msvc-19.36+](https://godbolt.org/z/73fv5vfMM))
+- C++20 ([clang++16+, g++12+, msvc-19.38+](https://godbolt.org/z/73fv5vfMM))
 
 ---
 
