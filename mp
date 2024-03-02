@@ -146,8 +146,10 @@ template<auto... Ns, class... Ts> [[nodiscard]] constexpr auto make(std::tuple<T
 template<auto... Ns, template<class...> class T, class... Ts> [[nodiscard]] constexpr auto make(T<Ts...>) { return T<mp::nth_pack_element<Ns, Ts...>...>{}; }
 template<auto... Ns, template<auto...> class T, auto... Ts> [[nodiscard]] constexpr auto make(T<Ts...>) { return T<mp::nth_pack_element_v<Ns, Ts...>...>{}; }
 template<template<class...> class TRng, class A, class Fn> auto adapter(TRng<A, Fn>) -> A;
+template<template<class...> class F, template<class...> class TRng, class A, class Fn> auto adapter(F<TRng<A, Fn>>) -> A;
 template<class T> auto adapter(T) -> void;
 template<template<class...> class TRng, class A, class Fn> auto pred(TRng<A, Fn>) -> Fn;
+template<template<class...> class F, template<class...> class TRng, template<class...> class X, class A, class Fn> auto pred(F<TRng<A, X<Fn>>>) -> Fn;
 template<class T> auto pred(T) -> void;
 } // namespace detail
 
