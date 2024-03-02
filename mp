@@ -15,9 +15,13 @@
 #include <utility>
 #include <vector>
 
+#if defined (_MSC_VER)
+#define __has_builtin(...) 0
+#endif
+
 namespace mp::inline v1_0_0 {
 namespace utility {
-#if __has_builtin(__type_pack_element) and defined(__clang__)
+#if __has_builtin(__type_pack_element)
 template <auto N, class... Ts>
 using nth_pack_element = __type_pack_element<N, Ts...>;
 
@@ -95,11 +99,14 @@ concept meta = detail::meta<T>;
 }  // namespace concepts
 
 struct meta {
-  std::size_t index{};
-  std::size_t size{};
+  constexpr meta() = default;
+  constexpr explicit(true) meta(const std::size_t index, const std::size_t size) : index{index}, size {size} { }
 
   [[nodiscard]] constexpr operator auto() const { return index; }
-  [[nodiscard]] constexpr auto operator==(const meta&) const -> bool = default;
+  [[nodiscard]] constexpr auto operator<=>(const meta&) const = default;
+
+  std::size_t index{};
+  std::size_t size{};
 };
 
 template <auto N> using const_t = utility::integral_constant<N>;
@@ -189,6 +196,10 @@ struct size_vs {
   std::array<std::size_t, N> vs{};
 };
 template<class T> extern const T ext{};
+
+template <template<class...> class T, class Fn, class... Ts>
+constexpr auto default_construct(std::type_identity<T<Fn, Ts...>>){ return T<Fn, Ts...>{Ts{}...}; }
+template <class T> constexpr auto default_construct(std::type_identity<T>) { return T{}; }
 }  // namespace detail
 
 template <template <class...> class T, class... Ts, template <class...> class U,
@@ -289,7 +300,7 @@ template <class... Ts, template <class...> class X, class T, class Pred>
 constexpr auto invoke(T fn, X<Ts...>, Pred) {
   if constexpr (requires { detail::invoke<T, Pred>{}; }) {
     auto i = 0u;
-    const std::vector<meta> types{meta{.index = i++, .size = sizeof(Ts)}...};
+    const std::vector<meta> types{meta{i++, sizeof(Ts)}...};
     return detail::invoke<T, Pred>{}.template operator()<Ts...>(types);
   } else {
     return fn;
@@ -297,12 +308,12 @@ constexpr auto invoke(T fn, X<Ts...>, Pred) {
 }
 
 template <class... Ts, class T>
-constexpr auto invoke(auto types, T fn)
+constexpr decltype(auto) invoke(auto types, T fn)
   requires(sizeof...(Ts) > 0u)
 {
   if constexpr (requires { detail::invoke_t<T>{}; }) {
     return detail::invoke_t<T>{}.template operator()<Ts...>(types);
-  } else {
+   } else {
     return fn;
   }
 }
@@ -342,9 +353,9 @@ template <template <class...> class T, class... Ts>
       }
     };
     constexpr auto expr = [make](auto fn) {
-      auto i = 0u;
+      [[maybe_unused]] auto i = 0u;
       if constexpr (const std::vector<meta> types{
-                        meta{.index = i++, .size = sizeof(Ts)}...};
+                        meta{i++, sizeof(Ts)}...};
                     requires { fn.template operator()<Ts...>(types); }) {
         return make(invoke<Ts...>(types, fn.template operator()<Ts...>(types)));
       } else if constexpr (requires { fn(types); }) {
@@ -385,9 +396,9 @@ template <template <auto...> class T, auto... Vs>
       }
     };
     constexpr auto expr = [make](auto fn) {
-      auto i = 0u;
+      [[maybe_unused]] auto i = 0u;
       if constexpr (const std::vector<meta> types{
-                        meta{.index = i++, .size = sizeof(Vs)}...};
+                        meta{i++, sizeof(Vs)}...};
                     requires { fn.template operator()<Vs...>(types); }) {
         return make(invoke<Vs...>(types, fn.template operator()<Vs...>(types)));
       } else if constexpr (requires { fn(types); }) {
@@ -428,9 +439,9 @@ template <template <class, auto...> class T, class R, auto... Vs>
       }
     };
     constexpr auto expr = [make](auto fn) {
-      auto i = 0u;
+      [[maybe_unused]] auto i = 0u;
       if constexpr (const std::vector<meta> types{
-                        meta{.index = i++, .size = sizeof(Vs)}...};
+                        meta{i++, sizeof(Vs)}...};
                     requires { fn.template operator()<Vs...>(types); }) {
         return make(invoke<Vs...>(types, fn.template operator()<Vs...>(types)));
       } else if constexpr (requires { fn(types); }) {
@@ -472,7 +483,7 @@ template <class T>
       constexpr auto expr = [make](auto&& fn, auto t) {
         return [&]<auto... Ids>(std::index_sequence<Ids...>) {
           if constexpr (const std::vector<meta> types{
-                            meta{.index = Ids, .size = sizeof(Ts)}...};
+                            meta{Ids, sizeof(Ts)}...};
                         requires { fn(types, std::get<Ids>(t())...); }) {
             return make(invoke<std::get<Ids>(t())...>(
                 types, fn(types, std::get<Ids>(t())...)));
@@ -510,10 +521,8 @@ template <class... Ts>
       return svs;
     };
     constexpr auto expr = [make](auto fn) {
-      auto i = 0u;
-      if constexpr (const std::vector<meta> types{
-                        meta{.index = i++, .size = sizeof(Ts)}...};
-                    requires { fn.template operator()<Ts...>(types); }) {
+      [[maybe_unused]] auto i = 0u;
+      if constexpr (const std::vector<meta> types{meta{i++, sizeof(Ts)}...}; requires { fn.template operator()<Ts...>(types); }) {
         return make(invoke<Ts...>(types, fn.template operator()<Ts...>(types)));
       } else if constexpr (requires { fn(types); }) {
         return make(invoke<Ts...>(types, fn(types)));
@@ -523,7 +532,7 @@ template <class... Ts>
         return make(invoke<Ts...>(types, fn));
       }
     };
-    constexpr auto expr_fn = expr(fn);
+    constexpr auto expr_fn = expr(detail::default_construct(std::type_identity<decltype(fn)>{}));
     return [expr_fn, t]<auto... Ids>(std::index_sequence<Ids...>) {
       return std::tuple{std::get<expr_fn.vs[Ids]>(t)...};
     }(std::make_index_sequence<expr_fn.size>{});
@@ -567,9 +576,8 @@ template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 #include <algorithm>
 
 static_assert(([] {
-  using mp::operator|;
-  using mp::operator""_c;
-  using std::literals::operator""sv;
+  using namespace std::literals;
+  using namespace mp;
 
   struct foo {};
   struct structural {};
@@ -612,9 +620,9 @@ static_assert(([] {
 
   // meta.comparable
   static_assert(mp::meta{} == mp::meta{});
-  static_assert(mp::meta{.index = 42, .size = 4} == mp::meta{.index = 42, .size = 4});
-  static_assert(mp::meta{.index = 42, .size = 4} != mp::meta{.index = 42, .size = 10000});
-  static_assert(mp::meta{.index = 42, .size = 4} != mp::meta{.index = 1000, .size = 4});
+  static_assert(mp::meta{42, 4} == mp::meta{42, 4});
+  static_assert(mp::meta{42, 4} != mp::meta{42, 10000});
+  static_assert(mp::meta{42, 4} != mp::meta{1000, 4});
 
   // tuple.reverse
   static_assert((std::tuple{1} | std::views::reverse) == std::tuple{1});
@@ -624,7 +632,6 @@ static_assert(([] {
   // tuple.take
   static_assert((std::tuple{1, 2, 3} | std::views::take(1_c)) == std::tuple{1});
   static_assert((std::tuple{1, 2, 3} | std::views::take(2_c)) == std::tuple{1, 2});
-
   // tuple.drop
   static_assert((std::tuple{1, 2, 3} | std::views::drop(1_c)) == std::tuple{2, 3});
   static_assert((std::tuple{1, 2, 3} | std::views::drop(2_c)) == std::tuple{3});
