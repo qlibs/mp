@@ -197,9 +197,13 @@ struct size_vs {
   std::size_t size{};
   std::array<std::size_t, N> vs{};
 };
+#if defined(_MSC_VER)
 template <template<class...> class T, class Fn, class... Ts>
-constexpr auto default_construct(std::type_identity<T<Fn, Ts...>>){ return T<Fn, Ts...>{Ts{}...}; }
-template <class T> constexpr auto default_construct(std::type_identity<T>) { return T{}; }
+constexpr auto propagate(const T<Fn, Ts...>&){ return T<Fn, Ts...>{Ts{}...}; }
+template <class T> constexpr auto propagate(const T&) { return T{}; }
+#else
+template <class T> constexpr auto propagate(const T& t) -> decltype(auto) { return t; }
+#endif
 }  // namespace detail
 
 template <template <class...> class T, class... Ts, template <class...> class U,
@@ -367,12 +371,7 @@ template <template <class...> class T, class... Ts>
       }
     };
 
-#if defined(_MSC_VER)
-    constexpr auto expr_fn = expr(detail::default_construct(std::type_identity<decltype(fn)>{}));
-#else
-    constexpr auto expr_fn = expr(fn);
-#endif
-    if constexpr (requires { expr_fn.vs; }) {
+    if constexpr (constexpr auto expr_fn = expr(detail::propagate(fn)); requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
         return type<T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>;
       }(std::make_index_sequence<expr_fn.size>{});
@@ -415,12 +414,7 @@ template <template <auto...> class T, auto... Vs>
       }
     };
 
-#if defined(_MSC_VER)
-    constexpr auto expr_fn = expr(detail::default_construct(std::type_identity<decltype(fn)>{}));
-#else
-    constexpr auto expr_fn = expr(fn);
-#endif
-    if constexpr (requires { expr_fn.vs; }) {
+    if constexpr (constexpr auto expr_fn = expr(detail::propagate(fn)); requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
         return T<utility::nth_pack_element_v<expr_fn.vs[Ids], Vs...>...>{};
       }(std::make_index_sequence<expr_fn.size>{});
@@ -463,12 +457,7 @@ template <template <class, auto...> class T, class R, auto... Vs>
       }
     };
 
-#if defined(_MSC_VER)
-    constexpr auto expr_fn = expr(detail::default_construct(std::type_identity<decltype(fn)>{}));
-#else
-    constexpr auto expr_fn = expr(fn);
-#endif
-    if constexpr (requires { expr_fn.vs; }) {
+    if constexpr (constexpr auto expr_fn = expr(detail::propagate(fn)); requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
         return T<R, utility::nth_pack_element_v<expr_fn.vs[Ids], Vs...>...>{};
       }(std::make_index_sequence<expr_fn.size>{});
@@ -549,11 +538,7 @@ template <class... Ts>
       }
     };
 
-#if defined(_MSC_VER)
-    constexpr auto expr_fn = expr(detail::default_construct(std::type_identity<decltype(fn)>{}));
-#else
-    constexpr auto expr_fn = expr(fn);
-#endif
+    constexpr auto expr_fn = expr(detail::propagate(fn));
     return [expr_fn, t]<auto... Ids>(std::index_sequence<Ids...>) {
       return std::tuple{std::get<expr_fn.vs[Ids]>(t)...};
     }(std::make_index_sequence<expr_fn.size>{});
