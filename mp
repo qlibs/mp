@@ -367,7 +367,12 @@ template <template <class...> class T, class... Ts>
       }
     };
 
-    if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
+#if defined(_MSC_VER)
+    constexpr auto expr_fn = expr(detail::default_construct(std::type_identity<decltype(fn)>{}));
+#else
+    constexpr auto expr_fn = expr(fn);
+#endif
+    if constexpr (requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
         return detail::ext<T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>;
       }(std::make_index_sequence<expr_fn.size>{});
@@ -410,7 +415,12 @@ template <template <auto...> class T, auto... Vs>
       }
     };
 
-    if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
+#if defined(_MSC_VER)
+    constexpr auto expr_fn = expr(detail::default_construct(std::type_identity<decltype(fn)>{}));
+#else
+    constexpr auto expr_fn = expr(fn);
+#endif
+    if constexpr (requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
         return T<utility::nth_pack_element_v<expr_fn.vs[Ids], Vs...>...>{};
       }(std::make_index_sequence<expr_fn.size>{});
@@ -453,7 +463,12 @@ template <template <class, auto...> class T, class R, auto... Vs>
       }
     };
 
-    if constexpr (constexpr auto expr_fn = expr(fn); requires { expr_fn.vs; }) {
+#if defined(_MSC_VER)
+    constexpr auto expr_fn = expr(detail::default_construct(std::type_identity<decltype(fn)>{}));
+#else
+    constexpr auto expr_fn = expr(fn);
+#endif
+    if constexpr (requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
         return T<R, utility::nth_pack_element_v<expr_fn.vs[Ids], Vs...>...>{};
       }(std::make_index_sequence<expr_fn.size>{});
@@ -496,6 +511,7 @@ template <class T>
           }
         }(std::make_index_sequence<sizeof...(Ts)>{});
       };
+
       constexpr auto expr_fn = expr(fn, t);
       return [&]<auto... Ids>(std::index_sequence<Ids...>) {
         return std::tuple{std::get<expr_fn.vs[Ids]>(t())...};
