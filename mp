@@ -694,6 +694,8 @@ static_assert(([] {
   static_assert((mp::list<1, 3, 2>() | sort | unique) == mp::list<1, 2, 3>());
   static_assert((mp::list<2, 2, 1, 1, 3>() | sort | unique) == mp::list<1, 2, 3>());
 
+  using mp::operator""_c;
+
   auto slice = [](auto list, auto begin, auto end) {
     return list
       | std::views::drop(begin)
