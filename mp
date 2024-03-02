@@ -15,13 +15,13 @@
 #include <utility>
 #include <vector>
 
-#if defined (_MSC_VER)
+#if defined(_MSC_VER)
 #define __has_builtin(...) 0
 #endif
 
 namespace mp::inline v1_0_0 {
 namespace utility {
-#if __has_builtin(__type_pack_element)
+#if defined(__clang__) and __has_builtin(__type_pack_element)
 template <auto N, class... Ts>
 using nth_pack_element = __type_pack_element<N, Ts...>;
 
@@ -532,7 +532,12 @@ template <class... Ts>
         return make(invoke<Ts...>(types, fn));
       }
     };
+
+#if defined(_MSC_VER)
     constexpr auto expr_fn = expr(detail::default_construct(std::type_identity<decltype(fn)>{}));
+#else
+    constexpr auto expr_fn = expr(fn);
+#endif
     return [expr_fn, t]<auto... Ids>(std::index_sequence<Ids...>) {
       return std::tuple{std::get<expr_fn.vs[Ids]>(t)...};
     }(std::make_index_sequence<expr_fn.size>{});
