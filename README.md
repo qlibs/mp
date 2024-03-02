@@ -15,11 +15,12 @@
 
 - Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp)
 - Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
-- Easy debugging (meta-functions can be simply run at run-time!)
+- Easy debugging (meta-functions can be simply run at run-time)
 - Same interface for `types/values/tuples`
 - Declarative by design (composable using pipe operator, support for ranges)
 - Verifies itself upon include (aka runs all tests via static_asserts)
 - Fast compilation times (see [benchmarks](#benchmarks))
+- Plays well with reflection
 
 ### Requirements
 
