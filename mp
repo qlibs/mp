@@ -110,7 +110,7 @@ struct meta {
 };
 
 using utility::operator""_c;
-template <auto N> constexpr auto _c = utility::integral_constant<N>{};
+template <auto N> inline constexpr auto _c = utility::integral_constant<N>{};
 
 template <class... Ts>
 struct type_list {
@@ -185,27 +185,24 @@ template <fixed_string Str>
   }(std::make_index_sequence<Str.size>{});
 }
 
-template <auto expr, class... Ts>
-using typeof = decltype(expr(std::declval<Ts>()...));
-
 namespace detail {
 template <auto N>
 struct size_vs {
   std::size_t size{};
   std::array<std::size_t, N> vs{};
 };
-template<class T> extern const T ext{};
-
 template <template<class...> class T, class Fn, class... Ts>
 constexpr auto default_construct(std::type_identity<T<Fn, Ts...>>){ return T<Fn, Ts...>{Ts{}...}; }
 template <class T> constexpr auto default_construct(std::type_identity<T>) { return T{}; }
 }  // namespace detail
 
+template<class T> extern T typeof;
+
 template <template <class...> class T, class... Ts, template <class...> class U,
           class... Us>
   requires(not concepts::callable<U<Us...>>)
 [[nodiscard]] constexpr auto operator|(T<Ts...>, U<Us...>) {
-  return detail::ext<T<Ts..., Us...>>;
+  return typeof<T<Ts..., Us...>>;
 }
 
 template <class... Ts, class... Us>
@@ -373,7 +370,7 @@ template <template <class...> class T, class... Ts>
 #endif
     if constexpr (requires { expr_fn.vs; }) {
       return [expr_fn]<auto... Ids>(std::index_sequence<Ids...>) {
-        return detail::ext<T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>;
+        return typeof<T<utility::nth_pack_element<expr_fn.vs[Ids], Ts...>...>>;
       }(std::make_index_sequence<expr_fn.size>{});
     } else {
       return expr_fn;
@@ -586,14 +583,12 @@ constexpr auto for_each(const T<Ts...>&, auto expr) {
     (expr(Ts) or ...);
   }
 }
-
-template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 }  // namespace mp::inline v0_0_1
 
 #if not defined(MP_DISABLE_STATIC_ASSERT_TESTS)
 #include <ranges>
 #include <algorithm>
+#include <variant>
 
 static_assert(([] {
   using namespace std::literals;
@@ -652,6 +647,7 @@ static_assert(([] {
   // tuple.take
   static_assert((std::tuple{1, 2, 3} | std::views::take(1_c)) == std::tuple{1});
   static_assert((std::tuple{1, 2, 3} | std::views::take(2_c)) == std::tuple{1, 2});
+
   // tuple.drop
   static_assert((std::tuple{1, 2, 3} | std::views::drop(1_c)) == std::tuple{2, 3});
   static_assert((std::tuple{1, 2, 3} | std::views::drop(2_c)) == std::tuple{3});
@@ -725,6 +721,13 @@ static_assert(([] {
   static_assert((mp::list<1, 2, 3>() | sort | unique) == mp::list<1, 2, 3>());
   static_assert((mp::list<1, 3, 2>() | sort | unique) == mp::list<1, 2, 3>());
   static_assert((mp::list<2, 2, 1, 1, 3>() | sort | unique) == mp::list<1, 2, 3>());
+
+  auto slice = [](auto list, auto begin, auto end) {
+    return list
+      | std::views::drop(begin)
+      | std::views::take(end - 1_c);
+  };
+  static_assert(std::is_same_v<decltype(slice(typeof<std::variant<int, double, float, short>>, 1_c, 3_c)), std::variant<double, float>>);
 }(), true));
 #endif
 #endif // MP

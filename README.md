@@ -435,7 +435,7 @@ Examples in the following section and the API.
 - <a href="https://godbolt.org/z/9hxds4ro6">pack</a>
 - <a href="https://godbolt.org/z/bP9a1Kd66">transform</a>
 - <a href="https://godbolt.org/z/jbx87ccKe">unique</a>
-- <a href="https://godbolt.org/z/hs79W63P9">state_machine</a>
+- <a href="https://godbolt.org/z/eKzj1hbW8">state_machine</a>
 
 </p>
 </details>
