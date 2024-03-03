@@ -153,6 +153,8 @@ template<template<class...> class F, template<class...> class TRng, template<cla
 template<class T> auto pred(T) -> void;
 } // namespace detail
 
+template<class... Ts> auto same_types(Ts...) -> std::common_type_t<Ts...>;
+
 template <template<class...> class T, class... Ts> // requires
 [[nodiscard]] constexpr auto operator|(T<Ts...> t, auto fn) {
   if constexpr (requires { fn.template operator()<T, Ts...>(); }) {
@@ -164,7 +166,7 @@ template <template<class...> class T, class... Ts> // requires
     using A = decltype(adapter(fn));
     using Fn = decltype(pred(fn));
 
-    if constexpr ((requires { Fn{}(Ts{}); } and ...)) {
+    if constexpr (not std::is_void_v<Fn> and requires { (Fn{}(Ts{}), ...); }) {
       if constexpr (requires { std::array{Fn{}(Ts{})...}; }) { // invocable
         constexpr auto indices = to<static_vector<std::size_t, sizeof...(Ts)>>(A{}([indices = std::array{Fn{}(Ts{})...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>()));
         return [&]<auto... Is>(std::index_sequence<Is...>) {
@@ -173,8 +175,8 @@ template <template<class...> class T, class... Ts> // requires
       } else {
         return T<decltype(Fn{}(Ts{}))...>{}; // pure
       }
-    } else if constexpr ((requires { Fn{}.template operator()<Ts>(); } and ...)) {
-      if constexpr (requires { std::array{Fn{}.template operator()<Ts>()...}; }) { // invocable
+    } else if constexpr (requires { (Fn{}.template operator()<Ts>(), ...); }) {
+      if constexpr (requires { same_types(Fn{}.template operator()<Ts>()...); }) { // invocable
         constexpr auto indices = to<static_vector<std::size_t, sizeof...(Ts)>>(A{}([indices = std::array{Fn{}.template operator()<Ts>()...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>()));
         return [&]<auto... Is>(std::index_sequence<Is...>) {
           return make<indices[Is]...>(t);
@@ -191,10 +193,10 @@ template <template<class...> class T, class... Ts> // requires
         } else if constexpr (requires{ fn(vs); }) {
           return detail::to<detail::static_vector<std::size_t, sizeof...(Ts)>>(fn(vs)); // others
         }
-      }(fn);
+      }(detail::propagate(fn));
       return [&]<auto... Is>(std::index_sequence<Is...>) {
         return make<indices[Is]...>(t);
-      }(std::make_index_sequence<std::size(indices)>());
+      }(std::make_index_sequence<std::size(indices)>{});
     }
   }
 }
@@ -210,7 +212,7 @@ template <template<auto...> class T, auto... Ts> // requires
     using A = decltype(adapter(fn));
     using Fn = decltype(pred(fn));
 
-    if constexpr ((requires { Fn{}(Ts); } and ...)) {
+    if constexpr (not std::is_void_v<A> and not std::is_void_v<Fn> and requires { (Fn{}(Ts), ...); }) {
       if constexpr (requires { std::array{Fn{}(Ts)...}; }) { // invocable
         constexpr auto indices = to<static_vector<std::size_t, sizeof...(Ts)>>(A{}([indices = std::array{Fn{}(Ts)...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>()));
         return [&]<auto... Is>(std::index_sequence<Is...>) {
@@ -220,7 +222,7 @@ template <template<auto...> class T, auto... Ts> // requires
         return T<Fn{}(Ts)...>{}; // pure
       }
     } else if constexpr ((requires { Fn{}.template operator()<Ts>(); } and ...)) {
-      if constexpr (requires { std::array{Fn{}.template operator()<Ts>()...}; }) { // invocable 
+      if constexpr (requires { std::array{Fn{}.template operator()<Ts>()...}; }) { // invocable
         constexpr auto indices = to<static_vector<std::size_t, sizeof...(Ts)>>(A{}([indices = std::array{Fn{}.template operator()<Ts>()...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>()));
         return [&]<auto... Is>(std::index_sequence<Is...>) {
           return make<indices[Is]...>(t);
@@ -237,10 +239,10 @@ template <template<auto...> class T, auto... Ts> // requires
         } else if constexpr (requires{ fn(vs); }) {
           return detail::to<detail::static_vector<std::size_t, sizeof...(Ts)>>(fn(vs)); // others
         }
-      }(fn);
+      }(detail::propagate(fn));
       return [&]<auto... Is>(std::index_sequence<Is...>) {
         return make<indices[Is]...>(t);
-      }(std::make_index_sequence<std::size(indices)>());
+      }(std::make_index_sequence<std::size(indices)>{});
     }
   }
 }
@@ -359,7 +361,7 @@ static_assert(([] {
         ;
     };
 
-    static_assert(mp::list<val const, foo const>() == ops(mp::list<int, foo, val, bar, double>()));
+   static_assert(mp::list<val const, foo const>() == ops(mp::list<int, foo, val, bar, double>()));
   }
 
   // type_list<Ts...>
