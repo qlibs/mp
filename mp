@@ -19,10 +19,6 @@
 #define __has_builtin(...) 0
 #endif
 
-#if defined(__clang__)
-#pragma clang diagnostic ignored "-Wundefined-var-template"
-#endif
-
 namespace mp::inline v1_0_0 {
 #if defined(__clang__) and __has_builtin(__type_pack_element)
 template <auto N, class... Ts> using nth_pack_element = __type_pack_element<N, Ts...>;
@@ -80,6 +76,9 @@ template <auto Lhs, auto Rhs>
   return str;
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wundefined-var-template"
+#endif
 template<class T> extern T type;
 
 template <class... Ts>
@@ -151,9 +150,7 @@ template<class... Ts> auto same_types(Ts...) -> std::common_type_t<Ts...>;
 
 template <template<class...> class T, class... Ts> // requires
 [[nodiscard]] constexpr auto operator|(T<Ts...> t, auto fn) {
-  if constexpr (requires { fn.template operator()<T, Ts...>(); }) {
-    return fn.template operator()<T, Ts...>();
-  } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
+  if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
     using namespace detail;
@@ -197,9 +194,7 @@ template <template<class...> class T, class... Ts> // requires
 
 template <template<auto...> class T, auto... Ts> // requires
 [[nodiscard]] constexpr auto operator|(T<Ts...> t, auto fn) {
-  if constexpr (requires { fn.template operator()<T, Ts...>(); }) {
-    return fn.template operator()<T, Ts...>();
-  } else if constexpr (requires { fn.template operator()<Ts...>(); }) {
+  if constexpr (requires { fn.template operator()<Ts...>(); }) {
     return fn.template operator()<Ts...>();
   } else {
     using namespace detail;
@@ -241,9 +236,14 @@ template <template<auto...> class T, auto... Ts> // requires
   }
 }
 
-template <template <class...> class T, class... Ts, template <class...> class U, class... Us>
+template<class T> concept meta = requires(T t) { t.size; } and sizeof(T) == 1u;
+
+template <template <class...> class T, class... Ts, template <class...> class U, class... Us> requires (meta<T<Ts...>> and meta<U<Us...>>)
 [[nodiscard]] constexpr auto operator+(T<Ts...>, U<Us...>) { return type<T<Ts..., Us...>>; }
-template <class... Ts, class... Us> [[nodiscard]] constexpr auto operator+(std::tuple<Ts...> lhs, std::tuple<Us...> rhs) { return std::tuple_cat(lhs, rhs); }
+template <template <auto...> class T, auto... Ts, template <auto...> class U, auto... Us> requires (meta<T<Ts...>> and meta<U<Us...>>)
+[[nodiscard]] constexpr auto operator+(T<Ts...>, U<Us...>) { return type<T<Ts..., Us...>>; }
+template <class... Ts, class... Us>
+[[nodiscard]] constexpr auto operator+(std::tuple<Ts...> lhs, std::tuple<Us...> rhs) { return std::tuple_cat(lhs, rhs); }
 } // namespace mp::inline v1_0_0
 
 #if not defined(MP_DISABLE_STATIC_ASSERT_TESTS)
@@ -427,6 +427,13 @@ static_assert(([] {
         | std::views::take(end - 1_c);
     };
     static_assert(std::is_same_v<decltype(slice(type<std::variant<int, double, float, short>>, 1_c, 3_c)), std::variant<double, float>>);
+  }
+
+  // operator+
+  {
+    static_assert(std::tuple{1, 2} + std::tuple{3} == std::tuple{1, 2, 3});
+    static_assert(mp::list<1, 2>() + mp::list<3>() == mp::list<1, 2, 3>());
+    static_assert(mp::list<int, float>() + mp::list<double>() == mp::list<int, float, double>());
   }
 }(), true));
 } // namespace MP_TEST
