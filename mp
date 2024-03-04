@@ -236,12 +236,12 @@ template <template<auto...> class T, auto... Ts> // requires
   }
 }
 
-template<class T> concept meta = requires(T t) { t.size; } and sizeof(T) == 1u;
+template<class T> concept meta = requires { T::size; } and sizeof(T) == 1u;
 
 template <template <class...> class T, class... Ts, template <class...> class U, class... Us> requires (meta<T<Ts...>> and meta<U<Us...>>)
-[[nodiscard]] constexpr auto operator+(T<Ts...>, U<Us...>) { return type<T<Ts..., Us...>>; }
+[[nodiscard]] constexpr auto operator+(T<Ts...>, U<Us...>) { return T<Ts..., Us...>{}; }
 template <template <auto...> class T, auto... Ts, template <auto...> class U, auto... Us> requires (meta<T<Ts...>> and meta<U<Us...>>)
-[[nodiscard]] constexpr auto operator+(T<Ts...>, U<Us...>) { return type<T<Ts..., Us...>>; }
+[[nodiscard]] constexpr auto operator+(T<Ts...>, U<Us...>) { return T<Ts..., Us...>{}; }
 template <class... Ts, class... Us>
 [[nodiscard]] constexpr auto operator+(std::tuple<Ts...> lhs, std::tuple<Us...> rhs) { return std::tuple_cat(lhs, rhs); }
 } // namespace mp::inline v1_0_0
