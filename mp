@@ -121,19 +121,14 @@ template <class T> constexpr auto propagate(const T& t) -> decltype(auto) { retu
 
 template <class T, std::size_t N>
 struct static_vector {
+  constexpr static_vector() = default;
+  constexpr explicit(true) static_vector(auto&& other) { for (const auto& e : other) { push_back(e); } }
   constexpr auto push_back(const T& value) { values_[size_++] = value; }
   [[nodiscard]] constexpr auto operator[](auto i) const { return values_[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
   std::array<T, N> values_{};
   std::size_t size_{};
 };
-
-template<class T>
-constexpr auto to(auto r) {
-  T v{};
-  for (const auto x : r) { v.push_back(x); }
-  return v;
-}
 
 template<auto Begin, auto End>
 constexpr auto iota() {
@@ -151,9 +146,8 @@ template<class T> auto adapter(T) -> void;
 template<template<class...> class TRng, class A, class Fn> auto pred(TRng<A, Fn>) -> Fn;
 template<template<class...> class F, template<class...> class TRng, template<class...> class X, class A, class Fn> auto pred(F<TRng<A, X<Fn>>>) -> Fn;
 template<class T> auto pred(T) -> void;
-} // namespace detail
-
 template<class... Ts> auto same_types(Ts...) -> std::common_type_t<Ts...>;
+} // namespace detail
 
 template <template<class...> class T, class... Ts> // requires
 [[nodiscard]] constexpr auto operator|(T<Ts...> t, auto fn) {
@@ -168,7 +162,7 @@ template <template<class...> class T, class... Ts> // requires
 
     if constexpr (not std::is_void_v<Fn> and requires { (Fn{}(Ts{}), ...); }) {
       if constexpr (requires { std::array{Fn{}(Ts{})...}; }) { // invocable
-        constexpr auto indices = to<static_vector<std::size_t, sizeof...(Ts)>>(A{}([indices = std::array{Fn{}(Ts{})...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>()));
+        constexpr auto indices = detail::static_vector<std::size_t, sizeof...(Ts)>{A{}([indices = std::array{Fn{}(Ts{})...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>())};
         return [&]<auto... Is>(std::index_sequence<Is...>) {
           return make<indices[Is]...>(t);
         }(std::make_index_sequence<std::size(indices)>());
@@ -176,8 +170,8 @@ template <template<class...> class T, class... Ts> // requires
         return T<decltype(Fn{}(Ts{}))...>{}; // pure
       }
     } else if constexpr (requires { (Fn{}.template operator()<Ts>(), ...); }) {
-      if constexpr (requires { same_types(Fn{}.template operator()<Ts>()...); }) { // invocable
-        constexpr auto indices = to<static_vector<std::size_t, sizeof...(Ts)>>(A{}([indices = std::array{Fn{}.template operator()<Ts>()...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>()));
+      if constexpr (requires { detail::same_types(Fn{}.template operator()<Ts>()...); }) { // invocable
+        constexpr auto indices = detail::static_vector<std::size_t, sizeof...(Ts)>{A{}([indices = std::array{Fn{}.template operator()<Ts>()...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>())};
         return [&]<auto... Is>(std::index_sequence<Is...>) {
           return make<indices[Is]...>(t);
         }(std::make_index_sequence<std::size(indices)>());
@@ -189,9 +183,9 @@ template <template<class...> class T, class... Ts> // requires
         auto i = 0;
         std::vector vs{(void((Ts*)0), i++)...};
         if constexpr (requires { fn.template operator()<Ts...>(vs); }) {
-          return detail::to<detail::static_vector<std::size_t, sizeof...(Ts)>>(fn.template operator()<Ts...>(vs)); // others
+          return detail::static_vector<std::size_t, sizeof...(Ts)>{fn.template operator()<Ts...>(vs)}; // others
         } else if constexpr (requires{ fn(vs); }) {
-          return detail::to<detail::static_vector<std::size_t, sizeof...(Ts)>>(fn(vs)); // others
+          return detail::static_vector<std::size_t, sizeof...(Ts)>{fn(vs)}; // others
         }
       }(detail::propagate(fn));
       return [&]<auto... Is>(std::index_sequence<Is...>) {
@@ -214,7 +208,7 @@ template <template<auto...> class T, auto... Ts> // requires
 
     if constexpr (not std::is_void_v<A> and not std::is_void_v<Fn> and requires { (Fn{}(Ts), ...); }) {
       if constexpr (requires { std::array{Fn{}(Ts)...}; }) { // invocable
-        constexpr auto indices = to<static_vector<std::size_t, sizeof...(Ts)>>(A{}([indices = std::array{Fn{}(Ts)...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>()));
+        constexpr auto indices = detail::static_vector<std::size_t, sizeof...(Ts)>{A{}([indices = std::array{Fn{}(Ts)...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>())};
         return [&]<auto... Is>(std::index_sequence<Is...>) {
           return make<indices[Is]...>(t);
         }(std::make_index_sequence<std::size(indices)>());
@@ -223,7 +217,7 @@ template <template<auto...> class T, auto... Ts> // requires
       }
     } else if constexpr ((requires { Fn{}.template operator()<Ts>(); } and ...)) {
       if constexpr (requires { std::array{Fn{}.template operator()<Ts>()...}; }) { // invocable
-        constexpr auto indices = to<static_vector<std::size_t, sizeof...(Ts)>>(A{}([indices = std::array{Fn{}.template operator()<Ts>()...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>()));
+        constexpr auto indices = detail::static_vector<std::size_t, sizeof...(Ts)>{A{}([indices = std::array{Fn{}.template operator()<Ts>()...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>())};
         return [&]<auto... Is>(std::index_sequence<Is...>) {
           return make<indices[Is]...>(t);
         }(std::make_index_sequence<std::size(indices)>());
@@ -235,9 +229,9 @@ template <template<auto...> class T, auto... Ts> // requires
         auto i = 0;
         std::vector vs{(void(Ts), i++)...};
         if constexpr (requires { fn.template operator()<Ts...>(vs); }) {
-          return detail::to<detail::static_vector<std::size_t, sizeof...(Ts)>>(fn.template operator()<Ts...>(vs)); // others
+          return detail::static_vector<std::size_t, sizeof...(Ts)>{fn.template operator()<Ts...>(vs)}; // others
         } else if constexpr (requires{ fn(vs); }) {
-          return detail::to<detail::static_vector<std::size_t, sizeof...(Ts)>>(fn(vs)); // others
+          return detail::static_vector<std::size_t, sizeof...(Ts)>{fn(vs)}; // others
         }
       }(detail::propagate(fn));
       return [&]<auto... Is>(std::index_sequence<Is...>) {
