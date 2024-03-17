@@ -5,437 +5,304 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#if not defined(MP)
+#if !defined(MP)
 #define MP 1'0'0
 
-#include <array>
-#include <concepts>
-#include <string_view>
-#include <tuple>
-#include <utility>
-#include <vector>
-
-#if defined(_MSC_VER)
-#define __has_builtin(...) 0
+#if defined(__GNUC__)
+#pragma GCC system_header // -Wnon-template-friend
 #endif
 
 namespace mp::inline v1_0_0 {
-#if defined(__clang__) and __has_builtin(__type_pack_element)
-template <auto N, class... Ts> using nth_pack_element = __type_pack_element<N, Ts...>;
-template <auto N, auto... Ns> constexpr auto nth_pack_element_v = __type_pack_element<N, std::integral_constant<decltype(Ns), Ns>...>::value;
-#else
 namespace detail {
-template <class, std::size_t> struct type_id {};
-template <class... Ts> struct inherit : Ts... {};
-template <auto N, class T> auto nth_pack_element_impl(type_id<T, N>) -> T;
-template <auto N, class... Ts, std::size_t... Ns>
-auto nth_pack_element(std::index_sequence<Ns...>) -> decltype(nth_pack_element_impl<N>( inherit<type_id<std::type_identity<Ts>, Ns>...>{}));
+using size_t = decltype(sizeof(int));
+template<class T> T&& declval();
+template<class T, T...> struct integer_sequence { };
+template<size_t... Ns> using index_sequence = integer_sequence<size_t, Ns...>;
+template<size_t Size> using make_index_sequence =
+#if defined(__clang__) || defined(_MSC_VER)
+  __make_integer_seq<integer_sequence, size_t, Size>;
+#else
+   index_sequence<__integer_pack(Size)...>;
+#endif
+#if defined(MP_EXPERIMENTAL)
+enum class meta_t : size_t { };
+#elif (__cpp_nontype_template_args >= 201911L)
+struct meta_t {
+  const size_t* id{};
+  [[nodiscard]] constexpr operator auto() const { return id; }
+};
+#else
+using meta_t = const size_t*;
+#endif
+template<meta_t> struct id { constexpr auto friend get(id); };
+template<class T> struct type_identity { using type = T; };
+template<class T, meta_t Id> struct meta_id { constexpr auto friend get(id<Id>) { return type_identity<T>{}; } };
+#if defined(MP_EXPERIMENTAL)
+template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(...) -> detail::size_t { return Id; }
+template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(int) -> decltype(get(id<meta_t(Id)>{}), size_t{}) { return type_id<T, Id+1>(Id); }
+template<class T> [[nodiscard]] constexpr auto meta() -> meta_t {
+  constexpr auto id = meta_t(type_id<T, 0>(0));
+  meta_id<T, id>();
+  return id;
+}
+#else
+template<class T> struct type { static constexpr size_t id{}; };
+template<class T> [[nodiscard]] constexpr auto meta() -> meta_t {
+  constexpr auto id = meta_t(&type<T>::id);
+  meta_id<T, id>();
+  return id;
+}
+#endif
 } // namespace detail
-template <auto N, class... Ts> using nth_pack_element = typename decltype(detail::nth_pack_element<N, Ts...>( std::make_index_sequence<sizeof...(Ts)>{}))::type;
-template <auto N, auto... Ns> constexpr auto nth_pack_element_v = nth_pack_element<N, std::integral_constant<decltype(Ns), Ns>...>::value;
-#endif
 
-template <auto N>
-struct integral_constant : std::integral_constant<decltype(N), N> {
-  [[nodiscard]] constexpr auto operator+(const auto value) const { return integral_constant<N + value>{}; }
-  [[nodiscard]] constexpr auto operator-(const auto value) const { return integral_constant<N - value>{}; }
-  [[nodiscard]] constexpr auto operator*(const auto value) const { return integral_constant<N * value>{}; }
-  [[nodiscard]] constexpr auto operator/(const auto value) const { return integral_constant<N / value>{}; }
-};
+using meta_t = detail::meta_t;
+template<class T> inline constexpr meta_t meta = detail::meta<T>();
+template<meta_t meta> using type_of = typename decltype(get(detail::id<meta>{}))::type;
 
-template <char... Cs> [[nodiscard]] consteval auto operator""_c() {
-  return integral_constant<[] {
-    std::size_t result{};
-    for (const auto c : std::array{Cs...}) {
-      result = result * std::size_t(10) + std::size_t(c - '0');
-    }
-    return result;
-  }()>{};
-}
-
-template <auto N> inline constexpr auto _c = integral_constant<N>{};
-
-template <std::size_t Size>
-struct fixed_string {
-  static constexpr auto size = Size;
-  constexpr fixed_string() = default;
-  constexpr explicit(false) fixed_string(const char* str) { for (auto i = 0u; i < Size; ++i) { data[i] = str[i]; } }
-  [[nodiscard]] constexpr auto operator<=>(const fixed_string&) const = default;
-  [[nodiscard]] constexpr explicit(false) operator std::string_view() const {
-    return {std::data(data), Size};
-  }
-  std::array<char, Size> data{};
-};
-template <std::size_t Size> fixed_string(const char (&)[Size]) -> fixed_string<Size-1>;
-
-template <auto Lhs, auto Rhs>
-[[nodiscard]] constexpr auto operator+(const fixed_string<Lhs>& lhs, const fixed_string<Rhs>& rhs) {
-  fixed_string<Lhs + Rhs> str{};
-  for (auto i = 0u; i < Lhs; ++i) { str.data[i] = lhs.data[i]; }
-  for (auto i = 0u; i < Rhs; ++i) { str.data[i + Lhs] = rhs.data[i]; }
-  return str;
-}
-
-#if defined(__clang__)
-#pragma clang diagnostic ignored "-Wundefined-var-template"
-#endif
-template<class T> extern T type;
-
-template <class... Ts>
-struct type_list {
-  static constexpr auto size = sizeof...(Ts);
-  constexpr auto operator==(type_list<Ts...>) const -> bool { return true; }
-  template <class... Us> constexpr auto operator==(type_list<Us...>) const -> bool { return false; }
-  constexpr auto operator[](const auto N) const { return nth_pack_element<N, Ts...>(); }
-};
-
-template <auto... Vs>
-struct value_list {
-  static constexpr auto size = sizeof...(Vs);
-  constexpr auto operator==(value_list<Vs...>) const -> bool { return true; }
-  template <auto... Us> constexpr auto operator==(value_list<Us...>) const -> bool { return false; }
-  constexpr auto operator[](const auto N) const { return nth_pack_element_v<N, Vs...>; }
-};
-
-template <class... Ts> [[nodiscard]] constexpr auto list() { return type_list<Ts...>{}; }
-
-template <auto... Vs> requires(not(requires { Vs.data; Vs.size; } or ...))
-[[nodiscard]] constexpr auto list() { return value_list<Vs...>{}; }
-
-template <fixed_string Str>
-[[nodiscard]] constexpr auto list() {
-  return []<auto... Ns>(std::index_sequence<Ns...>) {
-    return value_list<Str.data[Ns]...>{};
-  }(std::make_index_sequence<Str.size>{});
-}
-
-namespace detail {
-#if defined(_MSC_VER)
-template <template<class...> class T, class Fn, class... Ts>
-constexpr auto propagate(const T<Fn, Ts...>&){ return T<Fn, Ts...>{Ts{}...}; }
-template <class T> constexpr auto propagate(const T&) { return T{}; }
-#else
-template <class T> constexpr auto propagate(const T& t) -> decltype(auto) { return t; }
-#endif
-
-template <class T, std::size_t N>
-struct static_vector {
-  constexpr static_vector() = default;
-  constexpr explicit(true) static_vector(auto&& other) { for (const auto& e : other) { push_back(e); } }
-  constexpr auto push_back(const T& value) { values_[size_++] = value; }
-  [[nodiscard]] constexpr auto operator[](auto i) const { return values_[i]; }
+template<class T, detail::size_t Size>
+struct vector {
+  constexpr vector() = default;
+  template<class... Ts> constexpr vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
+  template<class TRange, class = decltype(detail::declval<TRange>().begin(), detail::declval<TRange>().end())> constexpr vector(TRange range) { for (const T& t : range) { data[size_++] = t; } }
+  constexpr void push_back(const T& t) { data[size_++] = t; }
+  [[nodiscard]] constexpr auto begin() const { return &data[0]; }
+  [[nodiscard]] constexpr auto begin() { return &data[0]; }
+  [[nodiscard]] constexpr auto end() const { return &data[0]+size_; }
+  [[nodiscard]] constexpr auto end() { return &data[0]+size_; }
+  [[nodiscard]] constexpr auto operator[](detail::size_t i) const { return data[i]; }
+  [[nodiscard]] constexpr auto& operator[](detail::size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
-  std::array<T, N> values_{};
-  std::size_t size_{};
+  [[nodiscard]] constexpr auto capacity() const { return Size; }
+  constexpr void clear() { size_ = {}; }
+  T data[Size?Size:1]{};
+  detail::size_t size_{};
 };
+template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1+sizeof...(Ts)>;
 
-template<auto Begin, auto End>
-constexpr auto iota() {
-  std::array<int, End-Begin> r{};
-  for (auto i = Begin; auto& e : r) { e = i++; }
-  return r;
+template<template<class...> class T, class Expr>
+[[nodiscard]] constexpr auto apply(Expr expr) {
+  constexpr auto ml = mp::vector<mp::meta_t, expr().size()>(expr());
+  return [ml]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
+    return T<typename decltype(get(detail::id<ml[Ns]>{}))::type...>();
+  }(detail::make_index_sequence<ml.size()>{});
 }
 
-template<auto... Ns, class... Ts> [[nodiscard]] constexpr auto make(std::tuple<Ts...> t) { return std::tuple{std::get<Ns>(t)...}; }
-template<auto... Ns, template<class...> class T, class... Ts> [[nodiscard]] constexpr auto make(T<Ts...>) { return T<mp::nth_pack_element<Ns, Ts...>...>{}; }
-template<auto... Ns, template<auto...> class T, auto... Ts> [[nodiscard]] constexpr auto make(T<Ts...>) { return T<mp::nth_pack_element_v<Ns, Ts...>...>{}; }
-template<template<class...> class TRng, class A, class Fn> auto adapter(TRng<A, Fn>) -> A;
-template<template<class...> class F, template<class...> class TRng, class A, class Fn> auto adapter(F<TRng<A, Fn>>) -> A;
-template<class T> auto adapter(T) -> void;
-template<template<class...> class TRng, class A, class Fn> auto pred(TRng<A, Fn>) -> Fn;
-template<template<class...> class F, template<class...> class TRng, template<class...> class X, class A, class Fn> auto pred(F<TRng<A, X<Fn>>>) -> Fn;
-template<class T> auto pred(T) -> void;
-template<class... Ts> auto same_types(Ts...) -> std::common_type_t<Ts...>;
+#if defined(__cpp_nontype_template_args)
+template<class Expr, class Fn>
+[[nodiscard]] constexpr auto apply(Expr expr, Fn fn) {
+  constexpr auto ml = mp::vector<mp::meta_t, expr().size()>(expr());
+  return [ml, fn]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
+    return fn.template operator()<type_of<ml[Ns]>...>();
+  }(detail::make_index_sequence<ml.size()>{});
+}
+#endif
+
+#if defined(__cpp_nontype_template_args)
+template<template<class...> class T, auto Expr>
+using apply_t = decltype(apply<T>(Expr));
+#endif
+
+#if (__cpp_generic_lambdas >= 201707L)
+template<auto V, class Fn>
+constexpr void for_each(Fn fn) {
+  [fn]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
+    (fn.template operator()<V[Ns]>(), ...);
+  }(detail::make_index_sequence<V.size()>{});
+}
+#endif
+
+#if defined(MP_EXPERIMENTAL)
+namespace experimental {
+namespace detail {
+template<class R, class T, class Fn> constexpr auto call(Fn fn, int) -> decltype(fn.template operator()<T>()) { return fn.template operator()<T>(); }
+template<class R, class T, class Fn> constexpr auto call(Fn, ...) -> R { return {}; }
 } // namespace detail
-
-template <template<class...> class T, class... Ts> // requires
-[[nodiscard]] constexpr auto operator|(T<Ts...> t, auto fn) {
-  if constexpr (requires { fn.template operator()<Ts...>(); }) {
-    return fn.template operator()<Ts...>();
-  } else {
-    using namespace detail;
-    using A = decltype(adapter(fn));
-    using Fn = decltype(pred(fn));
-
-    if constexpr (not std::is_void_v<Fn> and requires { (Fn{}(Ts{}), ...); }) {
-      if constexpr (requires { std::array{Fn{}(Ts{})...}; }) { // invocable
-        constexpr auto indices = detail::static_vector<std::size_t, sizeof...(Ts)>{A{}([indices = std::array{Fn{}(Ts{})...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>())};
-        return [&]<auto... Is>(std::index_sequence<Is...>) {
-          return make<indices[Is]...>(t);
-        }(std::make_index_sequence<std::size(indices)>());
-      } else {
-        return T<decltype(Fn{}(Ts{}))...>{}; // pure
-      }
-    } else if constexpr (requires { (Fn{}.template operator()<Ts>(), ...); }) {
-      if constexpr (requires { detail::same_types(Fn{}.template operator()<Ts>()...); }) { // invocable
-        constexpr auto indices = detail::static_vector<std::size_t, sizeof...(Ts)>{A{}([indices = std::array{Fn{}.template operator()<Ts>()...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>())};
-        return [&]<auto... Is>(std::index_sequence<Is...>) {
-          return make<indices[Is]...>(t);
-        }(std::make_index_sequence<std::size(indices)>());
-      } else {
-        return T<decltype(Fn{}.template operator()<Ts>())...>{}; // pure
-      }
-    } else {
-      constexpr auto indices = [](auto fn) {
-        auto i = 0;
-        std::vector vs{(void((Ts*)0), i++)...};
-        if constexpr (requires { fn.template operator()<Ts...>(vs); }) {
-          return detail::static_vector<std::size_t, sizeof...(Ts)>{fn.template operator()<Ts...>(vs)}; // others
-        } else if constexpr (requires{ fn(vs); }) {
-          return detail::static_vector<std::size_t, sizeof...(Ts)>{fn(vs)}; // others
-        }
-      }(detail::propagate(fn));
-      return [&]<auto... Is>(std::index_sequence<Is...>) {
-        return make<indices[Is]...>(t);
-      }(std::make_index_sequence<std::size(indices)>{});
-    }
-  }
+template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn) {
+  return [&]<mp::detail::size_t... Ns>(mp::detail::index_sequence<Ns...>) {
+    R (*dispatch[])(Fn){[](Fn fn) -> R { return detail::call<R, type_of<meta_t(Ns)>>(fn, int{}); }...};
+    return dispatch[mp::detail::size_t(m)](fn);
+  }(mp::detail::make_index_sequence<mp::detail::size_t(meta<class last>)>{});
 }
+} // namespace experimental
+#endif
+} // namespace mp
+#endif // MP
 
-template <template<auto...> class T, auto... Ts> // requires
-[[nodiscard]] constexpr auto operator|(T<Ts...> t, auto fn) {
-  if constexpr (requires { fn.template operator()<Ts...>(); }) {
-    return fn.template operator()<Ts...>();
-  } else {
-    using namespace detail;
-    using A = decltype(adapter(fn));
-    using Fn = decltype(pred(fn));
-
-    if constexpr (not std::is_void_v<A> and not std::is_void_v<Fn> and requires { (Fn{}(Ts), ...); }) {
-      if constexpr (requires { std::array{Fn{}(Ts)...}; }) { // invocable
-        constexpr auto indices = detail::static_vector<std::size_t, sizeof...(Ts)>{A{}([indices = std::array{Fn{}(Ts)...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>())};
-        return [&]<auto... Is>(std::index_sequence<Is...>) {
-          return make<indices[Is]...>(t);
-        }(std::make_index_sequence<std::size(indices)>());
-      } else {
-        return T<Fn{}(Ts)...>{}; // pure
-      }
-    } else if constexpr ((requires { Fn{}.template operator()<Ts>(); } and ...)) {
-      if constexpr (requires { std::array{Fn{}.template operator()<Ts>()...}; }) { // invocable
-        constexpr auto indices = detail::static_vector<std::size_t, sizeof...(Ts)>{A{}([indices = std::array{Fn{}.template operator()<Ts>()...}](auto i) { return indices[i]; })(iota<0, sizeof...(Ts)>())};
-        return [&]<auto... Is>(std::index_sequence<Is...>) {
-          return make<indices[Is]...>(t);
-        }(std::make_index_sequence<std::size(indices)>());
-      } else {
-        return T<Fn{}.template operator()<Ts>()...>{}; // pure
-      }
-    } else {
-      constexpr auto indices = [](auto fn) {
-        auto i = 0;
-        std::vector vs{(void(Ts), i++)...};
-        if constexpr (requires { fn.template operator()<Ts...>(vs); }) {
-          return detail::static_vector<std::size_t, sizeof...(Ts)>{fn.template operator()<Ts...>(vs)}; // others
-        } else if constexpr (requires{ fn(vs); }) {
-          return detail::static_vector<std::size_t, sizeof...(Ts)>{fn(vs)}; // others
-        }
-      }(detail::propagate(fn));
-      return [&]<auto... Is>(std::index_sequence<Is...>) {
-        return make<indices[Is]...>(t);
-      }(std::make_index_sequence<std::size(indices)>{});
-    }
-  }
-}
-
-template<class T> concept meta = requires { T::size; } and sizeof(T) == 1u;
-
-template <template <class...> class T, class... Ts, template <class...> class U, class... Us> requires (meta<T<Ts...>> and meta<U<Us...>>)
-[[nodiscard]] constexpr auto operator+(T<Ts...>, U<Us...>) { return T<Ts..., Us...>{}; }
-template <template <auto...> class T, auto... Ts, template <auto...> class U, auto... Us> requires (meta<T<Ts...>> and meta<U<Us...>>)
-[[nodiscard]] constexpr auto operator+(T<Ts...>, U<Us...>) { return T<Ts..., Us...>{}; }
-template <class... Ts, class... Us>
-[[nodiscard]] constexpr auto operator+(std::tuple<Ts...> lhs, std::tuple<Us...> rhs) { return std::tuple_cat(lhs, rhs); }
-} // namespace mp::inline v1_0_0
-
-#if not defined(MP_DISABLE_STATIC_ASSERT_TESTS)
-#include <ranges>
-#include <algorithm>
-#include <variant>
-
-namespace MP_TEST {
-using namespace std::literals;
-using namespace mp;
-
+#if !defined(DISABLE_STATIC_ASSERT_TESTS)
+namespace mp::inline v1_0_0::test {
+  template<class...> struct type_list { };
+  template<class...> struct is_same { static constexpr auto value = false; };
+  template<class TLhs, class TRhs> struct is_same<TLhs, TRhs> { static constexpr auto value = true; };
+} // namespace mp::test
 static_assert(([] {
-  struct bar { };
-  struct foo { int value; };
-  struct val { int value; };
-  struct structural {};
+  constexpr auto expect = [](auto cond) { if (not cond) { void failed(); failed(); } };
 
-  // nth_pack_element
-  static_assert(std::is_same_v<int, nth_pack_element<0, int, void, double>>);
-  static_assert(std::is_same_v<void, nth_pack_element<1, int, void, double>>);
-  static_assert(std::is_same_v<double, nth_pack_element<2, int, void, double>>);
-  static_assert(1 == nth_pack_element_v<0, 1, 2, 3>);
-  static_assert(2 == nth_pack_element_v<1, 1, 2, 3>);
-  static_assert(3 == nth_pack_element_v<2, 1, 2, 3>);
-
-  // ""_c/_c
-  static_assert(0_c == 0);
-  static_assert(42_c == 42);
-  static_assert(1000000_c == 1'000'000);
-  static_assert(1_c + 2_c == 3);
-  static_assert(2_c - 1_c == 1);
-  static_assert(_c<0> == 0_c);
-  static_assert(42_c == _c<42>);
-  static_assert(2_c - _c<1> == 1);
-
-  // fixed_string
+  // mp::detail
   {
-    static_assert(0u == mp::fixed_string<0>{}.size);
-    static_assert(""sv == mp::fixed_string{""});
-    static_assert("Foo"sv == mp::fixed_string{"Foo"});
-
-    constexpr auto foo = mp::fixed_string{"Foo"};
-    static_assert(foo == mp::fixed_string{"Foo"});
-    static_assert(foo != mp::fixed_string{"Bar"});
-  }
-
-  // type_list
-  {
-    static_assert(mp::type_list{} == mp::type_list{});
-    static_assert(mp::type_list<void>{} == mp::type_list<void>{});
-    static_assert(mp::type_list<int, double>{} == mp::type_list<int, double>{});
-    static_assert(mp::type_list<void>{} != mp::type_list<int>{});
-    static_assert(mp::type_list<void, int>{} != mp::type_list<int, void>{});
-  }
-
-  // value list
-  {
-    static_assert(mp::value_list{} == mp::value_list{});
-    static_assert(mp::value_list<1>{} == mp::value_list<1>{});
-    static_assert(mp::value_list<1, 2>{} == mp::value_list<1, 2>{});
-    static_assert(mp::value_list<2>{} != mp::value_list<1, 2>{});
-    static_assert(mp::value_list<2, 1>{} != mp::value_list<1, 2>{});
-    static_assert(mp::value_list<structural{}>{} == mp::value_list<structural{}>{});
-    static_assert(mp::value_list<structural{}>{} != mp::value_list<42>{});
+    // type_identity
+    {
+      static_assert([](int){ return true; }(typename mp::detail::type_identity<int>::type{}));
+      static_assert([](void*){ return true; }(typename mp::detail::type_identity<void*>::type{}));
     }
 
-  // list
-  {
-    static_assert(mp::list<int, void>() == mp::type_list<int, void>{});
-    static_assert(mp::list<1, 2, 3>() == mp::value_list<1, 2, 3>{});
-    static_assert(mp::list<structural{}, 1>() == mp::value_list<structural{}, 1>{});
+    // declval
+    {
+      struct s { s() = delete; };
+      static_assert(sizeof(s) == sizeof(mp::detail::declval<s>()));
+      static_assert(sizeof(s&) == sizeof(mp::detail::declval<s&>()));
+    }
+
+    // index_sequence
+    {
+      static_assert([](mp::detail::integer_sequence<mp::detail::size_t>){ return true; }(mp::detail::make_index_sequence<0>{}));
+      static_assert([](mp::detail::integer_sequence<mp::detail::size_t, 0>){ return true; }(mp::detail::make_index_sequence<1>{}));
+      static_assert([](mp::detail::integer_sequence<mp::detail::size_t, 0, 1>){ return true; }(mp::detail::make_index_sequence<2>{}));
+      static_assert([](mp::detail::index_sequence<>){ return true; }(mp::detail::make_index_sequence<0>{}));
+      static_assert([](mp::detail::index_sequence<0>){ return true; }(mp::detail::make_index_sequence<1>{}));
+      static_assert([](mp::detail::index_sequence<0, 1>){ return true; }(mp::detail::make_index_sequence<2>{}));
+    }
   }
 
-  // tuple.reverse
+  // mp::meta
   {
-    static_assert((std::tuple{1} | std::views::reverse) == std::tuple{1});
-    static_assert((std::tuple{1, 2} | std::views::reverse) == std::tuple{2, 1});
-    static_assert((std::tuple{1, 2., '3'} | std::views::reverse) == std::tuple{'3', 2., 1});
+    static_assert(mp::meta<int> == mp::meta<int>);
+    static_assert(mp::meta<int> != mp::meta<double>);
+    static_assert(mp::meta<double> == mp::meta<double>);
+    static_assert(mp::meta<int> == mp::meta<int>);
+    static_assert(mp::meta<void> == mp::meta<void>);
   }
 
-  // tuple.take
+  // mp::type_of
   {
-    static_assert((std::tuple{1, 2, 3} | std::views::take(1_c)) == std::tuple{1});
-    static_assert((std::tuple{1, 2, 3} | std::views::take(2_c)) == std::tuple{1, 2});
+    enum class e : int { };
+    static_assert(mp::test::is_same<void, mp::type_of<mp::meta<void>>>::value);
+    static_assert(mp::test::is_same<const int, mp::type_of<mp::meta<const int>>>::value);
+    static_assert(mp::test::is_same<const void*, mp::type_of<mp::meta<const void*>>>::value);
+    static_assert(mp::test::is_same<e, mp::type_of<mp::meta<e>>>::value);
+
+    constexpr mp::vector v{mp::meta<int>, mp::meta<e>};
+    static_assert(mp::test::is_same<int, mp::type_of<v[0]>>::value);
+    static_assert(mp::test::is_same<e, mp::type_of<v[1]>>::value);
   }
 
-  // tuple.drop
+  // mp::apply
   {
-    static_assert((std::tuple{1, 2, 3} | std::views::drop(1_c)) == std::tuple{2, 3});
-    static_assert((std::tuple{1, 2, 3} | std::views::drop(2_c)) == std::tuple{3});
+    static_assert([](mp::test::type_list<>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector<mp::meta_t, 0>{}; })));
+    static_assert([](mp::test::type_list<int>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<int>}; })));
+    static_assert([](mp::test::type_list<void, void>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<void>, mp::meta<void>}; })));
   }
 
-  // tuple.take.drop
+  // mp::apply_t
+#if (__cpp_nontype_template_args >= 201911L)
+  static_assert(mp::test::is_same<mp::test::type_list<>, mp::apply_t<mp::test::type_list, [] { return mp::vector<mp::meta_t, 0>{}; }>>::value);
+  static_assert(mp::test::is_same<mp::test::type_list<int, void>, mp::apply_t<mp::test::type_list, [] { return mp::vector{mp::meta<int>, mp::meta<void>}; }>>::value);
+#endif
+
+#if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
+  // mp::for_each
   {
-    static_assert((std::tuple{1, 2, 3} | std::views::drop(1_c) | std::views::take(1_c)) == std::tuple{2});
+    {
+      constexpr mp::vector<mp::meta_t, 0> m{};
+      mp::vector<mp::meta_t, 42> v{};
+      mp::for_each<m>([&]<auto meta> { v.push_back(meta); });
+      expect(0 == v.size());
+    }
+
+    {
+      constexpr mp::vector m{mp::meta<int>, mp::meta<void>};
+      mp::vector<mp::meta_t, 42> v{};
+      mp::for_each<m>([&]<auto meta> { v.push_back(meta); });
+      expect(2 == v.size());
+      expect(mp::meta<int> == v[0]);
+      expect(mp::meta<void> == v[1]);
+    }
   }
+#endif
 
-  // tuple.complex
+  // mp::vector
   {
-    auto ops = [](auto list) {
-      auto as_const = []<class T>() -> const T { return {}; };
+    {
+      mp::vector<mp::detail::size_t, 0> v{};
+      expect(0 == v.size());
+      expect(0 == v.capacity());
+    }
 
-      return list
-        | std::views::take(4_c)
-        | std::views::drop(1_c)
-        | std::views::transform(as_const)
-        | std::views::filter([](auto t) { return requires { t.value; }; })
-        | std::views::reverse
-        ;
-    };
+    {
+      mp::vector v{1, 2, 3};
+      expect(3 == v.size());
+      expect(3 == v.capacity());
+    }
 
-   static_assert(mp::list<val const, foo const>() == ops(mp::list<int, foo, val, bar, double>()));
-  }
+    {
+      constexpr mp::vector<int, 1> v1{1};
+      static_assert(1 == v1.size());
+      static_assert(1 == v1[0]);
 
-  // type_list<Ts...>
-  {
-    static_assert((mp::type_list{} | []<class... Ts> { return mp::type_list<Ts...>{}; }) == mp::type_list{});
-    static_assert((mp::list<int, double>() | []<class... Ts> { return mp::type_list<Ts...>{}; }) == mp::list<int, double>());
-  }
+      constexpr mp::vector<int, 1> v2{v1};
+      static_assert(1 == v2.size());
+      static_assert(1 == v2[0]);
+    }
 
-  // type_list.types
-  {
-    static_assert((mp::type_list{} | [](std::ranges::range auto types) { return types; }) == mp::type_list{});
-    static_assert((mp::list<int, double>() | [](std::ranges::range auto types) { return types; }) == mp::list<int, double>());
-    static_assert((mp::list<int, double>() | [](std::ranges::range auto types) { return std::array{types[0]}; }) == mp::list<int>());
-  }
+    {
+      mp::vector<int, 4> v1{1, 2};
+      expect(2 == v1.size());
+      expect(4 == v1.capacity());
+      expect(1 == v1[0]);
+      expect(2 == v1[1]);
 
-  // type_list<Ts...>(types)
-  {
-    static_assert((mp::type_list{} | []<class... Ts>(std::ranges::range auto types) { return types; }) == mp::type_list{});
-    static_assert((mp::list<int, double>() | []<class... Ts>(std::ranges::range auto types) { return types; }) == mp::list<int, double>());
-  }
+      mp::vector<int, 2> v2{v1};
+      expect(2 == v2.size());
+      expect(2 == v2.capacity());
+      expect(1 == v2[0]);
+      expect(2 == v2[1]);
+    }
 
-  // type_list.ranges
-  {
-    static_assert((mp::type_list{} | std::views::reverse) == mp::type_list{});
-    static_assert((mp::list<int, double>() | std::views::reverse) == mp::list<double, int>());
-  }
+    {
+      mp::vector<int, 2> v;
+      expect(0 == v.size());
+      expect(2 == v.capacity());
 
-  // value_list<Vs...>
-  {
-    static_assert((mp::value_list{} | []<auto... Vs> { return mp::value_list<Vs...>{}; }) == mp::value_list{});
-    static_assert((mp::list<1, 2>() | []<auto... Vs> { return mp::value_list<Vs...>{}; }) == mp::list<1, 2>());
-  }
+      v.push_back(1);
+      expect(1 == v.size());
+      expect(1 == v[0]);
 
-  // value_list(types)
-  {
-    static_assert((mp::value_list{} | [](std::ranges::range auto types) { return types; }) == mp::value_list{});
-    static_assert((mp::list<1, 2>() | [](std::ranges::range auto types) { return types; }) == mp::list<1, 2>());
-  }
+      v.push_back(2);
+      expect(2 == v.size());
+      expect(2 == v[1]);
+    }
 
-  // value_list<Vs...>(types)
-  {
-    static_assert((mp::value_list{} | []<auto... Vs>(std::ranges::range auto types) { return types; }) == mp::value_list{});
-    static_assert((mp::list<1, 2>() | []<auto... Vs>(std::ranges::range auto types) { return types; }) == mp::list<1, 2>());
-  }
+    {
+      mp::vector<int, 1> v{42};
+      expect(42 == v[0]);
+      v[0]++;
+      expect(43 == v[0]);
+      v[0] = 0;
+      expect(0 == v[0]);
+    }
 
-  // value_list.compound
-  {
-    auto sort = []<auto... Vs>(std::ranges::range auto types) {
-      std::sort(std::begin(types), std::end(types), [values = std::array{Vs...}](auto lhs, auto rhs) { return values[lhs] < values[rhs]; });
-      return types;
-    };
+    {
+      mp::vector<int, 2> v{1, 2};
+      expect(2 == v.size());
+      expect(2 == v.capacity());
 
-    auto unique = []<auto... Vs>(std::ranges::range auto types) {
-      types.erase(std::unique(std::begin(types), std::end(types), [values = std::array{Vs...}](auto lhs, auto rhs) { return values[lhs] == values[rhs]; }), std::end(types));
-      return types;
-    };
+      v.clear();
+      expect(0 == v.size());
+      expect(2 == v.capacity());
+    }
 
-    static_assert((mp::list<1, 2>() | sort) == mp::list<1, 2>());
-    static_assert((mp::list<1, 2, 2>() | sort | unique) == mp::list<1, 2>());
-    static_assert((mp::list<1, 1, 2, 2>() | sort | unique) == mp::list<1, 2>());
-    static_assert((mp::list<1, 2, 1, 2>() | sort | unique) == mp::list<1, 2>());
-    static_assert((mp::list<1, 2, 3>() | sort | unique) == mp::list<1, 2, 3>());
-    static_assert((mp::list<1, 3, 2>() | sort | unique) == mp::list<1, 2, 3>());
-    static_assert((mp::list<2, 2, 1, 1, 3>() | sort | unique) == mp::list<1, 2, 3>());
+    {
+      mp::vector<int, 42> v{};
+      expect(0 == v.size() && 0 == v.end() - v.begin());
+      expect(v.begin() == v.end());
 
-    auto slice = [](auto list, auto begin, auto end) {
-      return list
-        | std::views::drop(begin)
-        | std::views::take(end - 1_c);
-    };
-    static_assert(std::is_same_v<decltype(slice(type<std::variant<int, double, float, short>>, 1_c, 3_c)), std::variant<double, float>>);
-  }
+      v.push_back(1);
+      expect(1 == v.size() && 1 == v.end() - v.begin());
+      expect(v.begin() != v.end());
 
-  // operator+
-  {
-    static_assert(std::tuple{1, 2} + std::tuple{3} == std::tuple{1, 2, 3});
-    static_assert(mp::list<1, 2>() + mp::list<3>() == mp::list<1, 2, 3>());
-    static_assert(mp::list<int, float>() + mp::list<double>() == mp::list<int, float, double>());
+      v.push_back(2);
+      expect(2 == v.size() && 2 == v.end() - v.begin());
+      expect(v.begin() != v.end());
+    }
   }
 }(), true));
-} // namespace MP_TEST
 #endif
-#endif // MP
