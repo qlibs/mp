@@ -13,7 +13,7 @@
 #endif
 
 /**
- * ~~Template~~ Meta-programming library ($CXX -x c++ -std=c++17/20 -c mp)
+ * ~~Template~~ Meta-Programming library ($CXX -x c++ -std=c++17/20 -c mp)
  */
 namespace mp::inline v1_0_0 {
 namespace detail {
