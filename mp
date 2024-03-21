@@ -146,7 +146,7 @@ namespace mp::inline v1_0_0::test {
   template<class...> inline constexpr auto is_same = false;
   template<class TLhs, class TRhs> inline constexpr auto is_same<TLhs, TRhs> = true;
   constexpr void failed();
-  constexpr auto expect(auto cond) { if (not cond) { failed(); } }
+  constexpr void expect(bool cond) { if (not cond) { failed(); } }
 } // namespace mp::test
 
 static_assert(([] {
