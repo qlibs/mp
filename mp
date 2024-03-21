@@ -136,7 +136,8 @@ namespace mp::inline v1_0_0::test {
   template<class...> struct type_list { };
   template<class...> struct is_same { static constexpr auto value = false; };
   template<class TLhs, class TRhs> struct is_same<TLhs, TRhs> { static constexpr auto value = true; };
-  constexpr auto expect = [](auto cond) { if (not cond) { void failed(); failed(); } };
+  constexpr void failed();
+  constexpr auto expect = [](auto cond) { if (not cond) { failed(); } };
 
   static_assert(([] {
     // mp::detail
@@ -210,11 +211,11 @@ namespace mp::inline v1_0_0::test {
         expect(0 == v.size());
       }
 
-#if !defined(_MSC_VER) || (defined(_MSC_VER) && _MSC_VER < 1938)
       {
         mp::for_each<mp::vector{mp::meta<int>}>([&]<auto meta> { expect(meta == mp::meta<int>); });
       }
 
+#if !defined(_MSC_VER) || (defined(_MSC_VER) && _MSC_VER > 19'38)
       {
         constexpr mp::vector m{mp::meta<int>, mp::meta<void>};
         mp::vector<mp::meta_t, 42> v{};
