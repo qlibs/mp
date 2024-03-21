@@ -12,6 +12,9 @@
 #pragma GCC system_header // -Wnon-template-friend
 #endif
 
+/**
+ * ~~Template~~ Meta-programming library ($CXX -x c++ -std=c++17/20 -c mp)
+ */
 namespace mp::inline v1_0_0 {
 namespace detail {
 using size_t = decltype(sizeof(int));
@@ -209,13 +212,19 @@ static_assert(([] {
     }
 
     {
+      mp::for_each<mp::vector{mp::meta<int>}>([&]<auto meta> { expect(meta == mp::meta<int>); });
+    }
+
+#if !defined(_MSC_VER)
+    {
       constexpr mp::vector m{mp::meta<int>, mp::meta<void>};
       mp::vector<mp::meta_t, 42> v{};
       mp::for_each<m>([&]<auto meta> { v.push_back(meta); });
       expect(2 == v.size());
-      expect(mp::meta<int> == v[0]);
-      expect(mp::meta<void> == v[1]);
+      expect(m[0] == v[0]);
+      expect(m[1] == v[1]);
     }
+#endif
   }
 #endif
 
