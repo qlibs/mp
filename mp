@@ -6,7 +6,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #if !defined(MP)
-#define MP 1'0'0
+#define MP 1'0'0 // SemVer
 
 #if defined(__GNUC__)
 #pragma GCC system_header // -Wnon-template-friend
@@ -115,18 +115,27 @@ constexpr void for_each(Fn fn) {
 #endif
 
 #if defined(MP_EXPERIMENTAL)
-namespace experimental {
 namespace detail {
 template<class R, class T, class Fn> constexpr auto call(Fn fn, int) -> decltype(fn.template operator()<T>()) { return fn.template operator()<T>(); }
 template<class R, class T, class Fn> constexpr auto call(Fn, ...) -> R { return {}; }
+template<template<class> class Fn, class T = void> constexpr auto has_value(int) -> decltype(Fn<T>::value) { return true; }
+template<template<class> class Fn, class...> constexpr auto has_value(...) -> bool { return false; }
 } // namespace detail
+
 template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn) {
-  return [&]<mp::detail::size_t... Ns>(mp::detail::index_sequence<Ns...>) {
+  return [&]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
     R (*dispatch[])(Fn){[](Fn fn) -> R { return detail::call<R, type_of<meta_t(Ns)>>(fn, int{}); }...};
-    return dispatch[mp::detail::size_t(m)](fn);
-  }(mp::detail::make_index_sequence<mp::detail::size_t(meta<class last>)>{});
+    return dispatch[detail::size_t(m)](fn);
+  }(detail::make_index_sequence<detail::size_t(meta<class last>)>{});
 }
-} // namespace experimental
+template<template<class> class Fn>
+[[nodiscard]] constexpr auto apply(mp::meta_t meta) {
+  if constexpr (detail::has_value<Fn>(int{})) {
+    return mp::apply<bool>(meta, []<class T> { return Fn<T>::value; });
+  } else {
+    return mp::apply<mp::meta_t>(meta, []<class T> { return mp::meta<typename Fn<T>::type>; });
+  }
+}
 #endif
 } // namespace mp
 #endif // MP
@@ -134,185 +143,187 @@ template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn) {
 #if !defined(DISABLE_STATIC_ASSERT_TESTS)
 namespace mp::inline v1_0_0::test {
   template<class...> struct type_list { };
-  template<class...> struct is_same { static constexpr auto value = false; };
-  template<class TLhs, class TRhs> struct is_same<TLhs, TRhs> { static constexpr auto value = true; };
+  template<class...> inline constexpr auto is_same = false;
+  template<class TLhs, class TRhs> inline constexpr auto is_same<TLhs, TRhs> = true;
   constexpr void failed();
-  constexpr auto expect = [](auto cond) { if (not cond) { failed(); } };
+  constexpr auto expect(auto cond) { if (not cond) { failed(); } }
+} // namespace mp::test
 
-  static_assert(([] {
-    // mp::detail
+static_assert(([] {
+  using mp::test::expect;
+
+  // mp::detail
+  {
+    // type_identity
     {
-      // type_identity
-      {
-        static_assert([](int){ return true; }(typename mp::detail::type_identity<int>::type{}));
-        static_assert([](void*){ return true; }(typename mp::detail::type_identity<void*>::type{}));
-      }
-
-      // declval
-      {
-        struct s { s() = delete; };
-        static_assert(sizeof(s) == sizeof(mp::detail::declval<s>()));
-        static_assert(sizeof(s&) == sizeof(mp::detail::declval<s&>()));
-      }
-
-      // index_sequence
-      {
-        static_assert([](mp::detail::integer_sequence<mp::detail::size_t>){ return true; }(mp::detail::make_index_sequence<0>{}));
-        static_assert([](mp::detail::integer_sequence<mp::detail::size_t, 0>){ return true; }(mp::detail::make_index_sequence<1>{}));
-        static_assert([](mp::detail::integer_sequence<mp::detail::size_t, 0, 1>){ return true; }(mp::detail::make_index_sequence<2>{}));
-        static_assert([](mp::detail::index_sequence<>){ return true; }(mp::detail::make_index_sequence<0>{}));
-        static_assert([](mp::detail::index_sequence<0>){ return true; }(mp::detail::make_index_sequence<1>{}));
-        static_assert([](mp::detail::index_sequence<0, 1>){ return true; }(mp::detail::make_index_sequence<2>{}));
-      }
+      static_assert([](int){ return true; }(typename mp::detail::type_identity<int>::type{}));
+      static_assert([](void*){ return true; }(typename mp::detail::type_identity<void*>::type{}));
     }
 
-    // mp::meta
+    // declval
     {
-      static_assert(mp::meta<int> == mp::meta<int>);
-      static_assert(mp::meta<int> != mp::meta<double>);
-      static_assert(mp::meta<double> == mp::meta<double>);
-      static_assert(mp::meta<int> == mp::meta<int>);
-      static_assert(mp::meta<void> == mp::meta<void>);
+      struct s { s() = delete; };
+      static_assert(sizeof(s) == sizeof(mp::detail::declval<s>()));
+      static_assert(sizeof(s&) == sizeof(mp::detail::declval<s&>()));
     }
 
-    // mp::type_of
+    // index_sequence
     {
-      enum class e : int { };
-      static_assert(mp::test::is_same<void, mp::type_of<mp::meta<void>>>::value);
-      static_assert(mp::test::is_same<const int, mp::type_of<mp::meta<const int>>>::value);
-      static_assert(mp::test::is_same<const void*, mp::type_of<mp::meta<const void*>>>::value);
-      static_assert(mp::test::is_same<e, mp::type_of<mp::meta<e>>>::value);
-
-      constexpr mp::vector v{mp::meta<int>, mp::meta<e>};
-      static_assert(mp::test::is_same<int, mp::type_of<v[0]>>::value);
-      static_assert(mp::test::is_same<e, mp::type_of<v[1]>>::value);
+      static_assert([](mp::detail::integer_sequence<mp::detail::size_t>){ return true; }(mp::detail::make_index_sequence<0>{}));
+      static_assert([](mp::detail::integer_sequence<mp::detail::size_t, 0>){ return true; }(mp::detail::make_index_sequence<1>{}));
+      static_assert([](mp::detail::integer_sequence<mp::detail::size_t, 0, 1>){ return true; }(mp::detail::make_index_sequence<2>{}));
+      static_assert([](mp::detail::index_sequence<>){ return true; }(mp::detail::make_index_sequence<0>{}));
+      static_assert([](mp::detail::index_sequence<0>){ return true; }(mp::detail::make_index_sequence<1>{}));
+      static_assert([](mp::detail::index_sequence<0, 1>){ return true; }(mp::detail::make_index_sequence<2>{}));
     }
+  }
 
-    // mp::apply
-    {
-      static_assert([](mp::test::type_list<>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector<mp::meta_t, 0>{}; })));
-      static_assert([](mp::test::type_list<int>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<int>}; })));
-      static_assert([](mp::test::type_list<void, void>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<void>, mp::meta<void>}; })));
-    }
+  // mp::meta
+  {
+    static_assert(mp::meta<int> == mp::meta<int>);
+    static_assert(mp::meta<int> != mp::meta<double>);
+    static_assert(mp::meta<double> == mp::meta<double>);
+    static_assert(mp::meta<int> == mp::meta<int>);
+    static_assert(mp::meta<void> == mp::meta<void>);
+  }
 
-    // mp::apply_t
+  // mp::type_of
+  {
+    enum class e : int { };
+    static_assert(mp::test::is_same<void, mp::type_of<mp::meta<void>>>);
+    static_assert(mp::test::is_same<const int, mp::type_of<mp::meta<const int>>>);
+    static_assert(mp::test::is_same<const void*, mp::type_of<mp::meta<const void*>>>);
+    static_assert(mp::test::is_same<e, mp::type_of<mp::meta<e>>>);
+
+    constexpr mp::vector v{mp::meta<int>, mp::meta<e>};
+    static_assert(mp::test::is_same<int, mp::type_of<v[0]>>);
+    static_assert(mp::test::is_same<e, mp::type_of<v[1]>>);
+  }
+
+  // mp::apply
+  {
+    static_assert([](mp::test::type_list<>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector<mp::meta_t, 0>{}; })));
+    static_assert([](mp::test::type_list<int>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<int>}; })));
+    static_assert([](mp::test::type_list<void, void>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<void>, mp::meta<void>}; })));
+  }
+
+  // mp::apply_t
 #if (__cpp_nontype_template_args >= 201911L)
-    static_assert(mp::test::is_same<mp::test::type_list<>, mp::apply_t<mp::test::type_list, [] { return mp::vector<mp::meta_t, 0>{}; }>>::value);
-    static_assert(mp::test::is_same<mp::test::type_list<int, void>, mp::apply_t<mp::test::type_list, [] { return mp::vector{mp::meta<int>, mp::meta<void>}; }>>::value);
+  static_assert(mp::test::is_same<mp::test::type_list<>, mp::apply_t<mp::test::type_list, [] { return mp::vector<mp::meta_t, 0>{}; }>>);
+  static_assert(mp::test::is_same<mp::test::type_list<int, void>, mp::apply_t<mp::test::type_list, [] { return mp::vector{mp::meta<int>, mp::meta<void>}; }>>);
 #endif
 
 #if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
-    // mp::for_each
+  // mp::for_each
+  {
     {
-      {
-        constexpr mp::vector<mp::meta_t, 0> m{};
-        mp::vector<mp::meta_t, 42> v{};
-        mp::for_each<m>([&]<auto meta> { v.push_back(meta); });
-        expect(0 == v.size());
-      }
+      constexpr mp::vector<mp::meta_t, 0> m{};
+      mp::vector<mp::meta_t, 42> v{};
+      mp::for_each<m>([&]<auto meta> { v.push_back(meta); });
+      expect(0 == v.size());
+    }
 
-      {
-        mp::for_each<mp::vector{mp::meta<int>}>([&]<auto meta> { expect(meta == mp::meta<int>); });
-      }
+    {
+      mp::for_each<mp::vector{mp::meta<int>}>([&]<auto meta> { expect(meta == mp::meta<int>); });
+    }
 
 #if !defined(_MSC_VER)
-      {
-        constexpr mp::vector m{mp::meta<int>, mp::meta<void>};
-        mp::vector<mp::meta_t, 42> v{};
-        mp::for_each<m>([&]<auto meta> { v.push_back(meta); });
-        expect(2 == v.size());
-        expect(m[0] == v[0]);
-        expect(m[1] == v[1]);
-      }
-#endif
-    }
-#endif
-
-    // mp::vector
     {
-      {
-        mp::vector<mp::detail::size_t, 0> v{};
-        expect(0 == v.size());
-        expect(0 == v.capacity());
-      }
-
-      {
-        mp::vector v{1, 2, 3};
-        expect(3 == v.size());
-        expect(3 == v.capacity());
-      }
-
-      {
-        constexpr mp::vector<int, 1> v1{1};
-        static_assert(1 == v1.size());
-        static_assert(1 == v1[0]);
-
-        constexpr mp::vector<int, 1> v2{v1};
-        static_assert(1 == v2.size());
-        static_assert(1 == v2[0]);
-      }
-
-      {
-        mp::vector<int, 4> v1{1, 2};
-        expect(2 == v1.size());
-        expect(4 == v1.capacity());
-        expect(1 == v1[0]);
-        expect(2 == v1[1]);
-
-        mp::vector<int, 2> v2{v1};
-        expect(2 == v2.size());
-        expect(2 == v2.capacity());
-        expect(1 == v2[0]);
-        expect(2 == v2[1]);
-      }
-
-      {
-        mp::vector<int, 2> v;
-        expect(0 == v.size());
-        expect(2 == v.capacity());
-
-        v.push_back(1);
-        expect(1 == v.size());
-        expect(1 == v[0]);
-
-        v.push_back(2);
-        expect(2 == v.size());
-        expect(2 == v[1]);
-      }
-
-      {
-        mp::vector<int, 1> v{42};
-        expect(42 == v[0]);
-        v[0]++;
-        expect(43 == v[0]);
-        v[0] = 0;
-        expect(0 == v[0]);
-      }
-
-      {
-        mp::vector<int, 2> v{1, 2};
-        expect(2 == v.size());
-        expect(2 == v.capacity());
-
-        v.clear();
-        expect(0 == v.size());
-        expect(2 == v.capacity());
-      }
-
-      {
-        mp::vector<int, 42> v{};
-        expect(0 == v.size() && 0 == v.end() - v.begin());
-        expect(v.begin() == v.end());
-
-        v.push_back(1);
-        expect(1 == v.size() && 1 == v.end() - v.begin());
-        expect(v.begin() != v.end());
-
-        v.push_back(2);
-        expect(2 == v.size() && 2 == v.end() - v.begin());
-        expect(v.begin() != v.end());
-      }
+      constexpr mp::vector m{mp::meta<int>, mp::meta<void>};
+      mp::vector<mp::meta_t, 42> v{};
+      mp::for_each<m>([&]<auto meta> { v.push_back(meta); });
+      expect(2 == v.size());
+      expect(m[0] == v[0]);
+      expect(m[1] == v[1]);
     }
-  }(), true));
-} // namespace mp::test
+#endif
+  }
+#endif
+
+  // mp::vector
+  {
+    {
+      mp::vector<mp::detail::size_t, 0> v{};
+      expect(0 == v.size());
+      expect(0 == v.capacity());
+    }
+
+    {
+      mp::vector v{1, 2, 3};
+      expect(3 == v.size());
+      expect(3 == v.capacity());
+    }
+
+    {
+      constexpr mp::vector<int, 1> v1{1};
+      static_assert(1 == v1.size());
+      static_assert(1 == v1[0]);
+
+      constexpr mp::vector<int, 1> v2{v1};
+      static_assert(1 == v2.size());
+      static_assert(1 == v2[0]);
+    }
+
+    {
+      mp::vector<int, 4> v1{1, 2};
+      expect(2 == v1.size());
+      expect(4 == v1.capacity());
+      expect(1 == v1[0]);
+      expect(2 == v1[1]);
+
+      mp::vector<int, 2> v2{v1};
+      expect(2 == v2.size());
+      expect(2 == v2.capacity());
+      expect(1 == v2[0]);
+      expect(2 == v2[1]);
+    }
+
+    {
+      mp::vector<int, 2> v;
+      expect(0 == v.size());
+      expect(2 == v.capacity());
+
+      v.push_back(1);
+      expect(1 == v.size());
+      expect(1 == v[0]);
+
+      v.push_back(2);
+      expect(2 == v.size());
+      expect(2 == v[1]);
+    }
+
+    {
+      mp::vector<int, 1> v{42};
+      expect(42 == v[0]);
+      v[0]++;
+      expect(43 == v[0]);
+      v[0] = 0;
+      expect(0 == v[0]);
+    }
+
+    {
+      mp::vector<int, 2> v{1, 2};
+      expect(2 == v.size());
+      expect(2 == v.capacity());
+
+      v.clear();
+      expect(0 == v.size());
+      expect(2 == v.capacity());
+    }
+
+    {
+      mp::vector<int, 42> v{};
+      expect(0 == v.size() && 0 == v.end() - v.begin());
+      expect(v.begin() == v.end());
+
+      v.push_back(1);
+      expect(1 == v.size() && 1 == v.end() - v.begin());
+      expect(v.begin() != v.end());
+
+      v.push_back(2);
+      expect(2 == v.size() && 2 == v.end() - v.begin());
+      expect(v.begin() != v.end());
+    }
+  }
+}(), true));
 #endif
