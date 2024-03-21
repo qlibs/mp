@@ -26,9 +26,9 @@
 
 ---
 
-### Hello world (https://godbolt.org/z/TEEcdonfs)
+### Hello world (https://godbolt.org/z/qohPMKoEd)
 
-### C++20 (works in C++17 - simply use mp::vector instead of std::vector)
+### C++20
 
 ```cpp
 template<class... Ts>
@@ -73,11 +73,36 @@ static_assert(
     std::variant<const float*>
   >);
 ```
+
+### C++17
+
+```cpp
+template<class... Ts>
+auto hello_world_17 = [] {
+  mp::vector v{mp::meta<Ts>...};
+  mp::vector<mp::meta_t, sizeof...(Ts)> r;
+  for (auto e : v) {
+    if (is_const(e)) {
+      r.push_back(add_pointer(e));
+    }
+  }
+  return r;
+};
+```
+
+```cpp
+static_assert(
+  std::is_same_v<
+    decltype(mp::apply<std::variant>(hello_world_20<int, double, const float, short>)),
+    std::variant<const float*>
+  >);
+```
+
 ---
 
 ### Examples
 
-- 
+-
 
 ---
 
