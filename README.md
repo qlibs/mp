@@ -28,6 +28,8 @@
 
 ### Hello world (https://godbolt.org/z/TEEcdonfs)
 
+### C++20 (works in C++17 - simply use mp::vector instead of std::vector)
+
 ```cpp
 template<class... Ts>
 auto hello_world = [] {
@@ -50,11 +52,13 @@ static_assert(
   >);
 ```
 
---- C++20 with ranges
+---
+
+### C++20 with ranges
 
 ```cpp
 template<class... Ts>
-auto hello_world = [] {
+auto hello_world_ranges = [] {
   return std::vector{mp::meta<Ts>...}
        | std::views::filter([](auto m) { return is_const(m); })
        | std::views::transform([](auto m) { return add_pointer(m); })
@@ -65,7 +69,7 @@ auto hello_world = [] {
 ```cpp
 static_assert(
   std::is_same_v<
-    mp::apply_t<std::variant, hello_world<int, double, const float, short>>,
+    mp::apply_t<std::variant, hello_world_ranges<int, double, const float, short>>,
     std::variant<const float*>
   >);
 ```
