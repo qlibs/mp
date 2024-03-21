@@ -26,7 +26,7 @@ template<size_t Size> using make_index_sequence =
 #endif
 #if defined(MP_EXPERIMENTAL)
 enum class meta_t : size_t { };
-#elif (__cpp_nontype_template_args >= 201911L)
+#elif (__cpp_nontype_template_args >= 201911L) && defined (__clang__)
 struct meta_t {
   const size_t* id{};
   [[nodiscard]] constexpr operator auto() const { return id; }
