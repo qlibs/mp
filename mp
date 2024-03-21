@@ -215,7 +215,7 @@ namespace mp::inline v1_0_0::test {
         mp::for_each<mp::vector{mp::meta<int>}>([&]<auto meta> { expect(meta == mp::meta<int>); });
       }
 
-#if !defined(_MSC_VER) || (defined(_MSC_VER) && _MSC_VER > 19'38)
+#if !defined(_MSC_VER)
       {
         constexpr mp::vector m{mp::meta<int>, mp::meta<void>};
         mp::vector<mp::meta_t, 42> v{};
