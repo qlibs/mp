@@ -40,7 +40,9 @@ auto hello_world = [] {
   }
   return r;
 };
+```
 
+```cpp
 static_assert(
   std::is_same_v<
     mp::apply_t<std::variant, hello_world<int, double, const float, short>>,
@@ -48,6 +50,25 @@ static_assert(
   >);
 ```
 
+--- C++20 with ranges
+
+```cpp
+template<class... Ts>
+auto hello_world = [] {
+  return std::vector{mp::meta<Ts>...}
+       | std::views::filter([](auto m) { return is_const(m); })
+       | std::views::transform([](auto m) { return add_pointer(m); })
+       ;
+};
+```
+
+```cpp
+static_assert(
+  std::is_same_v<
+    mp::apply_t<std::variant, hello_world<int, double, const float, short>>,
+    std::variant<const float*>
+  >);
+```
 ---
 
 ### Examples
