@@ -39,22 +39,14 @@ using meta_t = const size_t*;
 #endif
 template<meta_t> struct id { constexpr auto friend get(id); };
 template<class T> struct type_identity { using type = T; };
-template<class T, meta_t Id> struct meta_id { constexpr auto friend get(id<Id>) { return type_identity<T>{}; } };
+template<class T, meta_t Id> struct meta_id { static constexpr auto value = Id; constexpr auto friend get(id<Id>) { return type_identity<T>{}; } };
 #if defined(MP_EXPERIMENTAL)
 template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(...) -> detail::size_t { return Id; }
 template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(int) -> decltype(get(id<meta_t(Id)>{}), size_t{}) { return type_id<T, Id+1>(Id); }
-template<class T> [[nodiscard]] constexpr auto meta() -> meta_t {
-  constexpr auto id = meta_t(type_id<T, 0>(0));
-  meta_id<T, id>();
-  return id;
-}
+template<class T> [[nodiscard]] constexpr auto meta() -> meta_t { return meta_id<T, meta_t(type_id<T, 0>(0))>::value; }
 #else
 template<class T> struct type { static constexpr size_t id{}; };
-template<class T> [[nodiscard]] constexpr auto meta() -> meta_t {
-  constexpr auto id = meta_t(&type<T>::id);
-  meta_id<T, id>();
-  return id;
-}
+template<class T> [[nodiscard]] constexpr auto meta() -> meta_t { return meta_id<T, meta_t(&type<T>::id)>::value; }
 #endif
 } // namespace detail
 
