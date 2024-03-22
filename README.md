@@ -156,7 +156,9 @@ template<class T> inline constexpr meta_t meta;
  * Returns underlying type from meta type
  *
  * @code
- * static_assert(typeid(type_of<meta<void>>) == typeid(void));
+ * static_assert(typeid(type_of<meta<void>>)
+                 ==
+                 typeid(void));
  * @endcode
  */
 template<meta_t meta> using type_of;
@@ -180,10 +182,13 @@ struct vector;
 
 ```cpp
 /**
- * Applies invocable `[] { return vector<meta_t>{...}; }` to `T<type_of<meta_t>...>`
+ * Applies invocable `[] { return vector<meta_t>{...}; }` to
+ *                   `T<type_of<meta_t>...>`
  *
  * @code
- * static_assert(typeid(variant<int>) == typeid(apply<variant>([] { return vector{meta<int>}; })));
+ * static_assert(typeid(variant<int>)
+ *               ==
+ *               typeid(apply<variant>([] { return vector{meta<int>}; })));
  * @endcode
  */
 template<template<class...> class T, class Expr>
@@ -192,10 +197,12 @@ template<template<class...> class T, class Expr>
 
 ```cpp
 /**
- * Applies invocable `[] { return vector<meta_t>{...}; }` to `[]<type_of<meta_t>...> { }`
+ * Applies invocable `[] { return vector<meta_t>{...}; }` to
+ *                   `[]<type_of<meta_t>...> { }`
  *
  * @code
- * static_assert(apply([] { return vector{meta<int>}; }, []<class T> { static_assert(typeid(T) == typeid(int)); }));
+ * static_assert(apply([] { return vector{meta<int>}; },
+ *  []<class T> { static_assert(typeid(T) == typeid(int)); }));
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)
@@ -209,7 +216,8 @@ template<class Expr, class Fn>
  * Applies `meta_t` and calls `fn.template operator()<meta_t>()`
  *
  * @code
- * apply(meta<int>, []<class T> { static_assert(typeid(T) == typeid(int)); });
+ * apply(meta<int>, []<class T> {
+ *   static_assert(typeid(T) == typeid(int)); });
  * @endcode
  */
 #if !defined(MP_MINIMAL)
@@ -236,7 +244,9 @@ template<template<class> class Fn>
  * Alternative to write `decltype(apply<T>(Expr))`
  *
  * @code
- * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
+ * static_assert(typeid(variant<int>)
+ *               ==
+ *               typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)

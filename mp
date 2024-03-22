@@ -21,7 +21,7 @@ namespace mp::inline v1_0_0 {
  */
 namespace detail {
 using size_t = decltype(sizeof(int));
-constexpr void expect(bool cond) { void fail(); if (not cond) { fail(); } }
+void fail(); constexpr void expect(bool cond) { if (not cond) { fail(); } }
 template<class T> T&& declval();
 template<class T, T...> struct integer_sequence { };
 template<size_t... Ns> using index_sequence = integer_sequence<size_t, Ns...>;
