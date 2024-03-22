@@ -411,6 +411,7 @@ static_assert(([] {
         auto it = v.erase(v.begin()+1, v.end());
         expect(1 == v.size());
         expect(1 == v[0]);
+        expect(it == v.end());
       }
     }
   }
