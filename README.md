@@ -187,8 +187,7 @@ template<class T, size_t Size>
 struct vector {
   using value_type = T;
   constexpr vector() = default;
-  template<class... Ts>
-  constexpr vector(Ts&&...);
+  template<class... Ts> constexpr explicit vector(Ts&&...);
   template<class TRange> requires requires(TRange range) { range.begin(); range.end(); }
   constexpr vector(TRange range);
   constexpr void push_back(const T&);

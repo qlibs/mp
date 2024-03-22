@@ -97,7 +97,7 @@ template<class T, detail::size_t Size>
 struct vector {
   using value_type = T;
   constexpr vector() = default;
-  template<class... Ts> constexpr vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
+  template<class... Ts> constexpr explicit vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
   template<class TRange, class = decltype(detail::declval<TRange>().begin(), detail::declval<TRange>().end())> constexpr vector(TRange range) { for (const T& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
   constexpr void emplace_back(T&& t) { data[size_++] = static_cast<T&&>(t); }
