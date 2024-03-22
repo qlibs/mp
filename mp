@@ -33,16 +33,16 @@ template<size_t Size> using make_index_sequence =
 #endif
 template<size_t...> struct auto_ { template<class... Ts> constexpr auto_(Ts&&...) { } };
 template<size_t... Ns, class T, class... Ts>
-[[nodiscard]] constexpr decltype(auto) nth_pack_element(auto_<Ns>&&..., T&& nth, Ts&&...) {
+[[nodiscard]] constexpr decltype(auto) nth_pack_element_nth(auto_<Ns>&&..., T&& nth, Ts&&...) {
   return static_cast<T&&>(nth);
 }
 template<size_t... Ns, class... Ts>
-[[nodiscard]] constexpr decltype(auto) nth_pack_element(index_sequence<Ns...>, Ts&&... ts) {
-  return nth_pack_element<Ns...>(static_cast<Ts&&>(ts)...);
+[[nodiscard]] constexpr decltype(auto) nth_pack_element_impl(index_sequence<Ns...>, Ts&&... ts) {
+  return nth_pack_element_nth<Ns...>(static_cast<Ts&&>(ts)...);
 }
 template<size_t N, class...Ts>
 [[nodiscard]] constexpr decltype(auto) nth_pack_element(Ts&&...ts) {
-  return nth_pack_element(make_index_sequence<N>{}, static_cast<Ts&&>(ts)...);
+  return nth_pack_element_impl(make_index_sequence<N>{}, static_cast<Ts&&>(ts)...);
 }
 #if !defined(MP_MINIMAL)
 enum class meta_t : size_t { };
