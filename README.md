@@ -15,10 +15,10 @@
     - Easy integration (see [FAQ](#faq))
 - Minimal [API](#api)
 - Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
-- Easy debugging (meta-functions can be simply run at run-time)
-- Verifies itself upon include (aka run all tests via static_asserts but it can be disabled - see [FAQ](#faq))
-- Compiles cleanly with ([`-fno-exceptions -fno-rtti -Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/M747ocGfx))
-- Fast compilation-times (see [compilation-times](#comp))
+- Easy debugging (meta-functions can be simply executed at run-time)
+- Verifies itself upon include (aka run all tests via static_asserts / it can be disabled - see [FAQ](#faq))
+- Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/M747ocGfx))
+- Fast compilation-times (see [benchmarks](#benchmarks))
 
 ### Requirements
 
