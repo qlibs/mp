@@ -172,7 +172,7 @@ template<class Expr, class Fn>
 template<class R = meta_t, class Fn>
 [[nodiscard]] constexpr auto apply(meta_t m, Fn fn) {
   return [&]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
-    R (*dispatch[])(Fn, int){detail::call<R, type_of<meta_t(Ns)>>...};
+    R (*dispatch[])(Fn, int){detail::call<R, type_of<meta_t(Ns)>, Fn>...};
     return dispatch[detail::size_t(m)](fn, int{});
   }(detail::make_index_sequence<detail::size_t(meta<class last>)>{});
 }
