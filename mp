@@ -205,11 +205,11 @@ using apply_t = decltype(apply<T>(Expr));
  * @endcode
  */
 #if (__cpp_generic_lambdas >= 201707L)
-template<auto V, class Fn>
+template<auto C, class Fn>
 constexpr void for_each(Fn fn) {
   [fn]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
-    (fn.template operator()<V[Ns]>(), ...);
-  }(detail::make_index_sequence<V.size()>{});
+    (fn.template operator()<C[Ns]>(), ...);
+  }(detail::make_index_sequence<C.size()>{});
 }
 #endif
 } // namespace mp

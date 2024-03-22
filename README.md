@@ -101,7 +101,7 @@ static_assert(
 );
 ```
 
-> #### C++20 (`-DMP_MINIMAL`)
+> #### C++20 (`-DMP_MINIMAL`) // The fastest compilation times
 
 ```cpp
 template<class... Ts>
@@ -271,7 +271,7 @@ template<template<class...> class T, auto Expr> using apply_t;
  * @endcode
  */
 #if (__cpp_generic_lambdas >= 201707L)
-template<auto V, class Fn> constexpr void for_each(Fn fn);
+template<auto C, class Fn> constexpr void for_each(Fn fn);
 #endif
 ```
 
