@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
 <a href="https://godbolt.org/z/on3qb6n9M">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/7Mnhnac58">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/TY4EevTEM">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 ---------------------------------------
 
@@ -31,7 +31,7 @@
 
 ---
 
-### Hello world (https://godbolt.org/z/7Mnhnac58)
+### Hello world (https://godbolt.org/z/TY4EevTEM)
 
 > #### C++20
 
@@ -83,7 +83,7 @@ static_assert(
 
 ```cpp
 template<class... Ts>
-auto hello_world_17 = [] {
+auto hello_world_17_stl = [] {
   mp::vector v{mp::meta<Ts>...};
   v.erase(std::remove_if(v.begin(), v.end(),
           [](auto m) { return not is_const(m); }), v.end());
@@ -97,7 +97,7 @@ auto hello_world_17 = [] {
 ```cpp
 static_assert(
   typeid(mp::apply<std::variant>(
-    hello_world_17<int, double, const float, short>)),
+    hello_world_17_stl<int, double, const float, short>)),
   ==
   typeid(std::variant<const float*>)
 );
