@@ -132,9 +132,9 @@ static_assert(
 
 ### Examples
 
-- Custom types - https://godbolt.org/z/1936T6sfn
+- Meta types - https://godbolt.org/z/1936T6sfn
 - Run-time testing/debugging - https://godbolt.org/z/1oczvPE61
-- Manipulating `std::tuple` - https://godbolt.org/z/jEKaE7K11
+- Manipulating `std::tuple` - https://godbolt.org/z/7Eoz34z5q
 - Integration with reflection (https://github.com/boost-ext/reflect) -
 
 ---
@@ -175,31 +175,6 @@ template<meta_t meta> using type_of = /* unspecified */;
 
 ```cpp
 /**
- * Returns underlying index of meta type
- * Only useful for structs/tuples
- *
- * @code
- * static_assert(42 == index_of<meta<int, 42>>);
- * @endcode
- */
-template<meta_t meta>
-inline constexpr detail::size_t index_of = /* unspecified */;
-```
-
-```cpp
-/**
- * Helper to create integral_constant
- *
- * @code
- * static_assert(42 == value<42>);
- * @endcode
- */
-template<auto V>
-inline constexpr auto value = /* unspecified */;
-```
-
-```cpp
-/**
  * Minimal (not standard compliant) inplace/static vector
  * implementation optimized for fast compilation-times with meta_t
  *
@@ -210,26 +185,7 @@ inline constexpr auto value = /* unspecified */;
  * assert(meta<int>  == v[1]);
  * @endcode
  */
-template<class T, size_t Size>
-struct vector {
-  using value_type = T;
-  constexpr vector() = default;
-  template<class... Ts> constexpr explicit vector(Ts&&...);
-  template<class TRange> requires requires(TRange range) { range.begin(); range.end(); }
-  constexpr vector(TRange range);
-  constexpr void push_back(const T&);
-  constexpr void emplace_back(T&&);
-  [[nodiscard]] constexpr auto begin() const;
-  [[nodiscard]] constexpr auto begin();
-  [[nodiscard]] constexpr auto end() const;
-  [[nodiscard]] constexpr auto end();
-  [[nodiscard]] constexpr auto operator[](size_t);
-  [[nodiscard]] constexpr auto& operator[](size_t);
-  [[nodiscard]] constexpr auto size() const;
-  [[nodiscard]] constexpr auto capacity() const;
-  template<class TIt> constexpr auto erase(TIt, TIt);
-  constexpr void clear();
-};
+template<class T, size_t Size> struct vector;
 ```
 
 ```cpp
@@ -268,8 +224,9 @@ template<class Expr, class Fn>
  * Applies `meta_t` and calls `fn.template operator()<meta_t>()`
  *
  * @code
- * apply(meta<int>, []<class T> {
- *   static_assert(typeid(T) == typeid(int)); });
+ * apply(meta<int>, []<meta_t meta> {
+ *   static_assert(meta_t<int> == meta);
+ * });
  * @endcode
  */
 #if !defined(MP_MINIMAL)
@@ -304,7 +261,8 @@ template<template<class> class Fn>
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)
-template<template<class...> class T, auto Expr> using apply_t;
+template<template<class...> class T, auto Expr
+using apply_t = /* unspecified */;
 #endif
 ```
 

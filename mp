@@ -1,4 +1,3 @@
-#include <tuple>
 //
 // Copyright (c) 2022-2024 Kris Jusiak (kris at jusiak dot net)
 //
@@ -21,13 +20,6 @@ namespace detail {
 using size_t = decltype(sizeof(int));
 void fail(); constexpr void expect(bool cond) { if (not cond) { fail(); } }
 template<class T> T&& declval();
-template<class T, T V> struct integral_constant {
-  using value_type = T;
-  using type = integral_constant;
-  static constexpr T value = V;
-  [[nodiscard]] constexpr operator value_type() const { return value; }
-  [[nodiscard]] constexpr value_type operator()() const { return value; }
-};
 template<class T, T...> struct integer_sequence { };
 template<size_t... Ns> using index_sequence = integer_sequence<size_t, Ns...>;
 template<size_t Size> using make_index_sequence =
@@ -45,11 +37,6 @@ template<size_t... Ns, class... Ts>
 [[nodiscard]] constexpr decltype(auto) nth(index_sequence<Ns...>, Ts&&... ts) {
   return nth_impl<Ns...>(static_cast<Ts&&>(ts)...);
 }
-template<class T, size_t I = 0>
-struct info {
-  using type = T;
-  static constexpr auto index = I;
-};
 #if !defined(MP_MINIMAL)
 enum class meta_t : size_t { };
 #elif (__cpp_nontype_template_args >= 201911L) && defined (__clang__)
@@ -60,6 +47,11 @@ struct meta_t {
 #else
 using meta_t = const size_t*;
 #endif
+template<class T, class... Ts> struct meta_info : Ts... { using type = T; };
+template<class T, size_t I>
+struct member_info {
+  static constexpr decltype(auto) get_(const T& t) { return get<I>(t); }
+};
 template<meta_t> struct id { constexpr auto friend get(id); };
 template<class T, meta_t Id> struct meta_id { static constexpr auto value = Id; constexpr auto friend get(id<Id>) { return T{}; } };
 #if defined(MP_MINIMAL)
@@ -70,11 +62,12 @@ template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(...) -> detail
 template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(int) -> decltype(get(id<meta_t(Id)>{}), size_t{}) { return type_id<T, Id+1>(Id); }
 template<class T> [[nodiscard]] constexpr auto meta() -> meta_t { return meta_id<T, meta_t(type_id<T, 0>(0))>::value; }
 #endif
-template<class R, class T, class Fn> constexpr auto call_impl(Fn fn, int) -> decltype(fn.template operator()<T>()) { return fn.template operator()<T>(); }
-template<class R, class T, class Fn> constexpr auto call_impl(Fn, ...) -> R { return {}; }
-template<class R, class T, class Fn> constexpr auto call(Fn fn) -> R { return call_impl<R, T, Fn>(fn, int{}); }
+template<class R, meta_t meta, class Fn> constexpr auto call_impl(Fn fn, int) -> decltype(fn.template operator()<meta>()) { return fn.template operator()<meta>(); }
+template<class R, meta_t meta, class Fn> constexpr auto call_impl(Fn, ...) -> R { return {}; }
+template<class R, meta_t meta, class Fn> constexpr auto call(Fn fn) -> R { return call_impl<R, meta, Fn>(fn, int{}); }
 template<template<class> class Fn, class T = void> constexpr auto has_value(int) -> decltype(Fn<T>::value) { return true; }
 template<template<class> class Fn, class...> constexpr auto has_value(...) -> bool { return false; }
+template<class T, class R, class... Ts> [[nodiscard]] constexpr auto rebind(meta_info<R, Ts...>) { return meta<meta_info<T, Ts...>>(); }
 } // namespace detail
 
 /**
@@ -90,8 +83,14 @@ using meta_t = detail::meta_t;
  * static_assert(meta<void> != meta<int>);
  * @endcode
  */
-template<class T, detail::size_t I = 0>
-inline constexpr meta_t meta = detail::meta<detail::info<T, I>>();
+template<class... Ts>
+inline constexpr meta_t meta = detail::meta<detail::meta_info<Ts...>>();
+
+
+/**
+ * Returns type infor from meta type
+ */
+template<meta_t meta> using type_info = decltype(get(detail::id<meta>{}));
 
 /**
  * Returns underlying type from meta type
@@ -101,28 +100,7 @@ inline constexpr meta_t meta = detail::meta<detail::info<T, I>>();
  * @endcode
  */
 template<meta_t meta>
-using type_of = typename decltype(get(detail::id<meta>{}))::type;
-
-/**
- * Returns underlying index of meta type
- * Only useful for structs/tuples
- *
- * @code
- * static_assert(42 == index_of<meta<int, 42>>);
- * @endcode
- */
-template<meta_t meta>
-inline constexpr detail::size_t index_of = get(detail::id<meta>{}).index;
-
-/**
- * Helper to create integral_constant
- *
- * @code
- * static_assert(42 == value<42>);
- * @endcode
- */
-template<auto V>
-inline constexpr detail::integral_constant<decltype(V), V> value{};
+using type_of = typename type_info<meta>::type;
 
 /**
  * Minimal (not standard compliant) inplace/static vector
@@ -132,7 +110,7 @@ inline constexpr detail::integral_constant<decltype(V), V> value{};
  * vector v{meta<void>, meta<int>};
  * assert(2 == v.size());
  * assert(meta<void> == v[0]);
- * assert(meta<int>  == v[1]);
+ * assert(meta<int> == v[1]);
  * @endcode
  */
 template<class T, detail::size_t Size>
@@ -169,7 +147,7 @@ template<template<class...> class T, class Expr>
 [[nodiscard]] constexpr auto apply(Expr expr) {
   constexpr auto ml = expr();
   return [ml]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
-    return T<typename decltype(get(detail::id<ml[Ns]>{}))::type...>();
+    return T<type_of<ml[Ns]>...>();
   }(detail::make_index_sequence<ml.size()>{});
 }
 
@@ -194,14 +172,14 @@ template<class Expr, class Fn>
  * Applies `meta_t` and calls `fn.template operator()<meta_t>()`
  *
  * @code
- * apply(meta<int>, []<class T> { static_assert(typeid(T) == typeid(int)); });
+ * apply(meta<int>, []<meta_t meta> { static_assert(meta_t<int> == meta); });
  * @endcode
  */
 #if !defined(MP_MINIMAL)
 template<class R = meta_t, class Fn>
 [[nodiscard]] constexpr auto apply(meta_t m, Fn fn) {
   return [&]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
-    R (*dispatch[])(Fn){detail::call<R, type_of<meta_t(Ns)>, Fn>...};
+    R (*dispatch[])(Fn){detail::call<R, meta_t(Ns), Fn>...};
     return dispatch[detail::size_t(m)](fn);
   }(detail::make_index_sequence<detail::size_t(meta<class last>)>{});
 }
@@ -219,9 +197,13 @@ template<class R = meta_t, class Fn>
 template<template<class> class Fn>
 [[nodiscard]] constexpr auto apply(mp::meta_t meta) {
   if constexpr (detail::has_value<Fn>(int{})) {
-    return mp::apply<bool>(meta, []<class T> { return Fn<T>::value; });
+    return mp::apply<bool>(meta, []<meta_t m>() -> bool {
+      return Fn<type_of<m>>::value;
+    });
   } else {
-    return mp::apply<mp::meta_t>(meta, []<class T> { return mp::meta<typename Fn<T>::type>; });
+    return mp::apply<meta_t>(meta, []<meta_t m>() -> meta_t {
+      return detail::rebind<typename Fn<type_of<m>>::type>(mp::type_info<m>{});
+    });
   }
 }
 #endif
@@ -273,19 +255,19 @@ template<detail::size_t N, class...Ts>
 
 namespace dsl {
 /**
- * Support for operator| with tuples and type_lists
+ * Support for operator| with tuple like objects
  *
  * @code
  * static_assert(std::tuple{3, 2, 1} == tuple{1, 2, 3} | std::views::reverse);
  * @endcode
  */
 template<template<class...> class T, class... Ts, class Fn>
-[[nodiscard]] constexpr auto operator|(T<Ts...>&& t, Fn fn) {
-  return [&]<auto... Ns>(detail::index_sequence<Ns...>) {
-    constexpr auto expr = [fn] { return vector{meta<Ts, Ns>...} | fn; };
+[[nodiscard]] constexpr auto operator|(const T<Ts...>& t, Fn fn) {
+  return [&]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
+    constexpr auto expr = [fn] { return vector{meta<Ts, detail::member_info<T<Ts...>, Ns>>...} | fn; };
     constexpr auto ml = vector<meta_t, sizeof...(Ts)>{expr()};
-    return [&]<auto... Is>(detail::index_sequence<Is...>) {
-      return T<type_of<ml[Is]>&&...>(static_cast<type_of<ml[Is]>&&>(get<index_of<ml[Is]>>(t))...);
+    return [&]<detail::size_t... Is>(detail::index_sequence<Is...>) {
+      return T<mp::type_of<ml[Is]>...>{static_cast<mp::type_of<ml[Is]>>(mp::type_info<ml[Is]>::get_(t))...};
     }(detail::make_index_sequence<ml.size()>{});
   }(detail::make_index_sequence<sizeof...(Ts)>{});
 }
@@ -343,18 +325,6 @@ static_assert(([] {
     constexpr mp::vector v{mp::meta<int>, mp::meta<e>};
     static_assert(mp::test::is_same<int, mp::type_of<v[0]>>);
     static_assert(mp::test::is_same<e, mp::type_of<v[1]>>);
-  }
-
-  // mp::index_of
-  {
-    static_assert(0 == mp::index_of<mp::meta<void, 0>>);
-    static_assert(1 == mp::index_of<mp::meta<void, 1>>);
-  }
-
-  // mp::value
-  {
-    static_assert(42 == mp::value<42>);
-    static_assert(0 == mp::value<0>.value);
   }
 
   // mp::apply
