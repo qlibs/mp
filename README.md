@@ -189,8 +189,7 @@ struct vector {
   constexpr vector() = default;
   template<class... Ts>
   constexpr vector(const Ts&...);
-  template<class TRange>
-    requires requires(TRange range) { range.begin(); range.end(); }
+  template<class TRange> requires requires(TRange range) { range.begin(); range.end(); }
   constexpr vector(TRange range);
   constexpr void push_back(const T&);
   constexpr void emplace_back(T&&);
@@ -202,8 +201,7 @@ struct vector {
   [[nodiscard]] constexpr auto& operator[](size_t);
   [[nodiscard]] constexpr auto size() const;
   [[nodiscard]] constexpr auto capacity() const;
-  template<class TIt>
-  constexpr auto erase(TIt, TIt);
+  template<class TIt> constexpr auto erase(TIt, TIt);
   constexpr void clear();
 };
 ```
