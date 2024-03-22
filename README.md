@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
 <a href="https://godbolt.org/z/on3qb6n9M">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/ohKcqqTWv">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/7Mnhnac58">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 ---------------------------------------
 
@@ -26,7 +26,7 @@
 
 ---
 
-### Hello world (https://godbolt.org/z/ohKcqqTWv)
+### Hello world (https://godbolt.org/z/7Mnhnac58)
 
 ### C++20
 
@@ -94,6 +94,33 @@ auto hello_world_17 = [] {
 static_assert(
   std::is_same_v<
     decltype(mp::apply<std::variant>(hello_world_17<int, double, const float, short>)),
+    std::variant<const float*>
+  >);
+```
+
+### C++20 (`MP_MINIMAL` - the fastest to compile)
+
+> Note: Compile with `-DMP_MINIMAL`
+
+```cpp
+template<class... Ts>
+auto hello_world_20_min = [] {
+  constexpr mp::vector v{mp::meta<Ts>...};
+  mp::vector<mp::meta_t, sizeof...(Ts)> r;
+  mp::for_each<v>([&]<auto m> {
+    using type = mp::type_of<m>;
+    if constexpr (std::is_const_v<type>) {
+      r.push_back(mp::meta<type*>);
+    }
+  });
+  return r;
+};
+```
+
+```cpp
+static_assert(
+  std::is_same_v<
+    mp::apply_t<std::variant, hello_world_20_min<int, double, const float, short>>,
     std::variant<const float*>
   >);
 ```
