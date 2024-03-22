@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
 <a href="https://godbolt.org/z/on3qb6n9M">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/3nraKEoqr">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/ohKcqqTWv">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 ---------------------------------------
 
@@ -26,7 +26,7 @@
 
 ---
 
-### Hello world (https://godbolt.org/z/GcxWEhnf4)
+### Hello world (https://godbolt.org/z/ohKcqqTWv)
 
 ### C++20
 
