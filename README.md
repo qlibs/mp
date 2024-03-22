@@ -103,7 +103,7 @@ static_assert(
 );
 ```
 
-> #### C++20 (`-DMP_MINIMAL`) // The fastest compilation times
+> #### C++20 (`-DMP_MINIMAL` - optimized for compilation times)
 
 ```cpp
 template<class... Ts>
