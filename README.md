@@ -297,6 +297,20 @@ constexpr void for_each(Fn fn);
 #endif
 ```
 
+```cpp
+/**
+ * Returns nth element of a variadic pack
+ *
+ * @code
+ * static_assert(0 == nth<0>(0, 1, 2));
+ * static_assert(1 == nth<1>(0, 1, 2));
+ * static_assert(2 == nth<2>(0, 1, 2));
+ * @endcode
+ */
+template<size_t N, class...Ts>
+[[nodiscard]] constexpr decltype(auto) nth(Ts&&...ts);
+```
+
 > Configuration
 
 ```cpp

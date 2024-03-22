@@ -33,16 +33,12 @@ template<size_t Size> using make_index_sequence =
 #endif
 template<size_t...> struct auto_ { template<class... Ts> constexpr auto_(Ts&&...) { } };
 template<size_t... Ns, class T, class... Ts>
-[[nodiscard]] constexpr decltype(auto) nth_pack_element_nth(auto_<Ns>&&..., T&& nth, Ts&&...) {
+[[nodiscard]] constexpr decltype(auto) nth_impl(auto_<Ns>&&..., T&& nth, Ts&&...) {
   return static_cast<T&&>(nth);
 }
 template<size_t... Ns, class... Ts>
-[[nodiscard]] constexpr decltype(auto) nth_pack_element_impl(index_sequence<Ns...>, Ts&&... ts) {
-  return nth_pack_element_nth<Ns...>(static_cast<Ts&&>(ts)...);
-}
-template<size_t N, class...Ts>
-[[nodiscard]] constexpr decltype(auto) nth_pack_element(Ts&&...ts) {
-  return nth_pack_element_impl(make_index_sequence<N>{}, static_cast<Ts&&>(ts)...);
+[[nodiscard]] constexpr decltype(auto) nth(index_sequence<Ns...>, Ts&&... ts) {
+  return nth_impl<Ns...>(static_cast<Ts&&>(ts)...);
 }
 #if !defined(MP_MINIMAL)
 enum class meta_t : size_t { };
@@ -65,8 +61,9 @@ template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(...) -> detail
 template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(int) -> decltype(get(id<meta_t(Id)>{}), size_t{}) { return type_id<T, Id+1>(Id); }
 template<class T> [[nodiscard]] constexpr auto meta() -> meta_t { return meta_id<T, meta_t(type_id<T, 0>(0))>::value; }
 #endif
-template<class R, class T, class Fn> constexpr auto call(Fn fn, int) -> decltype(fn.template operator()<T>()) { return fn.template operator()<T>(); }
-template<class R, class T, class Fn> constexpr auto call(Fn, ...) -> R { return {}; }
+template<class R, class T, class Fn> constexpr auto call_impl(Fn fn, int) -> decltype(fn.template operator()<T>()) { return fn.template operator()<T>(); }
+template<class R, class T, class Fn> constexpr auto call_impl(Fn, ...) -> R { return {}; }
+template<class R, class T, class Fn> constexpr auto call(Fn fn) -> R { return call_impl<R, T, Fn>(fn, int{}); }
 template<template<class> class Fn, class T = void> constexpr auto has_value(int) -> decltype(Fn<T>::value) { return true; }
 template<template<class> class Fn, class...> constexpr auto has_value(...) -> bool { return false; }
 } // namespace detail
@@ -172,8 +169,8 @@ template<class Expr, class Fn>
 template<class R = meta_t, class Fn>
 [[nodiscard]] constexpr auto apply(meta_t m, Fn fn) {
   return [&]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
-    R (*dispatch[])(Fn, int){detail::call<R, type_of<meta_t(Ns)>, Fn>...};
-    return dispatch[detail::size_t(m)](fn, int{});
+    R (*dispatch[])(Fn){detail::call<R, type_of<meta_t(Ns)>, Fn>...};
+    return dispatch[detail::size_t(m)](fn);
   }(detail::make_index_sequence<detail::size_t(meta<class last>)>{});
 }
 #endif
@@ -226,6 +223,20 @@ constexpr void for_each(Fn fn) {
     (fn.template operator()<V[Ns]>(), ...);
   }(detail::make_index_sequence<V.size()>{});
 }
+
+/**
+ * Returns nth element of a variadic pack
+ *
+ * @code
+ * static_assert(0 == nth<0>(0, 1, 2));
+ * static_assert(1 == nth<1>(0, 1, 2));
+ * static_assert(2 == nth<2>(0, 1, 2));
+ * @endcode
+ */
+template<detail::size_t N, class...Ts>
+[[nodiscard]] constexpr decltype(auto) nth(Ts&&...ts) {
+  return detail::nth(detail::make_index_sequence<N>{}, static_cast<Ts&&>(ts)...);
+}
 #endif
 } // namespace mp
 #endif // MP
@@ -263,16 +274,6 @@ static_assert(([] {
       static_assert([](mp::detail::index_sequence<>){ return true; }(mp::detail::make_index_sequence<0>{}));
       static_assert([](mp::detail::index_sequence<0>){ return true; }(mp::detail::make_index_sequence<1>{}));
       static_assert([](mp::detail::index_sequence<0, 1>){ return true; }(mp::detail::make_index_sequence<2>{}));
-    }
-
-    // nth_pack_element
-    {
-      static_assert(1 == mp::detail::nth_pack_element<0>(1));
-      static_assert(1 == mp::detail::nth_pack_element<0>(1, 2));
-      static_assert(2 == mp::detail::nth_pack_element<1>(1, 2));
-      static_assert('a' == mp::detail::nth_pack_element<0>('a', 1, true));
-      static_assert(1 == mp::detail::nth_pack_element<1>('a', 1, true));
-      static_assert(true == mp::detail::nth_pack_element<2>('a', 1, true));
     }
   }
 
@@ -337,6 +338,16 @@ static_assert(([] {
 #endif
   }
 #endif
+
+  // nth
+  {
+    static_assert(1 == mp::nth<0>(1));
+    static_assert(1 == mp::nth<0>(1, 2));
+    static_assert(2 == mp::nth<1>(1, 2));
+    static_assert('a' == mp::nth<0>('a', 1, true));
+    static_assert(1 == mp::nth<1>('a', 1, true));
+    static_assert(true == mp::nth<2>('a', 1, true));
+  }
 
   // mp::vector
   {
