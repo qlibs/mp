@@ -167,7 +167,7 @@ template<class T> inline constexpr meta_t meta = /* unspecified */;
                  typeid(void));
  * @endcode
  */
-template<meta_t meta> using type_of = /* unspecified */;
+template<meta_t meta>using type_of = /* unspecified */;
 ```
 
 ```cpp
@@ -231,7 +231,7 @@ template<template<class...> class T, class Expr>
  */
 #if defined(__cpp_nontype_template_args)
 template<class Expr, class Fn>
-[[nodiscard]] constexpr auto apply(Expr expr, Fn fn);
+[[nodiscard]]constexpr auto apply(Expr expr, Fn fn);
 #endif
 ```
 
@@ -245,7 +245,8 @@ template<class Expr, class Fn>
  * @endcode
  */
 #if !defined(MP_MINIMAL)
-template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn);
+template<class R = meta_t, class Fn>
+[[nodiscard]] constexpr auto apply(meta_t m, Fn fn);
 #endif
 ```
 
@@ -275,7 +276,7 @@ template<template<class> class Fn>
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)
-template<template<class...> class T, auto Expr> using apply_t;
+template<template<class...> class T, auto Expr>using apply_t;
 #endif
 ```
 
@@ -291,7 +292,8 @@ template<template<class...> class T, auto Expr> using apply_t;
  * @endcode
  */
 #if (__cpp_generic_lambdas >= 201707L)
-template<auto C, class Fn> constexpr void for_each(Fn fn);
+template<auto C, class Fn>
+constexpr void for_each(Fn fn);
 #endif
 ```
 

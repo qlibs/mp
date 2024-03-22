@@ -167,7 +167,8 @@ template<class Expr, class Fn>
  * @endcode
  */
 #if !defined(MP_MINIMAL)
-template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn) {
+template<class R = meta_t, class Fn>
+[[nodiscard]] constexpr auto apply(meta_t m, Fn fn) {
   return [&]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
     R (*dispatch[])(Fn, int){detail::call<R, type_of<meta_t(Ns)>>...};
     return dispatch[detail::size_t(m)](fn, int{});
