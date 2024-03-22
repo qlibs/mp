@@ -25,6 +25,8 @@
 
 - C++17* ([clang++15+, g++11+, msvc-19.34+](https://godbolt.org/z/3nraKEoqr))
 
+    - No STL headers required
+
 > * Limited compiler support and functionality (see [API](#api))
 
 ---
@@ -324,7 +326,7 @@ template<auto C, class Fn> constexpr void for_each(Fn fn);
     ```
 
 - Similar projects?
-    > [boost.mp11](https://github.com/boostorg/mp11)
+    > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.mpl](https://github.com/boostorg/mpl)
 
 ---
 
