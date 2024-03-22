@@ -249,7 +249,7 @@ constexpr void for_each(Fn fn) {
  * @endcode
  */
 template<detail::size_t N, class...Ts>
-[[nodiscard]] constexpr decltype(auto) nth(Ts&&...ts) {
+[[nodiscard]] constexpr decltype(auto) nth(Ts&&... ts) {
   return detail::nth(detail::make_index_sequence<N>{}, static_cast<Ts&&>(ts)...);
 }
 

@@ -132,7 +132,7 @@ static_assert(
 
 ### Examples
 
-- Meta types - https://godbolt.org/z/1936T6sfn
+- Meta types - https://godbolt.org/z/Mnfjcj18P
 - Run-time testing/debugging - https://godbolt.org/z/1oczvPE61
 - Manipulating `std::tuple` - https://godbolt.org/z/7Eoz34z5q
 - Integration with reflection (https://github.com/boost-ext/reflect) -
@@ -294,7 +294,7 @@ constexpr void for_each(Fn fn);
  * @endcode
  */
 template<size_t N, class...Ts>
-[[nodiscard]] constexpr decltype(auto) nth(Ts&&...ts);
+[[nodiscard]] constexpr decltype(auto) nth(Ts&&...);
 ```
 
 ```cpp
