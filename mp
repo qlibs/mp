@@ -210,7 +210,7 @@ using apply_t = decltype(apply<T>(Expr));
 #endif
 
 /**
- * Iterates over all elements of constexpr continer
+ * Iterates over all elements of constexpr container
  *
  * @code
  * constexpr vector v{meta<int>};
@@ -220,11 +220,11 @@ using apply_t = decltype(apply<T>(Expr));
  * @endcode
  */
 #if (__cpp_generic_lambdas >= 201707L)
-template<auto C, class Fn>
+template<auto V, class Fn>
 constexpr void for_each(Fn fn) {
   [fn]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
-    (fn.template operator()<C[Ns]>(), ...);
-  }(detail::make_index_sequence<C.size()>{});
+    (fn.template operator()<V[Ns]>(), ...);
+  }(detail::make_index_sequence<V.size()>{});
 }
 #endif
 } // namespace mp

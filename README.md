@@ -292,7 +292,7 @@ template<template<class...> class T, auto Expr> using apply_t;
  * @endcode
  */
 #if (__cpp_generic_lambdas >= 201707L)
-template<auto C, class Fn>
+template<auto V, class Fn>
 constexpr void for_each(Fn fn);
 #endif
 ```
