@@ -86,7 +86,6 @@ using meta_t = detail::meta_t;
 template<class... Ts>
 inline constexpr meta_t meta = detail::meta<detail::meta_info<Ts...>>();
 
-
 /**
  * Returns type infor from meta type
  */
@@ -99,8 +98,7 @@ template<meta_t meta> using type_info = decltype(get(detail::id<meta>{}));
  * static_assert(typeid(type_of<meta<void>>) == typeid(void));
  * @endcode
  */
-template<meta_t meta>
-using type_of = typename type_info<meta>::type;
+template<meta_t meta> using type_of = typename type_info<meta>::type;
 
 /**
  * Minimal (not standard compliant) inplace/static vector
