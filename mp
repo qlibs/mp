@@ -223,6 +223,7 @@ constexpr void for_each(Fn fn) {
     (fn.template operator()<V[Ns]>(), ...);
   }(detail::make_index_sequence<V.size()>{});
 }
+#endif
 
 /**
  * Returns nth element of a variadic pack
@@ -237,7 +238,6 @@ template<detail::size_t N, class...Ts>
 [[nodiscard]] constexpr decltype(auto) nth(Ts&&...ts) {
   return detail::nth(detail::make_index_sequence<N>{}, static_cast<Ts&&>(ts)...);
 }
-#endif
 } // namespace mp
 #endif // MP
 

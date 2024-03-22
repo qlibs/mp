@@ -132,10 +132,10 @@ static_assert(
 
 ### Examples
 
-- `mp::meta` with custom types - https://godbolt.org/z/1936T6sfn
-- run-time testing/debugging - https://godbolt.org/z/1oczvPE61
-- manipulating `std::tuple` -
-- integration with reflection (https://github.com/boost-ext/reflect) -
+- Custom types - https://godbolt.org/z/1936T6sfn
+- Run-time testing/debugging - https://godbolt.org/z/1oczvPE61
+- Manipulating `std::tuple` -
+- Integration with reflection (https://github.com/boost-ext/reflect) -
 
 ---
 
