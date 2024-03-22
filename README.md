@@ -143,7 +143,7 @@ static_assert(
 /**
  * Meta type object representation (the underlying representation is unspecified)
  */
-using meta_t = detail::meta_t;
+using meta_t = /* unspecified */;
 ```
 
 ```cpp
@@ -183,8 +183,29 @@ template<meta_t meta> using type_of;
  * assert(meta<int>  == v[1]);
  * @endcode
  */
-template<class T, detail::size_t Size>
-struct vector;
+template<class T, size_t Size>
+struct vector {
+  using value_type = T;
+  constexpr vector() = default;
+  template<class... Ts>
+  constexpr vector(const Ts&...);
+  template<class TRange>
+    requires requires(TRange range) { range.begin(); range.end(); }
+  constexpr vector(TRange range);
+  constexpr void push_back(const T&);
+  constexpr void emplace_back(T&&);
+  [[nodiscard]] constexpr auto begin() const;
+  [[nodiscard]] constexpr auto begin();
+  [[nodiscard]] constexpr auto end() const;
+  [[nodiscard]] constexpr auto end();
+  [[nodiscard]] constexpr auto operator[](size_t);
+  [[nodiscard]] constexpr auto& operator[](size_t);
+  [[nodiscard]] constexpr auto size() const;
+  [[nodiscard]] constexpr auto capacity() const;
+  template<class TIt>
+  constexpr auto erase(TIt, TIt);
+  constexpr void clear();
+};
 ```
 
 ```cpp

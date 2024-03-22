@@ -100,6 +100,7 @@ struct vector {
   template<class... Ts> constexpr vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
   template<class TRange, class = decltype(detail::declval<TRange>().begin(), detail::declval<TRange>().end())> constexpr vector(TRange range) { for (const T& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
+  constexpr void emplace_back(T&& t) { data[size_++] = static_cast<T&&>(t); }
   [[nodiscard]] constexpr auto begin() const { return &data[0]; }
   [[nodiscard]] constexpr auto begin() { return &data[0]; }
   [[nodiscard]] constexpr auto end() const { return &data[0]+size_; }
@@ -108,7 +109,7 @@ struct vector {
   [[nodiscard]] constexpr auto& operator[](detail::size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
   [[nodiscard]] constexpr auto capacity() const { return Size; }
-  constexpr auto erase(auto b, auto e) { detail::expect(e == end()); size_ = size()-(e-b); return end(); }
+  template<class TIt> constexpr auto erase(TIt b, TIt e) { detail::expect(e == end()); size_ = size()-(e-b); return end(); }
   constexpr void clear() { size_ = {}; }
   T data[Size?Size:1]{};
   detail::size_t size_{};
@@ -389,11 +390,11 @@ static_assert(([] {
       expect(0 == v.size() && 0 == v.end() - v.begin());
       expect(v.begin() == v.end());
 
-      v.push_back(1);
+      v.emplace_back(1);
       expect(1 == v.size() && 1 == v.end() - v.begin());
       expect(v.begin() != v.end());
 
-      v.push_back(2);
+      v.emplace_back(2);
       expect(2 == v.size() && 2 == v.end() - v.begin());
       expect(v.begin() != v.end());
     }
