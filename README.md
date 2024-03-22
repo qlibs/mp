@@ -11,24 +11,27 @@
 
 ### Features
 
-- Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp)
+- Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp) / 200 LOC
     - Easy integration (see [FAQ](#faq))
 - Minimal [API](#api)
 - Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
-- Easy debugging (meta-functions can be simply executed at run-time)
+- Easy debugging (meta-functions can be simply executed and debugged at run-time)
 - Verifies itself upon include (aka run all tests via static_asserts / it can be disabled - see [FAQ](#faq))
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/M747ocGfx))
 - Fast compilation-times (see [benchmarks](#benchmarks))
+- Support for reflection and/or tuples (see [examples](#examples))
 
 ### Requirements
 
 - C++17* ([clang++15+, g++11+, msvc-19.34+](https://godbolt.org/z/3nraKEoqr))
 
+> * Limited compiler support and functionality (see [API](#api))
+
 ---
 
 ### Hello world (https://godbolt.org/z/7Mnhnac58)
 
-### C++20
+> #### C++20
 
 ```cpp
 template<class... Ts>
@@ -54,7 +57,7 @@ static_assert(
 
 ---
 
-### C++20 (ranges)
+> #### C++20 (ranges)
 
 ```cpp
 template<class... Ts>
@@ -74,15 +77,17 @@ static_assert(
   >);
 ```
 
-### C++17
+> #### C++17 (stl)
 
 ```cpp
 template<class... Ts>
 auto hello_world_17 = [] {
   mp::vector v{mp::meta<Ts>...};
-  v.erase(std::remove_if(v.begin(), v.end(), [](auto m) { return not is_const(m); }), v.end());
+  v.erase(std::remove_if(v.begin(), v.end(), 
+          [](auto m) { return not is_const(m); }), v.end());
   mp::vector<mp::meta_t, sizeof...(Ts)> r;
-  std::transform(v.begin(), v.end(), std::back_inserter(r), [](auto m) { return add_pointer(m); });
+  std::transform(v.begin(), v.end(), std::back_inserter(r),
+          [](auto m) { return add_pointer(m); });
   return r;
 };
 ```
@@ -95,9 +100,7 @@ static_assert(
   >);
 ```
 
-### C++20 (`MP_MINIMAL` - the fastest to compile)
-
-> Note: Compile with `-DMP_MINIMAL`
+> #### C++20 (`-DMP_MINIMAL`)
 
 ```cpp
 template<class... Ts>
@@ -281,11 +284,16 @@ template<auto V, class Fn> constexpr void for_each(Fn fn);
 ```
 ---
 
+### Benchmarks
+
+---
+
 ### FAQ
 
 - How `mp` works under the hood?
 
-    > ....
+    > `mp` is leveraging a lot techniques such as stateful-metaprogramming (for meta types), constexpr evaluation and containers.
+      See implementation of `meta` and `apply` for more details.
 
 - What does it mean that `mp` tests itself upon include?
 
