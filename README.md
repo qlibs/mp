@@ -11,7 +11,7 @@
 
 ### Features
 
-- Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp) / 200 LOC
+- Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp)
     - Easy integration (see [FAQ](#faq))
 - Minimal [API](#api)
 - Minimal learning curve (reuses STL, ranges or any third-party algorithms for stl.container)
