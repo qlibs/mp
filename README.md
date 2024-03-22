@@ -167,7 +167,7 @@ template<class T> inline constexpr meta_t meta = /* unspecified */;
                  typeid(void));
  * @endcode
  */
-template<meta_t meta>using type_of = /* unspecified */;
+template<meta_t meta> using type_of = /* unspecified */;
 ```
 
 ```cpp
@@ -276,7 +276,7 @@ template<template<class> class Fn>
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)
-template<template<class...> class T, auto Expr>using apply_t;
+template<template<class...> class T, auto Expr> using apply_t;
 #endif
 ```
 
