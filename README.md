@@ -259,6 +259,7 @@ template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn);
  * static_assert(mp::meta<int*> == apply<std::add_pointer>(meta<int>));
  * @endcode
  */
+#if !defined(MP_MINIMAL)
 template<template<class> class Fn>
 [[nodiscard]] constexpr auto apply(mp::meta_t meta);
 #endif
