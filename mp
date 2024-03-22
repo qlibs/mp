@@ -16,8 +16,12 @@
  * ~~Template~~ Meta-Programming library ($CXX -x c++ -std=c++17/20 -c mp)
  */
 namespace mp::inline v1_0_0 {
+/**
+ * Implementation details (not exposed externally)
+ */
 namespace detail {
 using size_t = decltype(sizeof(int));
+constexpr void expect(bool cond) { void fail(); if (not cond) { fail(); } }
 template<class T> T&& declval();
 template<class T, T...> struct integer_sequence { };
 template<size_t... Ns> using index_sequence = integer_sequence<size_t, Ns...>;
@@ -54,12 +58,44 @@ template<template<class> class Fn, class T = void> constexpr auto has_value(int)
 template<template<class> class Fn, class...> constexpr auto has_value(...) -> bool { return false; }
 } // namespace detail
 
+/**
+ * Meta type object representation (the underlying representation is unspecified)
+ */
 using meta_t = detail::meta_t;
+
+/**
+ * Creates meta type
+ *
+ * @code
+ * static_assert(meta<void> == meta<void>);
+ * static_assert(meta<void> != meta<int>);
+ * @endcode
+ */
 template<class T> inline constexpr meta_t meta = detail::meta<T>();
+
+/**
+ * Returns underlying type from meta type
+ *
+ * @code
+ * static_assert(typeid(type_of<meta<void>>) == typeid(void));
+ * @endcode
+ */
 template<meta_t meta> using type_of = typename decltype(get(detail::id<meta>{}))::type;
 
+/**
+ * Minimal (not standard compliant) inplace/static vector
+ * implementation optimized for fast compilation-times with meta_t
+ *
+ * @code
+ * vector v{meta<void>, meta<int>};
+ * assert(2 == v.size());
+ * assert(meta<void> == v[0]);
+ * assert(meta<int>  == v[1]);
+ * @endcode
+ */
 template<class T, detail::size_t Size>
 struct vector {
+  using value_type = T;
   constexpr vector() = default;
   template<class... Ts> constexpr vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
   template<class TRange, class = decltype(detail::declval<TRange>().begin(), detail::declval<TRange>().end())> constexpr vector(TRange range) { for (const T& t : range) { data[size_++] = t; } }
@@ -72,12 +108,20 @@ struct vector {
   [[nodiscard]] constexpr auto& operator[](detail::size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
   [[nodiscard]] constexpr auto capacity() const { return Size; }
+  constexpr auto erase(auto b, auto e) { detail::expect(e == end()); size_ = size()-(e-b); return end(); }
   constexpr void clear() { size_ = {}; }
   T data[Size?Size:1]{};
   detail::size_t size_{};
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1+sizeof...(Ts)>;
 
+/**
+ * Applies invocable `[] { return vector<meta_t>{...}; }` to `T<type_of<meta_t>...>`
+ *
+ * @code
+ * static_assert(typeid(variant<int>) == typeid(apply<variant>([] { return vector{meta<int>}; })));
+ * @endcode
+ */
 template<template<class...> class T, class Expr>
 [[nodiscard]] constexpr auto apply(Expr expr) {
   constexpr auto ml = expr();
@@ -86,6 +130,13 @@ template<template<class...> class T, class Expr>
   }(detail::make_index_sequence<ml.size()>{});
 }
 
+/**
+ * Applies invocable `[] { return vector<meta_t>{...}; }` to `[]<type_of<meta_t>...> { }`
+ *
+ * @code
+ * static_assert(apply([] { return vector{meta<int>}; }, []<class T> { static_assert(typeid(T) == typeid(int)); }));
+ * @endcode
+ */
 #if defined(__cpp_nontype_template_args)
 template<class Expr, class Fn>
 [[nodiscard]] constexpr auto apply(Expr expr, Fn fn) {
@@ -96,6 +147,13 @@ template<class Expr, class Fn>
 }
 #endif
 
+/**
+ * Applies `meta_t` and calls `fn.template operator()<meta_t>()`
+ *
+ * @code
+ * apply(meta<int>, []<class T> { static_assert(typeid(T) == typeid(int)); });
+ * @endcode
+ */
 #if !defined(MP_MINIMAL)
 template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn) {
   return [&]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
@@ -103,7 +161,17 @@ template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn) {
     return dispatch[detail::size_t(m)](fn, int{});
   }(detail::make_index_sequence<detail::size_t(meta<class last>)>{});
 }
+#endif
 
+/**
+ * Applies `Fn<type_of<meta_t>>`
+ *
+ * @code
+ * static_assert(apply<std::is_const>(meta<const int>));
+ * static_assert(mp::meta<int*> == apply<std::add_pointer>(meta<int>));
+ * @endcode
+ */
+#if !defined(MP_MINIMAL)
 template<template<class> class Fn>
 [[nodiscard]] constexpr auto apply(mp::meta_t meta) {
   if constexpr (detail::has_value<Fn>(int{})) {
@@ -114,11 +182,28 @@ template<template<class> class Fn>
 }
 #endif
 
+/**
+ * Alternative to write `decltype(apply<T>(Expr))`
+ *
+ * @code
+ * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
+ * @endcode
+ */
 #if defined(__cpp_nontype_template_args)
 template<template<class...> class T, auto Expr>
 using apply_t = decltype(apply<T>(Expr));
 #endif
 
+/**
+ * Iterates over all elements of constexpr continer
+ *
+ * @code
+ * constexpr vector v{meta<int>};
+ * for_each<v>([]<meta_t m> {
+ *  static_assert(typeid(int) == typeid(type_of<m>));
+ * });
+ * @endcode
+ */
 #if (__cpp_generic_lambdas >= 201707L)
 template<auto V, class Fn>
 constexpr void for_each(Fn fn) {
@@ -135,12 +220,10 @@ namespace mp::inline v1_0_0::test {
   template<class...> struct type_list { };
   template<class...> inline constexpr auto is_same = false;
   template<class TLhs, class TRhs> inline constexpr auto is_same<TLhs, TRhs> = true;
-  constexpr void failed();
-  constexpr void expect(bool cond) { if (not cond) { failed(); } }
 } // namespace mp::test
 
 static_assert(([] {
-  using mp::test::expect;
+  using mp::detail::expect;
 
   // mp::detail
   {
@@ -313,6 +396,22 @@ static_assert(([] {
       v.push_back(2);
       expect(2 == v.size() && 2 == v.end() - v.begin());
       expect(v.begin() != v.end());
+    }
+    {
+      {
+        mp::vector v{1, 2, 3, 4};
+        auto it = v.erase(v.begin(), v.end());
+        expect(0 == v.size());
+        expect(v.begin() == v.end());
+        expect(it == v.end());
+      }
+
+      {
+        mp::vector v{1, 2, 3};
+        auto it = v.erase(v.begin()+1, v.end());
+        expect(1 == v.size());
+        expect(1 == v[0]);
+      }
     }
   }
 }(), true));

@@ -80,12 +80,9 @@ static_assert(
 template<class... Ts>
 auto hello_world_17 = [] {
   mp::vector v{mp::meta<Ts>...};
+  v.erase(std::remove_if(v.begin(), v.end(), [](auto m) { return not is_const(m); }), v.end());
   mp::vector<mp::meta_t, sizeof...(Ts)> r;
-  for (auto e : v) {
-    if (is_const(e)) {
-      r.push_back(add_pointer(e));
-    }
-  }
+  std::transform(v.begin(), v.end(), std::back_inserter(r), [](auto m) { return add_pointer(m); });
   return r;
 };
 ```
@@ -135,10 +132,142 @@ static_assert(
 
 ### API
 
+```cpp
+/**
+ * Meta type object representation (the underlying representation is unspecified)
+ */
+using meta_t = detail::meta_t;
+```
+
+```cpp
+/**
+ * Creates meta type
+ *
+ * @code
+ * static_assert(meta<void> == meta<void>);
+ * static_assert(meta<void> != meta<int>);
+ * @endcode
+ */
+template<class T> inline constexpr meta_t meta;
+```
+
+```cpp
+/**
+ * Returns underlying type from meta type
+ *
+ * @code
+ * static_assert(typeid(type_of<meta<void>>) == typeid(void));
+ * @endcode
+ */
+template<meta_t meta> using type_of;
+```
+
+```cpp
+/**
+ * Minimal (not standard compliant) inplace/static vector
+ * implementation optimized for fast compilation-times with meta_t
+ *
+ * @code
+ * vector v{meta<void>, meta<int>};
+ * assert(2 == v.size());
+ * assert(meta<void> == v[0]);
+ * assert(meta<int>  == v[1]);
+ * @endcode
+ */
+template<class T, detail::size_t Size>
+struct vector;
+```
+
+```cpp
+/**
+ * Applies invocable `[] { return vector<meta_t>{...}; }` to `T<type_of<meta_t>...>`
+ *
+ * @code
+ * static_assert(typeid(variant<int>) == typeid(apply<variant>([] { return vector{meta<int>}; })));
+ * @endcode
+ */
+template<template<class...> class T, class Expr>
+[[nodiscard]] constexpr auto apply(Expr expr);
+```
+
+```cpp
+/**
+ * Applies invocable `[] { return vector<meta_t>{...}; }` to `[]<type_of<meta_t>...> { }`
+ *
+ * @code
+ * static_assert(apply([] { return vector{meta<int>}; }, []<class T> { static_assert(typeid(T) == typeid(int)); }));
+ * @endcode
+ */
+#if defined(__cpp_nontype_template_args)
+template<class Expr, class Fn>
+[[nodiscard]] constexpr auto apply(Expr expr, Fn fn);
+#endif
+```
+
+```cpp
+/**
+ * Applies `meta_t` and calls `fn.template operator()<meta_t>()`
+ *
+ * @code
+ * apply(meta<int>, []<class T> { static_assert(typeid(T) == typeid(int)); });
+ * @endcode
+ */
+#if !defined(MP_MINIMAL)
+template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn);
+#endif
+```
+
+```cpp
+/**
+ * Applies `Fn<type_of<meta_t>>`
+ *
+ * @code
+ * static_assert(apply<std::is_const>(meta<const int>));
+ * static_assert(mp::meta<int*> == apply<std::add_pointer>(meta<int>));
+ * @endcode
+ */
+template<template<class> class Fn>
+[[nodiscard]] constexpr auto apply(mp::meta_t meta);
+#endif
+```
+
+```cpp
+/**
+ * Alternative to write `decltype(apply<T>(Expr))`
+ *
+ * @code
+ * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
+ * @endcode
+ */
+#if defined(__cpp_nontype_template_args)
+template<template<class...> class T, auto Expr> using apply_t;
+#endif
+```
+
+```cpp
+/**
+ * Iterates over all elements of constexpr continer
+ *
+ * @code
+ * constexpr vector v{meta<int>};
+ * for_each<v>([]<meta_t m> {
+ *  static_assert(typeid(int) == typeid(type_of<m>));
+ * });
+ * @endcode
+ */
+#if (__cpp_generic_lambdas >= 201707L)
+template<auto V, class Fn> constexpr void for_each(Fn fn);
+#endif
+```
+
 > Configuration
 
 ```cpp
 #define MP 1'0'0 // Current library version (SemVer)
+```
+
+```cpp
+#define MP_MINIMAL // If defined it limits the API for the fastest compilation times
 ```
 ---
 
