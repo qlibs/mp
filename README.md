@@ -27,7 +27,7 @@
 
     - No STL headers required
 
-> * Limited compiler support and functionality (see [API](#api))
+> \* Limited compiler support and functionality (see [API](#api))
 
 ---
 
