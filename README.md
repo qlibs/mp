@@ -141,7 +141,7 @@ static_assert(
 
 ```cpp
 /**
- * Meta type object representation (the underlying representation is unspecified)
+ * Meta type object representation
  */
 using meta_t = /* unspecified */;
 ```
@@ -155,7 +155,7 @@ using meta_t = /* unspecified */;
  * static_assert(meta<void> != meta<int>);
  * @endcode
  */
-template<class T> inline constexpr meta_t meta;
+template<class T> inline constexpr meta_t meta = /* unspecified */;
 ```
 
 ```cpp
@@ -168,7 +168,7 @@ template<class T> inline constexpr meta_t meta;
                  typeid(void));
  * @endcode
  */
-template<meta_t meta> using type_of;
+template<meta_t meta> using type_of = /* unspecified */;
 ```
 
 ```cpp
