@@ -201,7 +201,7 @@ using apply_t = decltype(apply<T>(Expr));
  * @code
  * constexpr vector v{meta<int>};
  * for_each<v>([]<meta_t m> {
- *  static_assert(typeid(int) == typeid(type_of<m>));
+ *   static_assert(typeid(int) == typeid(type_of<m>));
  * });
  * @endcode
  */

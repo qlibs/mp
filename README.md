@@ -188,7 +188,7 @@ struct vector {
   using value_type = T;
   constexpr vector() = default;
   template<class... Ts>
-  constexpr vector(const Ts&...);
+  constexpr vector(Ts&&...);
   template<class TRange> requires requires(TRange range) { range.begin(); range.end(); }
   constexpr vector(TRange range);
   constexpr void push_back(const T&);
@@ -287,7 +287,7 @@ template<template<class...> class T, auto Expr> using apply_t;
  * @code
  * constexpr vector v{meta<int>};
  * for_each<v>([]<meta_t m> {
- *  static_assert(typeid(int) == typeid(type_of<m>));
+ *   static_assert(typeid(int) == typeid(type_of<m>));
  * });
  * @endcode
  */
