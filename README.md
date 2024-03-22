@@ -111,8 +111,7 @@ auto hello_world_20_min = [] {
   constexpr mp::vector v{mp::meta<Ts>...};
   mp::vector<mp::meta_t, sizeof...(Ts)> r;
   mp::for_each<v>([&]<auto m> {
-    using type = mp::type_of<m>;
-    if constexpr (std::is_const_v<type>) {
+    if constexpr (using type = mp::type_of<m>; std::is_const_v<type>) {
       r.push_back(mp::meta<type*>);
     }
   });
