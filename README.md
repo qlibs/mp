@@ -15,7 +15,7 @@
     - Easy integration (see [FAQ](#faq))
 - Minimal [API](#api)
 - Minimal learning curve (reuses stl, ranges or any third-party library/algorithms operating on stl like containers)
-- Easy debugging (meta-functions can be simply executed and debugged at run-time)
+- Easy debugging (meta-functions can be simply executed and debugged at run-time - see [examples](#examples))
 - Verifies itself upon include (aka run all tests via static_asserts (less than .1s overhead but it can be disabled - see [FAQ](#faq))
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/on3qb6n9M))
 - Fast compilation-times (see [benchmarks](#benchmarks))
@@ -133,7 +133,7 @@ static_assert(
 ### Examples
 
 - `mp::meta` with custom types - https://godbolt.org/z/1936T6sfn
-- run-time testing/debugging -
+- run-time testing/debugging - https://godbolt.org/z/1oczvPE61
 - manipulating `std::tuple` -
 - integration with reflection (https://github.com/boost-ext/reflect) -
 
