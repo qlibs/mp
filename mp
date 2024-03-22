@@ -31,7 +31,7 @@ template<size_t Size> using make_index_sequence =
 #else
    index_sequence<__integer_pack(Size)...>;
 #endif
-template<size_t...> struct auto_ { constexpr auto_(auto&&...) { } };
+template<size_t...> struct auto_ { template<class Ts> constexpr auto_(Ts&&...) { } };
 template<size_t... Ns, class T, class... Ts>
 [[nodiscard]] constexpr auto nth_pack_element_impl(auto_<Ns>&&..., T&& nth, Ts&&...) -> decltype(auto) {
   return static_cast<T&&>(nth);
