@@ -31,6 +31,15 @@ template<size_t Size> using make_index_sequence =
 #else
    index_sequence<__integer_pack(Size)...>;
 #endif
+template<size_t...> struct auto_ { constexpr auto_(auto&&...) { } };
+template<size_t N>
+constexpr auto nth_pack_element_impl = []<auto... Ns>(index_sequence<Ns...>) -> decltype(auto) {
+  return [](auto_<Ns>&&..., auto&& nth, auto&&...) -> decltype(auto) { return static_cast<decltype(nth)&&>(nth); };
+}(make_index_sequence<N>{});
+template<size_t N, class...Ts>
+[[nodiscard]] constexpr decltype(auto) nth_pack_element(Ts&&...args) {
+  return nth_pack_element_impl<N>(static_cast<Ts&&>(args)...);
+}
 #if !defined(MP_MINIMAL)
 enum class meta_t : size_t { };
 #elif (__cpp_nontype_template_args >= 201911L) && defined (__clang__)
@@ -249,6 +258,16 @@ static_assert(([] {
       static_assert([](mp::detail::index_sequence<>){ return true; }(mp::detail::make_index_sequence<0>{}));
       static_assert([](mp::detail::index_sequence<0>){ return true; }(mp::detail::make_index_sequence<1>{}));
       static_assert([](mp::detail::index_sequence<0, 1>){ return true; }(mp::detail::make_index_sequence<2>{}));
+    }
+
+    // nth_pack_element
+    {
+      static_assert(1 == mp::detail::nth_pack_element<0>(1));
+      static_assert(1 == mp::detail::nth_pack_element<0>(1, 2));
+      static_assert(2 == mp::detail::nth_pack_element<1>(1, 2));
+      static_assert('a' == mp::detail::nth_pack_element<0>('a', 1, true));
+      static_assert(1 == mp::detail::nth_pack_element<1>('a', 1, true));
+      static_assert(true == mp::detail::nth_pack_element<2>('a', 1, true));
     }
   }
 
