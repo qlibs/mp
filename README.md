@@ -134,7 +134,7 @@ static_assert(
 
 - Custom types - https://godbolt.org/z/1936T6sfn
 - Run-time testing/debugging - https://godbolt.org/z/1oczvPE61
-- Manipulating `std::tuple` -
+- Manipulating `std::tuple` - https://godbolt.org/z/jEKaE7K11
 - Integration with reflection (https://github.com/boost-ext/reflect) -
 
 ---
@@ -171,6 +171,31 @@ template<class T> inline constexpr meta_t meta = /* unspecified */;
  * @endcode
  */
 template<meta_t meta> using type_of = /* unspecified */;
+```
+
+```cpp
+/**
+ * Returns underlying index of meta type
+ * Only useful for structs/tuples
+ *
+ * @code
+ * static_assert(42 == index_of<meta<int, 42>>);
+ * @endcode
+ */
+template<meta_t meta>
+inline constexpr detail::size_t index_of = /* unspecified */;
+```
+
+```cpp
+/**
+ * Helper to create integral_constant
+ *
+ * @code
+ * static_assert(42 == value<42>);
+ * @endcode
+ */
+template<auto V>
+inline constexpr auto value = /* unspecified */;
 ```
 
 ```cpp
@@ -234,7 +259,7 @@ template<template<class...> class T, class Expr>
  */
 #if defined(__cpp_nontype_template_args)
 template<class Expr, class Fn>
-[[nodiscard]]constexpr auto apply(Expr expr, Fn fn);
+[[nodiscard]] constexpr auto apply(Expr expr, Fn fn);
 #endif
 ```
 
@@ -312,6 +337,20 @@ constexpr void for_each(Fn fn);
  */
 template<size_t N, class...Ts>
 [[nodiscard]] constexpr decltype(auto) nth(Ts&&...ts);
+```
+
+```cpp
+namespace dsl {
+/**
+ * Support for operator| with tuples and type_lists
+ *
+ * @code
+ * static_assert(std::tuple{3, 2, 1} == tuple{1, 2, 3} | std::views::reverse);
+ * @endcode
+ */
+template<template<class...> class T, class... Ts, class Fn>
+[[nodiscard]] constexpr auto operator|(T<Ts...>&&, Fn);
+} // namespace dsl
 ```
 
 > Configuration
