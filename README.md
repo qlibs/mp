@@ -32,7 +32,7 @@
 
 ```cpp
 template<class... Ts>
-auto hello_world = [] {
+auto hello_world_20 = [] {
   std::vector v{mp::meta<Ts>...};
   std::vector<mp::meta_t> r;
   for (auto e : v) {
@@ -47,18 +47,18 @@ auto hello_world = [] {
 ```cpp
 static_assert(
   std::is_same_v<
-    mp::apply_t<std::variant, hello_world<int, double, const float, short>>,
+    mp::apply_t<std::variant, hello_world_20<int, double, const float, short>>,
     std::variant<const float*>
   >);
 ```
 
 ---
 
-### C++20 with ranges
+### C++20 (ranges)
 
 ```cpp
 template<class... Ts>
-auto hello_world_ranges = [] {
+auto hello_world_20_ranges = [] {
   return std::vector{mp::meta<Ts>...}
        | std::views::filter([](auto m) { return is_const(m); })
        | std::views::transform([](auto m) { return add_pointer(m); })
@@ -69,7 +69,7 @@ auto hello_world_ranges = [] {
 ```cpp
 static_assert(
   std::is_same_v<
-    mp::apply_t<std::variant, hello_world_ranges<int, double, const float, short>>,
+    mp::apply_t<std::variant, hello_world_20_ranges<int, double, const float, short>>,
     std::variant<const float*>
   >);
 ```
@@ -93,7 +93,7 @@ auto hello_world_17 = [] {
 ```cpp
 static_assert(
   std::is_same_v<
-    decltype(mp::apply<std::variant>(hello_world_20<int, double, const float, short>)),
+    decltype(mp::apply<std::variant>(hello_world_17<int, double, const float, short>)),
     std::variant<const float*>
   >);
 ```

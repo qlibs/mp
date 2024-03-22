@@ -27,7 +27,7 @@ template<size_t Size> using make_index_sequence =
 #else
    index_sequence<__integer_pack(Size)...>;
 #endif
-#if defined(MP_EXPERIMENTAL)
+#if !defined(MP_MINIMAL)
 enum class meta_t : size_t { };
 #elif (__cpp_nontype_template_args >= 201911L) && defined (__clang__)
 struct meta_t {
@@ -40,14 +40,18 @@ using meta_t = const size_t*;
 template<meta_t> struct id { constexpr auto friend get(id); };
 template<class T> struct type_identity { using type = T; };
 template<class T, meta_t Id> struct meta_id { static constexpr auto value = Id; constexpr auto friend get(id<Id>) { return type_identity<T>{}; } };
-#if defined(MP_EXPERIMENTAL)
+#if defined(MP_MINIMAL)
+template<class T> struct type { static constexpr size_t id{}; };
+template<class T> [[nodiscard]] constexpr auto meta() -> meta_t { return meta_id<T, meta_t(&type<T>::id)>::value; }
+#else
 template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(...) -> detail::size_t { return Id; }
 template<class T, size_t Id> [[nodiscard]] constexpr auto type_id(int) -> decltype(get(id<meta_t(Id)>{}), size_t{}) { return type_id<T, Id+1>(Id); }
 template<class T> [[nodiscard]] constexpr auto meta() -> meta_t { return meta_id<T, meta_t(type_id<T, 0>(0))>::value; }
-#else
-template<class T> struct type { static constexpr size_t id{}; };
-template<class T> [[nodiscard]] constexpr auto meta() -> meta_t { return meta_id<T, meta_t(&type<T>::id)>::value; }
 #endif
+template<class R, class T, class Fn> constexpr auto call(Fn fn, int) -> decltype(fn.template operator()<T>()) { return fn.template operator()<T>(); }
+template<class R, class T, class Fn> constexpr auto call(Fn, ...) -> R { return {}; }
+template<template<class> class Fn, class T = void> constexpr auto has_value(int) -> decltype(Fn<T>::value) { return true; }
+template<template<class> class Fn, class...> constexpr auto has_value(...) -> bool { return false; }
 } // namespace detail
 
 using meta_t = detail::meta_t;
@@ -76,7 +80,7 @@ template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1+sizeof...(Ts)>;
 
 template<template<class...> class T, class Expr>
 [[nodiscard]] constexpr auto apply(Expr expr) {
-  constexpr auto ml = mp::vector<mp::meta_t, expr().size()>(expr());
+  constexpr auto ml = expr();
   return [ml]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
     return T<typename decltype(get(detail::id<ml[Ns]>{}))::type...>();
   }(detail::make_index_sequence<ml.size()>{});
@@ -85,10 +89,28 @@ template<template<class...> class T, class Expr>
 #if defined(__cpp_nontype_template_args)
 template<class Expr, class Fn>
 [[nodiscard]] constexpr auto apply(Expr expr, Fn fn) {
-  constexpr auto ml = mp::vector<mp::meta_t, expr().size()>(expr());
+  constexpr auto ml = expr();
   return [ml, fn]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
     return fn.template operator()<type_of<ml[Ns]>...>();
   }(detail::make_index_sequence<ml.size()>{});
+}
+#endif
+
+#if !defined(MP_MINIMAL)
+template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn) {
+  return [&]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
+    R (*dispatch[])(Fn, int){detail::call<R, type_of<meta_t(Ns)>>...};
+    return dispatch[detail::size_t(m)](fn, int{});
+  }(detail::make_index_sequence<detail::size_t(meta<class last>)>{});
+}
+
+template<template<class> class Fn>
+[[nodiscard]] constexpr auto apply(mp::meta_t meta) {
+  if constexpr (detail::has_value<Fn>(int{})) {
+    return mp::apply<bool>(meta, []<class T> { return Fn<T>::value; });
+  } else {
+    return mp::apply<mp::meta_t>(meta, []<class T> { return mp::meta<typename Fn<T>::type>; });
+  }
 }
 #endif
 
@@ -103,30 +125,6 @@ constexpr void for_each(Fn fn) {
   [fn]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
     (fn.template operator()<V[Ns]>(), ...);
   }(detail::make_index_sequence<V.size()>{});
-}
-#endif
-
-#if defined(MP_EXPERIMENTAL)
-namespace detail {
-template<class R, class T, class Fn> constexpr auto call(Fn fn, int) -> decltype(fn.template operator()<T>()) { return fn.template operator()<T>(); }
-template<class R, class T, class Fn> constexpr auto call(Fn, ...) -> R { return {}; }
-template<template<class> class Fn, class T = void> constexpr auto has_value(int) -> decltype(Fn<T>::value) { return true; }
-template<template<class> class Fn, class...> constexpr auto has_value(...) -> bool { return false; }
-} // namespace detail
-
-template<class R = meta_t, class Fn> constexpr auto apply(meta_t m, Fn fn) {
-  return [&]<detail::size_t... Ns>(detail::index_sequence<Ns...>) {
-    R (*dispatch[])(Fn){[](Fn fn) -> R { return detail::call<R, type_of<meta_t(Ns)>>(fn, int{}); }...};
-    return dispatch[detail::size_t(m)](fn);
-  }(detail::make_index_sequence<detail::size_t(meta<class last>)>{});
-}
-template<template<class> class Fn>
-[[nodiscard]] constexpr auto apply(mp::meta_t meta) {
-  if constexpr (detail::has_value<Fn>(int{})) {
-    return mp::apply<bool>(meta, []<class T> { return Fn<T>::value; });
-  } else {
-    return mp::apply<mp::meta_t>(meta, []<class T> { return mp::meta<typename Fn<T>::type>; });
-  }
 }
 #endif
 } // namespace mp
