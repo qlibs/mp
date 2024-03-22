@@ -49,13 +49,12 @@ auto hello_world_20 = [] {
 
 ```cpp
 static_assert(
-  std::is_same_v<
-    mp::apply_t<std::variant, hello_world_20<int, double, const float, short>>,
-    std::variant<const float*>
-  >);
+  typeid(mp::apply_t<std::variant,
+    hello_world_20<int, double, const float, short>>),
+  ==
+  typeid(std::variant<const float*>)
+);
 ```
-
----
 
 > #### C++20 (ranges)
 
@@ -71,10 +70,11 @@ auto hello_world_20_ranges = [] {
 
 ```cpp
 static_assert(
-  std::is_same_v<
-    mp::apply_t<std::variant, hello_world_20_ranges<int, double, const float, short>>,
-    std::variant<const float*>
-  >);
+  typeid(mp::apply_t<std::variant,
+    hello_world_20_ranges<int, double, const float, short>>),
+  ==
+  typeid(std::variant<const float*>)
+);
 ```
 
 > #### C++17 (stl)
@@ -83,7 +83,7 @@ static_assert(
 template<class... Ts>
 auto hello_world_17 = [] {
   mp::vector v{mp::meta<Ts>...};
-  v.erase(std::remove_if(v.begin(), v.end(), 
+  v.erase(std::remove_if(v.begin(), v.end(),
           [](auto m) { return not is_const(m); }), v.end());
   mp::vector<mp::meta_t, sizeof...(Ts)> r;
   std::transform(v.begin(), v.end(), std::back_inserter(r),
@@ -94,10 +94,11 @@ auto hello_world_17 = [] {
 
 ```cpp
 static_assert(
-  std::is_same_v<
-    decltype(mp::apply<std::variant>(hello_world_17<int, double, const float, short>)),
-    std::variant<const float*>
-  >);
+  typeid(mp::apply<std::variant>(
+    hello_world_17<int, double, const float, short>)),
+  ==
+  typeid(std::variant<const float*>)
+);
 ```
 
 > #### C++20 (`-DMP_MINIMAL`)
@@ -119,10 +120,11 @@ auto hello_world_20_min = [] {
 
 ```cpp
 static_assert(
-  std::is_same_v<
-    mp::apply_t<std::variant, hello_world_20_min<int, double, const float, short>>,
-    std::variant<const float*>
-  >);
+  typeid(mp::apply_t<std::variant,
+    hello_world_20_min<int, double, const float, short>>),
+  ==
+  typeid(std::variant<const float*>)
+);
 ```
 
 ---
