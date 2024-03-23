@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
 <a href="https://godbolt.org/z/on3qb6n9M">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/TY4EevTEM">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/W1fvsTc8o">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 ---------------------------------------
 
@@ -31,7 +31,7 @@
 
 ---
 
-### Hello world (https://godbolt.org/z/TY4EevTEM)
+### Hello world (https://godbolt.org/z/W1fvsTc8o)
 
 > #### C++20
 
@@ -111,7 +111,7 @@ auto hello_world_20_min = [] {
   constexpr mp::vector v{mp::meta<Ts>...};
   mp::vector<mp::meta_t, sizeof...(Ts)> r;
   mp::for_each<v>([&]<auto m> {
-    if constexpr (using type = mp::type_of<m>; std::is_const_v<type>) {
+    if (using type = mp::type_of<m>; std::is_const_v<type>) {
       r.push_back(mp::meta<type*>);
     }
   });
