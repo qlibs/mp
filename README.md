@@ -16,7 +16,7 @@
 - Minimal [API](#api)
 - Minimal learning curve (reuses stl, ranges or any third-party library/algorithms operating on stl like containers)
 - Easy debugging (meta-functions can be simply executed and debugged at run-time - see [examples](#examples))
-- Verifies itself upon include (aka run all tests via static_asserts (less than .1s overhead but it can be disabled - see [FAQ](#faq))
+- Verifies itself upon include (aka run all tests via static_asserts / can be disabled by `DISABLE_STATIC_ASSERT_TESTS`)
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/on3qb6n9M))
 - Fast compilation-times (see [benchmarks](#benchmarks))
 - Support for reflection and/or tuples (see [examples](#examples))
@@ -33,99 +33,7 @@
 
 ### Hello world (https://godbolt.org/z/W1fvsTc8o)
 
-> #### C++20
-
 ```cpp
-template<class... Ts>
-auto hello_world_20 = [] {
-  std::vector v{mp::meta<Ts>...};
-  std::vector<mp::meta_t> r;
-  for (auto e : v) {
-    if (is_const(e)) {
-      r.push_back(add_pointer(e));
-    }
-  }
-  return r;
-};
-```
-
-```cpp
-static_assert(
-  typeid(mp::apply_t<std::variant,
-    hello_world_20<int, double, const float, short>>),
-  ==
-  typeid(std::variant<const float*>)
-);
-```
-
-> #### C++20 (ranges)
-
-```cpp
-template<class... Ts>
-auto hello_world_20_ranges = [] {
-  return std::vector{mp::meta<Ts>...}
-       | std::views::filter([](auto m) { return is_const(m); })
-       | std::views::transform([](auto m) { return add_pointer(m); })
-       ;
-};
-```
-
-```cpp
-static_assert(
-  typeid(mp::apply_t<std::variant,
-    hello_world_20_ranges<int, double, const float, short>>),
-  ==
-  typeid(std::variant<const float*>)
-);
-```
-
-> #### C++17 (stl)
-
-```cpp
-template<class... Ts>
-auto hello_world_17_stl = [] {
-  mp::vector v{mp::meta<Ts>...};
-  v.erase(std::remove_if(v.begin(), v.end(),
-          [](auto m) { return not is_const(m); }), v.end());
-  mp::vector<mp::meta_t, sizeof...(Ts)> r;
-  std::transform(v.begin(), v.end(), std::back_inserter(r),
-          [](auto m) { return add_pointer(m); });
-  return r;
-};
-```
-
-```cpp
-static_assert(
-  typeid(mp::apply<std::variant>(
-    hello_world_17_stl<int, double, const float, short>)),
-  ==
-  typeid(std::variant<const float*>)
-);
-```
-
-> #### C++20 (`-DMP_MINIMAL` - optimized for compilation times)
-
-```cpp
-template<class... Ts>
-auto hello_world_20_min = [] {
-  constexpr mp::vector v{mp::meta<Ts>...};
-  mp::vector<mp::meta_t, sizeof...(Ts)> r;
-  mp::for_each<v>([&]<auto m> {
-    if (using type = mp::type_of<m>; std::is_const_v<type>) {
-      r.push_back(mp::meta<type*>);
-    }
-  });
-  return r;
-};
-```
-
-```cpp
-static_assert(
-  typeid(mp::apply_t<std::variant,
-    hello_world_20_min<int, double, const float, short>>),
-  ==
-  typeid(std::variant<const float*>)
-);
 ```
 
 ---
@@ -175,6 +83,26 @@ template<meta_t meta> using type_of = /* unspecified */;
 
 ```cpp
 /**
+ * Returns value of meta type
+ *
+ * @code
+ * static_assert(42 = value_of_v<mp::meta<std::integral_constant<int, 42>>>);
+ * @endcode
+ */
+template<meta_t meta>
+[[nodiscard]] constexpr auto value_of_v;
+```
+
+```cpp
+/**
+ * Returns value of meta type underlying object
+ */
+template<meta_t meta, class T>
+[[nodiscard]] constexpr decltype(auto) value_of(T&& t);
+```
+
+```cpp
+/**
  * Minimal (not standard compliant) inplace/static vector
  * implementation optimized for fast compilation-times with meta_t
  *
@@ -204,65 +132,48 @@ template<template<class...> class T, class Expr>
 ```
 
 ```cpp
-/**
- * Applies invocable `[] { return vector<meta_t>{...}; }` to
- *                   `[]<type_of<meta_t>...> { }`
+ * Applies expression expr to `R<type_of<meta_t>...>`
  *
  * @code
- * static_assert(apply([] { return vector{meta<int>}; },
- *  []<class T> { static_assert(typeid(T) == typeid(int)); }));
+ * static_assert(typeid(variant<int>) == typeid(apply<variant>([] { return vector{meta<int>}; })));
+ * @endcode
+ */
+template<template<class...> class R, class Expr>
+[[nodiscard]] constexpr auto apply(Expr expr);
+```
+
+```cpp
+/**
+ * Applies vector V to `R<type_of<meta_t>...>`
+ *
+ * @code
+ * static_assert(typeid(variant<int>) == typeid(apply<variant, vector{meta<int>}>));
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)
-template<class Expr, class Fn>
-[[nodiscard]] constexpr auto apply(Expr expr, Fn fn);
-#endif
-```
+template<template<class...> class R, auto V>
+inline constexpr auto apply_v = /* unspecified */;
 
 ```cpp
 /**
- * Applies `meta_t` and calls `fn.template operator()<meta_t>()`
- *
- * @code
- * apply(meta<int>, []<meta_t meta> {
- *   static_assert(meta_t<int> == meta);
- * });
- * @endcode
+ * Applies vector V with object t to `R{value_of<V>(t)...}
  */
-#if !defined(MP_MINIMAL)
-template<class R = meta_t, class Fn>
-[[nodiscard]] constexpr auto apply(meta_t m, Fn fn);
+#if defined(__cpp_nontype_template_args)
+template<template<class...> class R, auto V, class T>
+[[nodiscard]] constexpr auto apply(T&& t);
 #endif
 ```
 
 ```cpp
 /**
- * Applies `Fn<type_of<meta_t>>`
+ * Alternative to write `decltype(apply_v<T, Expr>))`
  *
  * @code
- * static_assert(apply<std::is_const>(meta<const int>));
- * static_assert(mp::meta<int*> == apply<std::add_pointer>(meta<int>));
- * @endcode
- */
-#if !defined(MP_MINIMAL)
-template<template<class> class Fn>
-[[nodiscard]] constexpr auto apply(mp::meta_t meta);
-#endif
-```
-
-```cpp
-/**
- * Alternative to write `decltype(apply<T>(Expr))`
- *
- * @code
- * static_assert(typeid(variant<int>)
- *               ==
- *               typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
+ * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)
-template<template<class...> class T, auto Expr
-using apply_t = /* unspecified */;
+template<template<class...> class T, auto V> using apply_t = /* unspecified */;
 #endif
 ```
 
@@ -283,43 +194,12 @@ constexpr void for_each(Fn fn);
 #endif
 ```
 
-```cpp
-/**
- * Returns nth element of a variadic pack
- *
- * @code
- * static_assert(0 == nth<0>(0, 1, 2));
- * static_assert(1 == nth<1>(0, 1, 2));
- * static_assert(2 == nth<2>(0, 1, 2));
- * @endcode
- */
-template<size_t N, class...Ts>
-[[nodiscard]] constexpr decltype(auto) nth(Ts&&...);
-```
-
-```cpp
-namespace dsl {
-/**
- * Support for operator| with tuples and type_lists
- *
- * @code
- * static_assert(std::tuple{3, 2, 1} == tuple{1, 2, 3} | std::views::reverse);
- * @endcode
- */
-template<template<class...> class T, class... Ts, class Fn>
-[[nodiscard]] constexpr auto operator|(T<Ts...>&&, Fn);
-} // namespace dsl
-```
-
 > Configuration
 
 ```cpp
 #define MP 1'0'0 // Current library version (SemVer)
 ```
 
-```cpp
-#define MP_MINIMAL // If defined it limits the API for the fastest compilation times
-```
 ---
 
 ### Benchmarks
