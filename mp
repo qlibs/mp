@@ -32,13 +32,12 @@ template<size_t Size> using make_index_sequence =
 /**
  * Meta type object representation
  */
+struct meta_info { };
 #if defined(MP_META_INFO)
 using meta_t = const MP_META_INFO*;
 #elif (__cpp_constexpr >= 202306L) // [C++23] Constexpr cast from void*
-struct meta_info { };
 using meta_t = const void*;
 #else
-struct meta_info { };
 using meta_t = const meta_info*;
 #endif
 
@@ -177,7 +176,7 @@ struct vector {
   T data[Size]{};
   size_t size_{};
 };
-template<class... Ts> vector(Ts...) -> vector<meta_t, sizeof...(Ts)>;
+template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1 + sizeof...(Ts)>;
 
 /**
  * Applies expression expr to `R<type_of<meta_t>...>`

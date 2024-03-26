@@ -320,6 +320,7 @@ template<template<class...> class R, class Expr>
 #if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class R, auto V>
 inline constexpr auto apply_v = /* unspecified */;
+```
 
 ```cpp
 /**
