@@ -96,7 +96,7 @@ using type_of = typename meta_info_of<meta>::value_type;
  * @endcode
  */
 template<meta_t meta>
-[[nodiscard]] constexpr auto value_of_v = type_of<meta>::value;
+constexpr auto value_of_v = type_of<meta>::value;
 
 /**
  * Returns value of meta type underlying object
@@ -324,7 +324,7 @@ static_assert(([] {
 
   // mp::apply
   {
-    static_assert([](mp::test::type_list<>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector<mp::meta_t, 0>{}; })));
+    static_assert([](mp::test::type_list<>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector<mp::meta_t, 1>{}; })));
     static_assert([](mp::test::type_list<int>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<int>}; })));
     static_assert([](mp::test::type_list<void, void>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<void>, mp::meta<void>}; })));
   }
@@ -333,7 +333,7 @@ static_assert(([] {
   // mp::for_each
   {
     {
-      constexpr mp::vector<mp::meta_t, 0> m{};
+      constexpr mp::vector<mp::meta_t, 1> m{};
       mp::vector<mp::meta_t, 42> v{};
       mp::for_each<m>([&]<auto meta> { v.push_back(meta); });
       expect(0 == v.size());
