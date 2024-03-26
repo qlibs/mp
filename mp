@@ -188,7 +188,7 @@ template<template<class...> class R, auto V, class T>
  */
 #if defined(__cpp_nontype_template_args)
 template<template<class...> class T, auto V>
-using apply_t = decltype(apply_v<T, V>);
+using apply_t = decltype(apply<T>([] { return V; }));
 #endif
 
 /**
@@ -217,7 +217,7 @@ namespace mp::inline v1_0_0::test {
   template<auto I> struct _i { static constexpr auto value = I; };
   template<class...> inline constexpr auto is_same = false;
   template<class TLhs, class TRhs> inline constexpr auto is_same<TLhs, TRhs> = true;
-  void fail(); constexpr void expect(bool cond) { if (not cond) { fail(); } }
+  void fail(); constexpr void expect(bool cond) { if (!cond) { fail(); } }
 } // namespace mp::test
 
 static_assert(([] {
