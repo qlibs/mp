@@ -48,7 +48,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> [C++17] Operation fuzion
+> [C++17] Algorithms
 
 ```cpp
 template<class... Ts>
@@ -56,6 +56,7 @@ auto drop_1_reverse = [] {
   mp::vector v{mp::meta<Ts>...};
   mp::vector<mp::meta_t, sizeof...(Ts)-1> r;
   // fuze operations for faster compilation times
+  // Can use STL
   for (auto i = v.size()-1; i > 0; --i) { r.push_back(v[i]); }
   return r;
 };
@@ -82,7 +83,7 @@ static_assert(std::is_same_v<std::variant<int, double>,
               mp::apply_t<std::variant, drop_1_reverse<float, double, int>>>);
 ```
 
-> https://godbolt.org/z/oKfs71bYG (C++20)
+> https://godbolt.org/z/oKfs71bYG
 
 ---
 
@@ -115,7 +116,7 @@ std::apply([](auto... args) {
 }, t);
 ```
 
-> https://godbolt.org/z/x91ods9xc
+> https://godbolt.org/z/WYKGWYofc
 
 ---
 
@@ -348,11 +349,6 @@ constexpr void for_each(Fn fn);
 ---
 
 ### FAQ
-
-- How `mp` works under the hood?
-
-    > `mp` is leveraging a lot techniques such as stateful-metaprogramming (for meta types), constexpr evaluation and containers.
-      See implementation of `meta` and `apply` for more details.
 
 - What does it mean that `mp` tests itself upon include?
 
