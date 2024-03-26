@@ -132,11 +132,16 @@ struct vector {
   [[nodiscard]] constexpr auto& operator[](size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
   [[nodiscard]] constexpr auto capacity() const { return Size; }
+  template<size_t size> [[nodiscard]] constexpr auto operator==(const vector<T, size>& other) const {
+    if (size_ != other.size_) { return false; }
+    for (auto i = 0u; i < size_; ++i) { if (data[i] != other.data[i]) { return false; } }
+    return true;
+  }
   constexpr void clear() { size_ = {}; }
   T data[Size?Size:1]{};
   size_t size_{};
 };
-template<class... Ts> vector(Ts...) -> vector<meta_t, 1 + sizeof...(Ts)>;
+template<class... Ts> vector(Ts...) -> vector<meta_t, sizeof...(Ts)>;
 
 /**
  * Applies expression expr to `R<type_of<meta_t>...>`
@@ -398,6 +403,13 @@ static_assert(([] {
       v.emplace_back(2);
       expect(2 == v.size() && 2 == v.end() - v.begin());
       expect(v.begin() != v.end());
+    }
+
+    {
+      expect(mp::vector<int, 1>{1} == mp::vector<int, 1>{1});
+      expect(mp::vector<int, 1>{1} == mp::vector<int, 2>{1});
+      expect(mp::vector<int, 1>{1} != mp::vector<int, 1>{2});
+      expect(mp::vector<int, 1>{1} != mp::vector<int, 2>{2});
     }
   }
 }(), true));
