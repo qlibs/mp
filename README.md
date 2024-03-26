@@ -53,9 +53,9 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 ```cpp
 template<class... Ts>
 auto drop_1_reverse = [] {
-  std::array v{mp::meta<Ts>...}; // or mp::array{m::meta<Ts>...};
+  std::array v{mp::meta<Ts>...}; // or mp::array{mp::meta<Ts>...};
   std::array<mp::meta_t, sizeof...(Ts)-1> r{};
-  // fuze operations for faster compilation times (can use STL)
+  // fuse operations for faster compilation times (can use STL)
   for (auto i = 1u; i < v.size(); ++i) { r[i-1] = v[v.size()-i]; }
   return r;
 };
