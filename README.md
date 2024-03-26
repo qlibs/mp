@@ -371,8 +371,27 @@ constexpr void for_each(Fn fn);
 
 ---
 
-### Benchmarks
-https://godbolt.org/z/cx3Ws6Ka8
+### Benchmarks (https://godbolt.org/z/cx3Ws6Ka8)
+
+> To build/run benchmarks
+
+```cpp
+git clone https://github.com/boost-ext/mp
+git co benchmark
+cd benchmark
+mkdir build && cd build
+cmake ..
+make benchmark
+```
+
+> Results
+
+- https://boost-ext.github.io/mp/metabench/results/at
+- https://boost-ext.github.io/mp/metabench/results/drop
+- https://boost-ext.github.io/mp/metabench/results/erase
+- https://boost-ext.github.io/mp/metabench/results/insert
+- https://boost-ext.github.io/mp/metabench/results/reverse
+- https://boost-ext.github.io/mp/metabench/results/take
 
 ---
 
