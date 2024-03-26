@@ -1,0 +1,22 @@
+// Copyright Odin Holmes 2018
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/tmp.hpp>
+
+namespace tmp = boost::tmp;
+
+template<typename T>
+using is_even = tmp::bool_<(T::value % 2 == 0)>;
+
+int main() {
+<% env[:k].times do |k| %>
+    constexpr auto <%= "xs#{k}" %> = tmp::val_pack_(
+        <%= ((k*n+1)..(k*n+n)).map { |i| "tmp::int_<#{i}>{}" }.join(', ') %>
+    );
+
+#if defined(METABENCH)
+    constexpr auto <%= "result#{k}" %> = <%= "xs#{k}" %> >>= tmp::filter_<tmp::lift_<is_even>>{};
+#endif
+<% end %>
+}

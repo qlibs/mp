@@ -1,0 +1,30 @@
+// Copyright Bruno Dutra 2016
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+#define DISABLE_STATIC_ASSERT_TESTS
+#include <mp>
+
+template<int> struct x;
+
+template<class...> struct type_list {};
+
+template<class... Ts>
+constexpr auto reverse() {
+  mp::array v{mp::meta<Ts>...};
+  mp::array<mp::meta_t, sizeof...(Ts)> r;
+  for (auto i = 0u; i < v.size(); ++i) { r[i] = v[v.size()-i-1]; }
+  return r;
+}
+
+template<class... Ts>
+using reverse = mp::apply_t<type_list, reverse<Ts...>()>;
+
+<% env[:k].times do |k| %>
+
+#if defined(METABENCH)
+using <%= "result#{k}" %> = reverse<<%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>>;
+#endif
+
+<% end %>
+
+int main() {}

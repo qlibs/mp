@@ -1,0 +1,22 @@
+// Copyright Bruno Dutra 2016
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/mp11.hpp>
+using namespace boost::mp11;
+
+template<int> struct x;
+
+<% env[:k].times do |k| %>
+
+using <%= "xs#{k}" %> = mp_list<
+    <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>
+>;
+
+#if defined(METABENCH)
+using <%= "result#{k}" %> = mp_append<mp_push_back<mp_take_c<<%= "xs#{k}" %>, <%= k*n/env[:k] %>>, void>, mp_drop_c<<%= "xs#{k}" %>, <%= k*n/env[:k] %>>>;
+#endif
+
+<% end %>
+
+int main() {}

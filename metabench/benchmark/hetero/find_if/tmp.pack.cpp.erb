@@ -1,0 +1,27 @@
+// Copyright Odin Holmes 2018
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/tmp.hpp>
+
+namespace tmp = boost::tmp;
+
+template <int X>
+struct equals_to {
+    template<typename Y>
+    using f = tmp::bool_<(Y::value == X)>;
+};
+
+int main() {
+    <% env[:k].times do |k| %>
+    <% ints = ((k*n+1)..(k*n+n)).to_a %>
+
+    constexpr auto <%= "xs#{k}" %> = tmp::val_pack_(
+        <%= ints.map { |i| "tmp::int_<#{i}>{}" }.join(', ') %>
+    );
+
+#if defined(METABENCH)
+    constexpr auto <%= "result#{k}" %> = <%= "xs#{k}" %> >>= tmp::find_if_<tmp::lift_<equals_to<<%= ints.last || 0 %>>::template f>>{};
+#endif
+<% end %>
+}

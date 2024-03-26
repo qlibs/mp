@@ -1,0 +1,43 @@
+# Copyright Louis Dionne 2017
+# Copyright Bruno Dutra 2016
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+shallow_clone: true
+
+branches:
+  except:
+    - /pr\/.+/
+    - /.+/ # Temporarily disable all branches
+
+build:
+  verbosity: detailed
+
+environment:
+    matrix:
+      - MSVC: "14.0"
+        CMAKE_GENERATOR: "Ninja"
+
+      - MSVC: "12.0"
+        CMAKE_GENERATOR: "Ninja"
+
+install:
+  - if "%CMAKE_GENERATOR%" equ "Ninja" (choco install ninja)
+
+  # Remove MinGW from PATH
+  - set PATH=%PATH:C:\MinGW\bin;=%
+
+  # Use a more recent Ruby by default.
+  - set PATH=C:\Ruby21-x64;C:\Ruby21-x64\bin;%PATH%
+  - ruby --version
+
+before_build:
+  - call "C:\Program Files (x86)\Microsoft Visual Studio %MSVC%\VC\vcvarsall.bat"
+  - cd C:\projects\metabench
+
+build_script:
+  - mkdir build
+  - cd build
+  - cmake .. -G"%CMAKE_GENERATOR%" -DBOOST_ROOT="C:\Libraries\boost_1_59_0"
+  - cmake --build .
+  - ctest --output-on-failure

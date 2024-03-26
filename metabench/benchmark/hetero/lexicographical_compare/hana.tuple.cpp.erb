@@ -1,0 +1,22 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/hana/lexicographical_compare.hpp>
+#include <boost/hana/tuple.hpp>
+namespace hana = boost::hana;
+
+int main() {
+<% env[:k].times do |k| %>
+    constexpr auto <%= "xs#{k}" %> = hana::make_tuple(
+        <%= ((k*n+1)..(k*n+n)).map { |i| i.to_s }.join(', ') %>
+    );
+    constexpr auto <%= "ys#{k}" %> = hana::make_tuple(
+        <%= ((k*n+1)..(k*n+n)).map { |i| (i == (k*n+n) ? i + 1 : i).to_s }.join(', ') %>
+    );
+
+#if defined(METABENCH)
+    constexpr auto <%= "result#{k}" %> = hana::lexicographical_compare(<%= "xs#{k}" %>, <%= "ys#{k}" %>);
+#endif
+<% end %>
+}

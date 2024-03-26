@@ -1,0 +1,17 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <array>
+
+template<int> struct x {};
+
+int main() {
+<% env[:k].times do |k| %>
+#if defined(METABENCH)
+    constexpr std::array<int, <%= n %>> <%= "xs#{k}" %> = {{
+        <%= ((k*n+1)..(k*n+n)).to_a.join(', ') %>
+    }};
+#endif
+<% end %>
+}

@@ -1,0 +1,18 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/fusion/include/make_list.hpp>
+namespace fusion = boost::fusion;
+
+template<int> struct x {};
+
+int main() {
+<% env[:k].times do |k| %>
+#if defined(METABENCH)
+    /*constexpr*/ auto <%= "xs#{k}" %> = fusion::make_list(
+        <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>()" }.join(', ') %>
+    );
+#endif
+<% end %>
+}

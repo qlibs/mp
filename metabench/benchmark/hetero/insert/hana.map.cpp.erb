@@ -1,0 +1,25 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/hana/insert.hpp>
+#include <boost/hana/integral_constant.hpp>
+#include <boost/hana/map.hpp>
+#include <boost/hana/pair.hpp>
+namespace hana = boost::hana;
+
+int main() {
+<% env[:k].times do |k| %>
+    constexpr auto <%= "xs#{k}" %> = hana::make_map(
+        <%= ((k*n+1)..(k*n+n)).map { |i|
+            "hana::make_pair(hana::int_c<#{i}>, hana::int_c<#{i}>)"
+        }.join(', ') %>
+    );
+    constexpr auto <%= "next#{k}" %> = hana::int_c< <%= n + 1 %> >;
+    constexpr auto <%= "pair#{k}" %> = hana::make_pair(<%= "next#{k}" %>, <%= "next#{k}" %>);
+
+#if defined(METABENCH)
+    constexpr auto <%= "result#{k}" %> = hana::insert(<%= "xs#{k}" %>, <%= "pair#{k}" %>);
+#endif
+<% end %>
+}

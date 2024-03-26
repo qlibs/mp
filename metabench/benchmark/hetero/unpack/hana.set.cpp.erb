@@ -1,0 +1,32 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+// Disable concept checks, otherwise x<> would need to be Comparable.
+// We only define the macro if it was not defined on the command line.
+#ifndef BOOST_HANA_CONFIG_DISABLE_CONCEPT_CHECKS
+#   define BOOST_HANA_CONFIG_DISABLE_CONCEPT_CHECKS
+#endif
+
+#include <boost/hana/set.hpp>
+#include <boost/hana/unpack.hpp>
+namespace hana = boost::hana;
+
+struct f {
+    template<typename ...T>
+    constexpr void operator()(T const& ...) const {}
+};
+
+template<int> struct x {};
+
+int main() {
+<% env[:k].times do |k| %>
+    constexpr auto <%= "xs#{k}" %> = hana::make_set(
+        <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>{}" }.join(', ') %>
+    );
+
+#if defined(METABENCH)
+    hana::unpack(<%= "xs#{k}" %>, f{});
+#endif
+<% end %>
+}

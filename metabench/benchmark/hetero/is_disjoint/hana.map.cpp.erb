@@ -1,0 +1,28 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/hana/integral_constant.hpp>
+#include <boost/hana/is_disjoint.hpp>
+#include <boost/hana/map.hpp>
+#include <boost/hana/pair.hpp>
+namespace hana = boost::hana;
+
+int main() {
+<% env[:k].times do |k| %>
+    constexpr auto <%= "xs#{k}" %> = hana::make_map(
+        <%= ((k*n+1)..(k*n+n)).map { |i|
+            "hana::make_pair(hana::int_<#{i*2}>{}, hana::int_<#{i*2}>{})"
+        }.join(', ') %>
+    );
+    constexpr auto <%= "ys#{k}" %> = hana::make_map(
+        <%= ((k*n+1)..(k*n+n)).map { |i|
+            "hana::make_pair(hana::int_<#{i*2+1}>{}, hana::int_<#{i*2+1}>{})"
+        }.join(', ') %>
+    );
+
+#if defined(METABENCH)
+    constexpr auto <%= "result#{k}" %> = hana::is_disjoint(<%= "xs#{k}" %>, <%= "ys#{k}" %>);
+#endif
+<% end %>
+}

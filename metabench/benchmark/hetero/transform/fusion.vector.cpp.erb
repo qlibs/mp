@@ -1,0 +1,30 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/fusion/include/as_vector.hpp>
+#include <boost/fusion/include/make_vector.hpp>
+#include <boost/fusion/include/transform.hpp>
+namespace fusion = boost::fusion;
+
+struct f {
+    template<typename> struct result;
+    template<typename F, typename X> struct result<F(X)> { typedef X type; };
+
+    template<typename X>
+    constexpr X operator()(X x) const { return x; }
+};
+
+template<int> struct x {};
+
+int main() {
+<% env[:k].times do |k| %>
+    /*constexpr*/ auto <%= "xs#{k}" %> = fusion::make_vector(
+        <%= ((k*n+1)..(k*n+n)).map { |n| "x<#{n}>()" }.join(', ') %>
+    );
+
+#if defined(METABENCH)
+    /*constexpr*/ auto <%= "result#{k}" %> = fusion::as_vector(fusion::transform(<%= "xs#{k}" %>, f{}));
+#endif
+<% end %>
+}

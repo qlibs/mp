@@ -1,0 +1,52 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/hana/at_key.hpp>
+#include <boost/hana/integral_constant.hpp>
+#include <boost/hana/map.hpp>
+#include <boost/hana/fwd/first.hpp>
+#include <boost/hana/fwd/second.hpp>
+
+struct light_pair_tag {};
+
+template<typename T, typename U>
+struct light_pair {
+    using First = T;
+    using Second = U;
+    using hana_tag = light_pair_tag;
+};
+
+namespace boost { namespace hana {
+    template<>
+    struct first_impl<light_pair_tag> {
+        template<typename First, typename Second>
+        static constexpr First apply(light_pair<First, Second> const&)
+        { return First{}; }
+    };
+
+    template<>
+    struct second_impl<light_pair_tag> {
+        template<typename First, typename Second>
+        static constexpr Second apply(light_pair<First, Second> const&)
+        { return Second{}; }
+    };
+}}
+
+namespace hana = boost::hana;
+
+struct undefined {};
+
+int main() {
+<% env[:k].times do |k| %>
+    constexpr auto <%= "xs#{k}" %> = hana::make_map(<%=
+        ((k*n+1)..(k*n+n)).map { |i| "light_pair<hana::int_<#{i}>, undefined>{}" }.join(', ')
+    %>);
+
+    <% (env[:p]*n/100).times do |p| %>
+    #if defined(METABENCH)
+        constexpr auto <%= "result#{p}#{k}" %> = hana::at_key(<%= "xs#{k}" %>, hana::int_<<%= k*n+p*100/env[:p]+1 %>>{});
+    #endif
+    <% end %>
+<% end %>
+}

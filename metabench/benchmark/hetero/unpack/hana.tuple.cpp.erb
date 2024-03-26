@@ -1,0 +1,26 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/hana/tuple.hpp>
+#include <boost/hana/unpack.hpp>
+namespace hana = boost::hana;
+
+struct f {
+    template<typename ...T>
+    constexpr void operator()(T const& ...) const {}
+};
+
+template<int> struct x {};
+
+int main() {
+<% env[:k].times do |k| %>
+    constexpr auto <%= "xs#{k}" %> = hana::make_tuple(
+        <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>{}" }.join(', ') %>
+    );
+
+#if defined(METABENCH)
+    hana::unpack(<%= "xs#{k}" %>, f{});
+#endif
+<% end %>
+}

@@ -1,0 +1,21 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#define DISABLE_STATIC_ASSERT_TESTS
+#include <mp>
+
+template<auto N, class... Ts>
+using at_c = mp::type_of<mp::array{mp::meta<Ts>...}[N]>;
+
+template<int> struct x;
+
+<% env[:k].times do |k| %>
+    <% (env[:p]*n/100).times do |p| %>
+    #if defined(METABENCH)
+    using <%= "result#{p}#{k}" %> = at_c<%= p*100/env[:p] %>, <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>>;
+    #endif
+    <% end %>
+<% end %>
+
+int main() {}

@@ -1,0 +1,33 @@
+// Copyright Bruno Dutra 2016
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+<% if n > 20 %>
+    #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+    #define BOOST_MPL_LIMIT_LIST_SIZE <%= ((n + 9) / 10) * 10 %>
+<% end %>
+
+#include <boost/mpl/list.hpp>
+#include <boost/mpl/erase.hpp>
+#include <boost/mpl/begin.hpp>
+#include <boost/mpl/advance.hpp>
+#include <boost/mpl/int.hpp>
+namespace mpl = boost::mpl;
+
+template<int> struct x;
+
+<% env[:k].times do |k| %>
+
+using <%= "xs#{k}" %> = mpl::list<
+    <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>
+>;
+
+using <%= "pos#{k}" %> = mpl::advance<mpl::begin<<%= "xs#{k}" %>>::type, mpl::int_<<%= k*n/env[:k] %>>>::type;
+
+#if defined(METABENCH)
+using <%= "result#{k}" %> = mpl::erase<<%= "xs#{k}" %>, <%= "pos#{k}" %>>::type;
+#endif
+
+<% end %>
+
+int main() {}

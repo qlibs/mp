@@ -1,0 +1,27 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/fusion/include/at_key.hpp>
+#include <boost/fusion/include/make_map.hpp>
+#include <boost/mpl/int.hpp>
+namespace fusion = boost::fusion;
+namespace mpl = boost::mpl;
+
+struct undefined {};
+
+int main() {
+<% env[:k].times do |k| %>
+    /*constexpr*/ auto <%= "xs#{k}" %> = fusion::make_map<
+        <%= ((k*n+1)..(k*n+n)).map { |i| "mpl::int_<#{i}>" }.join(', ') %>
+    >(
+        <%= ((k*n+1)..(k*n+n)).map { |i| "undefined{}" }.join(', ') %>
+    );
+
+    <% (env[:p]*n/100).times do |p| %>
+    #if defined(METABENCH)
+        /*constexpr*/ auto <%= "result#{p}#{k}" %> = fusion::at_key<mpl::int_<<%= k*n+p*100/env[:p]+1 %>>>(<%= "xs#{k}" %>);
+    #endif
+    <% end %>
+<% end %>
+}

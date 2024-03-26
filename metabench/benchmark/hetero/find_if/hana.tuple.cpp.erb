@@ -1,0 +1,30 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/hana/find_if.hpp>
+#include <boost/hana/tuple.hpp>
+
+#include <type_traits>
+namespace hana = boost::hana;
+
+template <int X>
+struct equals_to {
+    template<typename Y>
+    constexpr std::integral_constant<bool, X == Y::value>
+    operator()(Y const&) const;
+};
+
+int main() {
+<% env[:k].times do |k| %>
+    <% ints = ((k*n+1)..(k*n+n)).to_a %>
+
+    constexpr auto <%= "xs#{k}" %> = hana::make_tuple(
+        <%= ints.map { |i| "std::integral_constant<int, #{i}>{}" }.join(', ') %>
+    );
+
+#if defined(METABENCH)
+    constexpr auto <%= "result#{k}" %> = hana::find_if(<%= "xs#{k}" %>, equals_to<<%= ints.last || 0 %>>{});
+#endif
+<% end %>
+}

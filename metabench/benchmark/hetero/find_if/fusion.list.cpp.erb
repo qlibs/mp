@@ -1,0 +1,31 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#include <boost/fusion/include/find_if.hpp>
+#include <boost/fusion/include/make_list.hpp>
+
+#include <type_traits>
+namespace fusion = boost::fusion;
+
+template <int X>
+struct equals_to {
+    template<typename Y>
+    struct apply
+        : std::integral_constant<bool, X == Y::type::value>
+    {};
+};
+
+int main() {
+<% env[:k].times do |k| %>
+    <% ints = ((k*n+1)..(k*n+n)).to_a %>
+
+    /*constexpr*/ auto <%= "xs#{k}" %> = fusion::make_list(
+        <%= ints.map { |i| "std::integral_constant<int, #{i}>{}" }.join(', ') %>
+    );
+
+#if defined(METABENCH)
+    /*constexpr*/ auto <%= "result#{k}" %> = fusion::find_if<equals_to<<%= ints.last || 0 %>>>(<%= "xs#{k}" %>);
+#endif
+<% end %>
+}
