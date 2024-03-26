@@ -31,6 +31,28 @@
 
 ---
 
+### Overview
+
+```cpp
+static_assert(mp::meta<void> == mp::meta<void>);
+static_assert(mp::meta<int>  == mp::meta<int>);
+static_assert(mp::meta<int>  != mp::meta<void>);
+```
+
+```cpp
+constexpr mp::meta_t meta = mp::meta<int>;
+mp::type_of<meta> i; // int
+```
+
+```cpp
+constexpr mp::array a{mp::meta<int>, mp::meta<float>};
+mp::apply_t<std::variant, a> v; // std::variant<int, float>
+mp::type_of<a[0]> i; // int
+mp::type_of<a[1]> f; // float
+```
+
+---
+
 ### Examples
 
 > [C++17] Hello world
