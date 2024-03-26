@@ -132,10 +132,13 @@ template<template<class...> class T, class Expr>
 ```
 
 ```cpp
+/**
  * Applies expression expr to `R<type_of<meta_t>...>`
  *
  * @code
- * static_assert(typeid(variant<int>) == typeid(apply<variant>([] { return vector{meta<int>}; })));
+ * static_assert(typeid(variant<int>)
+ *               ==
+ *               typeid(apply<variant>([] { return vector{meta<int>}; })));
  * @endcode
  */
 template<template<class...> class R, class Expr>
@@ -147,7 +150,9 @@ template<template<class...> class R, class Expr>
  * Applies vector V to `R<type_of<meta_t>...>`
  *
  * @code
- * static_assert(typeid(variant<int>) == typeid(apply<variant, vector{meta<int>}>));
+ * static_assert(typeid(variant<int>)
+ *               ==
+ *               typeid(apply<variant, vector{meta<int>}>));
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)
@@ -169,7 +174,9 @@ template<template<class...> class R, auto V, class T>
  * Alternative to write `decltype(apply_v<T, Expr>))`
  *
  * @code
- * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
+ * static_assert(typeid(variant<int>)
+ *               ==
+ *               typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)
