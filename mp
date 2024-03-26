@@ -34,8 +34,11 @@ template<size_t Size> using make_index_sequence =
  */
 #if defined(MP_META_INFO)
 using meta_t = const MP_META_INFO*;
+#elif (__cpp_constexpr >= 202306L) // [C++23] Constexpr cast from void*
+using meta_t = const void*;
 #else
-using meta_t = const void*; // [C++23] Constexpr cast from void*
+struct meta_info { };
+using meta_t = const meta_info*;
 #endif
 
 namespace detail {
@@ -47,7 +50,7 @@ template<class T> struct meta_info {
 #if defined(MP_META_INFO)
   static constexpr MP_META_INFO info{};
 #else
-  static constexpr size_t info{};
+  static constexpr mp::meta_info info{};
 #endif
   constexpr auto friend get(meta_id<meta_t{&info}>) { return meta_info{}; }
 };
