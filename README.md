@@ -15,7 +15,7 @@
     - Easy integration (see [FAQ](#faq))
 - Minimal [API](#api)
 - Minimal learning curve (reuses stl, ranges or any third-party library/algorithms operating on stl like containers)
-- Easy debugging (meta-functions can be simply executed and debugged at run-time - see [examples](#examples))
+- Easy debugging (meta-functions can simply be executed and debugged at run-time - see [examples](#examples))
 - Self verfication upon include (<.05s overhead - can be disabled by `DISABLE_STATIC_ASSERT_TESTS`)
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/on3qb6n9M))
 - Fast compilation-times (see [benchmarks](#benchmarks))
