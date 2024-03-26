@@ -37,14 +37,14 @@
 
 ```cpp
 template<auto N, class... Ts>
-using at_c = mp::type_of<mp::vector{mp::meta<Ts>...}[N]>;
+using at_c = mp::type_of<std::array{mp::meta<Ts>...}[N]>;
 
 static_assert(std::is_same_v<int, at_c<0, int, bool, float>>);
 static_assert(std::is_same_v<bool, at_c<1, int, bool, float>>);
 static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 ```
 
-> https://godbolt.org/z/abdh68qxK
+> https://godbolt.org/z/abdh68qxK / https://godbolt.org/z/44q1jEsea
 
 ---
 
@@ -53,7 +53,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 ```cpp
 template<class... Ts>
 auto drop_1_reverse = [] {
-  mp::vector v{mp::meta<Ts>...};
+  std::array v{mp::meta<Ts>...};
   mp::vector<mp::meta_t, sizeof...(Ts)-1> r;
   // fuze operations for faster compilation times (can use STL)
   for (auto i = v.size()-1; i > 0; --i) { r.push_back(v[i]); }
@@ -96,7 +96,7 @@ static_assert(std::is_same_v<double*,
 ```cpp
 template<class... Ts>
 constexpr mp::vector drop_1_reverse =
-    mp::vector{mp::meta<Ts>...}
+    std::array{mp::meta<Ts>...}
   | std::views::drop(1)
   | std::views::reverse
   ;
@@ -168,7 +168,7 @@ int main() {
 ```cpp
 template<class... Ts>
 constexpr auto reverse() {
-  mp::vector v{mp::meta<Ts>...};
+  std::array v{mp::meta<Ts>...};
   mp::vector<mp::meta_t, sizeof...(Ts)> r;
   for (auto i = 0u; i < v.size(); ++i) { r.push_back(v[v.size()-i-1]); }
   return r;
