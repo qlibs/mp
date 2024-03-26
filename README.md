@@ -249,6 +249,22 @@ template<meta_t meta, class T>
 
 ```cpp
 /**
+ * Minimal (not standard compliant) array
+ * implementation optimized for fast compilation-times with meta_t
+ *
+ * @code
+ * array v{meta<void>, meta<int>};
+ * assert(2 == v.size());
+ * assert(meta<void> == v[0]);
+ * assert(meta<int> == v[1]);
+ * @endcode
+ */
+template<class T, size_t Size>
+struct array;
+```
+
+```cpp
+/**
  * Minimal (not standard compliant) inplace/static vector
  * implementation optimized for fast compilation-times with meta_t
  *
