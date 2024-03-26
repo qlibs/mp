@@ -33,7 +33,7 @@
 
 ### Examples
 
-> [C++17] Hello world
+> [C++17] Basic
 
 ```cpp
 template<auto N, class... Ts>
@@ -55,8 +55,7 @@ template<class... Ts>
 auto drop_1_reverse = [] {
   mp::vector v{mp::meta<Ts>...};
   mp::vector<mp::meta_t, sizeof...(Ts)-1> r;
-  // fuze operations for faster compilation times
-  // Can use STL
+  // fuze operations for faster compilation times (can use STL)
   for (auto i = v.size()-1; i > 0; --i) { r.push_back(v[i]); }
   return r;
 };
