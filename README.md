@@ -69,6 +69,30 @@ static_assert(std::is_same_v<std::variant<int, double>,
 
 ---
 
+> [C++17/C++20] Reduce
+
+```cpp
+template<class... Ts>
+constexpr auto reduce() {
+  constexpr auto v = drop_1_reverse<Ts...>();
+  mp::meta_t result = mp::meta<void>;
+  mp::for_each<v>([&]<auto m> {
+    using type = mp::type_of<m>;
+    if (std::is_same_v<double, type>) {
+      result = mp::meta<type*>;
+    }
+  });
+  return result;
+}
+
+static_assert(std::is_same_v<double*,
+              mp::type_of<reduce<float, double, int>()>>);
+```
+
+> https://godbolt.org/z/KEEPoxKK5
+
+---
+
 > [C++20] Ranges
 
 ```cpp
