@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
-<a href="https://godbolt.org/z/on3qb6n9M">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/W1fvsTc8o">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/5vjba7ezY">![build](https://img.shields.io/badge/build-blue.svg)</a>
+<a href="https://godbolt.org/z/rrdraaTj7">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 ---------------------------------------
 
@@ -23,7 +23,7 @@
 
 ### Requirements
 
-- C++17* ([clang++15+, g++11+, msvc-19.34+](https://godbolt.org/z/3nraKEoqr))
+- C++17* ([clang++13+, g++12+, msvc-19.34+](https://godbolt.org/z/5vjba7ezY))
 
     - No STL headers required
 
