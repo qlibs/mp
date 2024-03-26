@@ -16,10 +16,10 @@
 - Minimal [API](#api)
 - Minimal learning curve (reuses stl, ranges or any third-party library/algorithms operating on stl like containers)
 - Easy debugging (meta-functions can be simply executed and debugged at run-time - see [examples](#examples))
-- Verifies itself upon include (aka run all tests via static_asserts / can be disabled by `DISABLE_STATIC_ASSERT_TESTS`)
+- Self verfication upon include (<.05s overhead - can be disabled by `DISABLE_STATIC_ASSERT_TESTS`)
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/on3qb6n9M))
 - Fast compilation-times (see [benchmarks](#benchmarks))
-- Support for reflection and/or tuples (see [examples](#examples))
+- Support for reflection (see [examples](#examples) / https://github.com/boost-ext/reflect)
 
 ### Requirements
 
