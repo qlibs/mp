@@ -160,7 +160,7 @@ template<template<class...> class R, class Expr>
  * static_assert(typeid(variant<int>) == typeid(apply<variant, vector{meta<int>}>));
  * @endcode
  */
-#if defined(__cpp_nontype_template_args)
+#if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class R, auto V>
 inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>) {
   return R<type_of<V[Ns]>...>{};
@@ -170,7 +170,7 @@ inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>)
 /**
  * Applies vector V with object t to `R{value_of<V>(t)...}
  */
-#if defined(__cpp_nontype_template_args)
+#if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class R, auto V, class T>
 [[nodiscard]] constexpr auto apply(T&& t) {
   return [&]<size_t... Ns>(utility::index_sequence<Ns...>) {
@@ -186,7 +186,7 @@ template<template<class...> class R, auto V, class T>
  * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
-#if defined(__cpp_nontype_template_args)
+#if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class T, auto V>
 using apply_t = decltype(apply<T>([] { return V; }));
 #endif

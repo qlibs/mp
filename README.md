@@ -155,7 +155,7 @@ template<template<class...> class R, class Expr>
  *               typeid(apply<variant, vector{meta<int>}>));
  * @endcode
  */
-#if defined(__cpp_nontype_template_args)
+#if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class R, auto V>
 inline constexpr auto apply_v = /* unspecified */;
 
@@ -163,7 +163,7 @@ inline constexpr auto apply_v = /* unspecified */;
 /**
  * Applies vector V with object t to `R{value_of<V>(t)...}
  */
-#if defined(__cpp_nontype_template_args)
+#if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class R, auto V, class T>
 [[nodiscard]] constexpr auto apply(T&& t);
 #endif
@@ -179,7 +179,7 @@ template<template<class...> class R, auto V, class T>
  *               typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
-#if defined(__cpp_nontype_template_args)
+#if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class T, auto V> using apply_t = /* unspecified */;
 #endif
 ```
