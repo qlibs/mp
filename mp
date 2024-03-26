@@ -137,6 +137,9 @@ struct vector {
     for (auto i = 0u; i < size_; ++i) { if (data[i] != other.data[i]) { return false; } }
     return true;
   }
+  template<size_t size> [[nodiscard]] constexpr auto operator!=(const vector<T, size>& other) const {
+    return !operator==(other);
+  }
   constexpr void clear() { size_ = {}; }
   T data[Size?Size:1]{};
   size_t size_{};

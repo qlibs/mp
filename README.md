@@ -144,41 +144,30 @@ int main() {
 > [C++17] Run-time testing/debugging
 
 ```cpp
-constexpr auto revert(auto& r, auto v) {
-  for (auto i = 0u; i < v.size(); ++i) {
-    r.push_back(v[v.size()-i-1]);
-  }
+template<class... Ts>
+constexpr auto reverse() {
+  mp::vector v{mp::meta<Ts>...};
+  mp::vector<mp::meta_t, sizeof...(Ts)> r;
+  for (auto i = 0u; i < v.size(); ++i) { r.push_back(v[v.size()-i-1]); }
+  return r;
 }
 
-template<class... Ts>
-auto example = [] {
-    mp::vector v{mp::meta<Ts>...};
-    mp::vector<mp::meta_t, sizeof...(Ts)> r;
-    revert(r, v);
-    return r;
-};
-
 int main() {
-  {
-    std::vector v{1, 2, 3};
-    std::vector<int> r;
-    revert(r, v);
-    expect(r.size() == v.size());
-    expect(r[0] == v[2]);
-    expect(r[1] == v[1]);
-    expect(r[0] == v[2]);
-  }
+  static_assert(
+    mp::vector{mp::meta<float>, mp::meta<double>, mp::meta<int>}
+    ==
+    reverse<int, double, float>()
+  );
 
-  {
-    auto v = example<int, double, float>();
-    expect(v.size() == 3);
-    expect(v[0] == mp::meta<float>);
-    expect(v[1] == mp::meta<double>);
-    expect(v[2] == mp::meta<int>);
-  }
+  assert((
+    mp::vector{mp::meta<float>, mp::meta<double>, mp::meta<int>}
+    ==
+    reverse<int, double, float>()
+  ));
+}
 ```
 
-> https://godbolt.org/z/svzfKrxKd
+> https://godbolt.org/z/Gs7q65ez8
 
 ---
 
