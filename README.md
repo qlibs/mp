@@ -356,7 +356,7 @@ constexpr void for_each(Fn fn);
 ---
 
 ### Benchmarks
-
+https://godbolt.org/z/Whnb7f15b
 ---
 
 ### FAQ

@@ -107,6 +107,36 @@ template<meta_t meta, class T>
 }
 
 /**
+ * Minimal (not standard compliant) array
+ * implementation optimized for fast compilation-times with meta_t
+ *
+ * @code
+ * array v{meta<void>, meta<int>};
+ * assert(2 == v.size());
+ * assert(meta<void> == v[0]);
+ * assert(meta<int> == v[1]);
+ * @endcode
+ */
+template<class T, size_t Size>
+struct array {
+  using value_type = T;
+
+  [[nodiscard]] constexpr auto operator[](size_t I) const { return data[I]; }
+  [[nodiscard]] constexpr auto& operator[](size_t I) { return data[I]; }
+  [[nodiscard]] constexpr auto size() const { return Size; }
+  [[nodiscard]] constexpr bool operator==(const array& other) const {
+    for (auto i = 0u; i < Size; ++i) { if (data[i] != other.data[i]) { return false; } }
+    return true;
+  }
+  [[nodiscard]] constexpr bool operator!=(const array& other) const {
+    return !operator==(other);
+  }
+
+  T data[Size]{};
+};
+template<class T, class... Ts> array(T, Ts...) -> array<T, 1 + sizeof...(Ts)>;
+
+/**
  * Minimal (not standard compliant) inplace/static vector
  * implementation optimized for fast compilation-times with meta_t
  *
@@ -121,7 +151,7 @@ template<class T, size_t Size>
 struct vector {
   using value_type = T;
   constexpr vector() = default;
-  template<class... Ts> constexpr explicit vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
+  template<class... Ts> constexpr explicit vector(Ts&&... ts) : data{ts...}, size_{sizeof...(ts)} { }
   template<class TRange, class = decltype(utility::declval<TRange>().begin(), utility::declval<TRange>().end())> constexpr vector(TRange range) { for (const T& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
   constexpr void emplace_back(T&& t) { data[size_++] = static_cast<T&&>(t); }
@@ -143,7 +173,8 @@ struct vector {
     return !operator==(other);
   }
   constexpr void clear() { size_ = {}; }
-  T data[Size?Size:1]{};
+
+  T data[Size]{};
   size_t size_{};
 };
 template<class... Ts> vector(Ts...) -> vector<meta_t, sizeof...(Ts)>;
@@ -325,12 +356,38 @@ static_assert(([] {
   }
 #endif
 
+  // mp::array
+  {
+    {
+      mp::array<mp::size_t, 1> a{};
+      expect(1 == a.size());
+    }
+
+    {
+      mp::array a{1, 2};
+      expect(2 == a.size());
+      expect(1 == a[0]);
+      expect(2 == a[1]);
+    }
+
+    {
+      expect(mp::array{1, 2} == mp::array{1, 2});
+      expect(mp::array{1, 2} != mp::array{1, 3});
+    }
+
+    {
+      mp::array a{1};
+      a[0] = 2;
+      expect(2 == a[0]);
+    }
+  }
+
   // mp::vector
   {
     {
-      mp::vector<mp::size_t, 0> v{};
+      mp::vector<mp::size_t, 1> v{};
       expect(0 == v.size());
-      expect(0 == v.capacity());
+      expect(1 == v.capacity());
     }
 
     {
