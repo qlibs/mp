@@ -31,19 +31,153 @@
 
 ---
 
-### Hello world (https://godbolt.org/z/W1fvsTc8o)
+### Examples
+
+> [C++17] Hello world
 
 ```cpp
+template<auto N, class... Ts>
+using at_c = mp::type_of<mp::vector{mp::meta<Ts>...}[N]>;
+
+static_assert(std::is_same_v<int, at_c<0, int, bool, float>>);
+static_assert(std::is_same_v<bool, at_c<1, int, bool, float>>);
+static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 ```
+
+> https://godbolt.org/z/abdh68qxK
 
 ---
 
-### Examples
+> [C++17] Operation fuzion
 
-- Meta types - https://godbolt.org/z/Mnfjcj18P
-- Run-time testing/debugging - https://godbolt.org/z/1oczvPE61
-- Manipulating `std::tuple` - https://godbolt.org/z/7Eoz34z5q
-- Integration with reflection (https://github.com/boost-ext/reflect) -
+```cpp
+template<class... Ts>
+auto drop_1_reverse = [] {
+  mp::vector v{mp::meta<Ts>...};
+  mp::vector<mp::meta_t, sizeof...(Ts)-1> r;
+  // fuze operations for faster compilation times
+  for (auto i = v.size()-1; i > 0; --i) { r.push_back(v[i]); }
+  return r;
+};
+
+static_assert(std::is_same_v<std::variant<int, double>,
+              decltype(mp::apply<std::variant>(drop_1_reverse<float, double, int>))>);
+```
+
+> https://godbolt.org/z/rrdraaTj7
+
+---
+
+> [C++20] Ranges
+
+```cpp
+template<class... Ts>
+constexpr mp::vector drop_1_reverse =
+    mp::vector{mp::meta<Ts>...}
+  | std::views::drop(1)
+  | std::views::reverse
+  ;
+
+static_assert(std::is_same_v<std::variant<int, double>,
+              mp::apply_t<std::variant, drop_1_reverse<float, double, int>>>);
+```
+
+> https://godbolt.org/z/oKfs71bYG (C++20)
+
+---
+
+> [C++20] Reflection (https://github.com/boost-ext/reflect)
+
+```cpp
+struct foo {
+  int a;
+  bool b;
+  float c;
+};
+
+foo f{.a = 42, .b = true, .c = 3.2f};
+
+constexpr mp::vector v =
+    reflect::reflect(f)
+  | std::views::filter([](auto meta) { return meta->name() != "b" ; })
+  | std::views::reverse
+  ;
+
+mp::for_each<v>([&]<auto meta>{
+  std::cout << reflect::type_name<mp::type_of<meta>>() << '\n';
+  std::cout << mp::value_of<meta>(f) << '\n';
+});
+
+auto&& t = mp::apply<std::tuple, v>(f);
+
+std::apply([](auto... args) {
+  ((std::cout << args << '\n'), ...);
+}, t);
+```
+
+> https://godbolt.org/z/x91ods9xc
+
+---
+
+> [C++20] Simple Domain Specific Language (DSL)
+
+```cpp
+int main() {
+  using namespace dsl;
+  constexpr auto v =
+        type_list<int, const double, float>
+      | filter([]<class T> { return not std::is_const_v<T>; })
+      | transform([]<class T>() -> T* { })
+      | reverse
+      | take<1>
+      ;
+
+  static_assert(type_list<float*> == v);
+}
+```
+
+> https://godbolt.org/z/r936cErdd
+
+---
+
+> [C++17] Run-time testing/debugging
+
+```cpp
+constexpr auto revert(auto& r, auto v) {
+  for (auto i = 0u; i < v.size(); ++i) {
+    r.push_back(v[v.size()-i-1]);
+  }
+}
+
+template<class... Ts>
+auto example = [] {
+    mp::vector v{mp::meta<Ts>...};
+    mp::vector<mp::meta_t, sizeof...(Ts)> r;
+    revert(r, v);
+    return r;
+};
+
+int main() {
+  {
+    std::vector v{1, 2, 3};
+    std::vector<int> r;
+    revert(r, v);
+    expect(r.size() == v.size());
+    expect(r[0] == v[2]);
+    expect(r[1] == v[1]);
+    expect(r[0] == v[2]);
+  }
+
+  {
+    auto v = example<int, double, float>();
+    expect(v.size() == 3);
+    expect(v[0] == mp::meta<float>);
+    expect(v[1] == mp::meta<double>);
+    expect(v[2] == mp::meta<int>);
+  }
+```
+
+> https://godbolt.org/z/svzfKrxKd
 
 ---
 
