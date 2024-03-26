@@ -261,9 +261,9 @@ static_assert(([] {
 
   // mp::value_of
   {
-    static_assert(0 == mp::value_of<mp::meta<mp::test::_i<0>>>());
-    static_assert('a' == mp::value_of<mp::meta<mp::test::_i<'a'>>>());
-    static_assert(42u == mp::value_of<mp::meta<mp::test::_i<42u>>>());
+    static_assert(0 == mp::value_of_v<mp::meta<mp::test::_i<0>>>);
+    static_assert('a' == mp::value_of_v<mp::meta<mp::test::_i<'a'>>>);
+    static_assert(42u == mp::value_of_v<mp::meta<mp::test::_i<42u>>>);
   }
 
   // mp::apply
