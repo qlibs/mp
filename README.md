@@ -77,8 +77,7 @@ constexpr auto reduce() {
   constexpr auto v = drop_1_reverse<Ts...>();
   mp::meta_t result = mp::meta<void>;
   mp::for_each<v>([&]<auto m> {
-    using type = mp::type_of<m>;
-    if (std::is_same_v<double, type>) {
+    if (using type = mp::type_of<m>; std::is_same_v<double, type>) {
       result = mp::meta<type*>;
     }
   });
@@ -140,7 +139,7 @@ std::apply([](auto... args) {
 }, t);
 ```
 
-> https://godbolt.org/z/WYKGWYofc
+> https://godbolt.org/z/b7dP3sTdK
 
 ---
 
