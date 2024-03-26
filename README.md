@@ -33,7 +33,7 @@
 
 ### Examples
 
-> [C++17] Basic
+> [C++17] Hello world
 
 ```cpp
 template<auto N, class... Ts>
@@ -44,7 +44,7 @@ static_assert(std::is_same_v<bool, at_c<1, int, bool, float>>);
 static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 ```
 
-> https://godbolt.org/z/abdh68qxK / https://godbolt.org/z/44q1jEsea
+> https://godbolt.org/z/44q1jEsea
 
 ---
 
@@ -53,10 +53,10 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 ```cpp
 template<class... Ts>
 auto drop_1_reverse = [] {
-  std::array v{mp::meta<Ts>...};
-  mp::vector<mp::meta_t, sizeof...(Ts)-1> r;
+  std::array v{mp::meta<Ts>...}; // or mp::vector{m::meta<Ts>...};
+  std::array<mp::meta_t, sizeof...(Ts)-1> r{};
   // fuze operations for faster compilation times (can use STL)
-  for (auto i = v.size()-1; i > 0; --i) { r.push_back(v[i]); }
+  for (auto i = 1u; i < v.size(); ++i) { r[i-1] = v[v.size()-i]; }
   return r;
 };
 
@@ -64,7 +64,7 @@ static_assert(std::is_same_v<std::variant<int, double>,
               decltype(mp::apply<std::variant>(drop_1_reverse<float, double, int>))>);
 ```
 
-> https://godbolt.org/z/rrdraaTj7
+> https://godbolt.org/z/fhahKPqK1
 
 ---
 
@@ -122,23 +122,23 @@ foo f{.a = 42, .b = true, .c = 3.2f};
 
 constexpr mp::vector v =
     reflect::reflect(f)
-  | std::views::filter([](auto meta) { return meta->name() != "b" ; })
+  | std::views::filter([](auto meta) { return meta->name() == "b" ; })
   | std::views::reverse
   ;
 
 mp::for_each<v>([&]<auto meta>{
-  std::cout << reflect::type_name<mp::type_of<meta>>() << '\n';
-  std::cout << mp::value_of<meta>(f) << '\n';
+  std::cout << reflect::type_name<mp::type_of<meta>>() << '\n'; // prints bool
+  std::cout << mp::value_of<meta>(f) << '\n';                   // prints true
 });
 
 auto&& t = mp::apply<std::tuple, v>(f);
 
 std::apply([](auto... args) {
-  ((std::cout << args << '\n'), ...);
+  ((std::cout << args << '\n'), ...); // prints true
 }, t);
 ```
 
-> https://godbolt.org/z/b7dP3sTdK
+> https://godbolt.org/z/s7ce6bh5d
 
 ---
 
@@ -169,27 +169,27 @@ int main() {
 template<class... Ts>
 constexpr auto reverse() {
   std::array v{mp::meta<Ts>...};
-  mp::vector<mp::meta_t, sizeof...(Ts)> r;
-  for (auto i = 0u; i < v.size(); ++i) { r.push_back(v[v.size()-i-1]); }
+  std::array<mp::meta_t, sizeof...(Ts)> r;
+  for (auto i = 0u; i < v.size(); ++i) { r[i] = v[v.size()-i-1]; }
   return r;
 }
 
 int main() {
   static_assert(
-    mp::vector{mp::meta<float>, mp::meta<double>, mp::meta<int>}
+    std::array{mp::meta<float>, mp::meta<double>, mp::meta<int>}
     ==
     reverse<int, double, float>()
   );
 
   assert((
-    mp::vector{mp::meta<float>, mp::meta<double>, mp::meta<int>}
+    std::array{mp::meta<float>, mp::meta<double>, mp::meta<int>}
     ==
     reverse<int, double, float>()
   ));
 }
 ```
 
-> https://godbolt.org/z/Gs7q65ez8
+> https://godbolt.org/z/h9K3bnaea
 
 ---
 

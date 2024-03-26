@@ -35,6 +35,7 @@ template<size_t Size> using make_index_sequence =
 #if defined(MP_META_INFO)
 using meta_t = const MP_META_INFO*;
 #elif (__cpp_constexpr >= 202306L) // [C++23] Constexpr cast from void*
+struct meta_info { };
 using meta_t = const void*;
 #else
 struct meta_info { };
@@ -131,6 +132,7 @@ struct vector {
   [[nodiscard]] constexpr auto operator[](size_t i) const { return data[i]; }
   [[nodiscard]] constexpr auto& operator[](size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
+  [[nodiscard]] constexpr auto& size() { return size_; }
   [[nodiscard]] constexpr auto capacity() const { return Size; }
   template<size_t size> [[nodiscard]] constexpr auto operator==(const vector<T, size>& other) const {
     if (size_ != other.size_) { return false; }
