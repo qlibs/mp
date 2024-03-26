@@ -105,7 +105,7 @@ static_assert(std::is_same_v<std::variant<int, double>,
               mp::apply_t<std::variant, drop_1_reverse<float, double, int>>>);
 ```
 
-> https://godbolt.org/z/oKfs71bYG
+> https://godbolt.org/z/93GTe7xGx
 
 ---
 
