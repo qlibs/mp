@@ -9,7 +9,7 @@ template<int> struct x;
 template<class...> struct type_list {};
 
 template<class... Ts>
-constexpr auto reverse() {
+constexpr auto reverse_impl() {
   mp::array v{mp::meta<Ts>...};
   mp::array<mp::meta_t, sizeof...(Ts)> r;
   for (auto i = 0u; i < v.size(); ++i) { r[i] = v[v.size()-i-1]; }
@@ -17,7 +17,7 @@ constexpr auto reverse() {
 }
 
 template<class... Ts>
-using reverse = mp::apply_t<type_list, reverse<Ts...>()>;
+using reverse = mp::apply_t<type_list, reverse_impl<Ts...>()>;
 
 <% env[:k].times do |k| %>
 

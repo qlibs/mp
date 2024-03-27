@@ -6,21 +6,23 @@
 
 template<class...> struct type_list { };
 
-template<auto N, class... Ts>
-using drop = mp::apply_t<type_list,
-    [] {
-      mp::array v{mp::meta<Ts>...};
-      mp::array<mp::meta_t, sizeof...(Ts)-N> r{};
-      for (auto i=N; i < v.size(); ++i) { r[i-N] = v[i]; }
-      return r;
-    }()>;
+template<mp::size_t N, class... Ts>
+constexpr auto drop_impl() {
+  mp::array v{mp::meta<Ts>...};
+  mp::array<mp::meta_t, sizeof...(Ts)-N> r;
+  for (auto i=N; i < v.size(); ++i) { r[i-N] = v[i]; }
+  return r;
+}
+
+template<mp::size_t N, class... Ts>
+using drop = mp::apply_t<type_list, drop_impl<N, Ts...>()>;
 
 template<int> struct x;
 
 <% env[:k].times do |k| %>
 
 #if defined(METABENCH)
-using <%= "result#{k}" %> = drop<%= k*n/env[:k] %>, <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>>;
+using <%= "result#{k}" %> = drop<<%= k*n/env[:k] %>, <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>>;
 #endif
 <% end %>
 

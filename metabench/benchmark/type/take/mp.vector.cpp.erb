@@ -6,20 +6,22 @@
 
 template<class...> struct type_list { };
 
-template<auto N, class... Ts>
-using take = mp::apply_t<type_list,
-    [] {
-     mp::vector v{mp::meta<Ts>...};
-     v.size() = N;
-     return v;
-    }()>;
+template<mp::size_t N, class... Ts>
+constexpr auto take_impl() {
+ mp::vector v{mp::meta<Ts>...};
+ v.size() = N;
+ return v;
+}
+
+template<mp::size_t N, class... Ts>
+using take = mp::apply_t<type_list, take_impl<N, Ts...>()>;
 
 template<int> struct x;
 
 <% env[:k].times do |k| %>
 
 #if defined(METABENCH)
-using <%= "result#{k}" %> = take<%= k*n/env[:k] %>, <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>>;
+using <%= "result#{k}" %> = take<<%= k*n/env[:k] %>, <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>>;
 #endif
 <% end %>
 
