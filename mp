@@ -149,9 +149,9 @@ template<class T, class... Ts> array(T, Ts...) -> array<T, 1 + sizeof...(Ts)>;
 template<class T, size_t Size>
 struct vector {
   using value_type = T;
-  constexpr vector() : data{}, size_{} { }
+  constexpr vector() = default;
   template<class... Ts> constexpr explicit vector(Ts&&... ts) : data{ts...}, size_{sizeof...(ts)} { }
-  template<class TRange, class = decltype(utility::declval<TRange>().begin(), utility::declval<TRange>().end())> constexpr vector(TRange range) : size_{} { for (const T& t : range) { data[size_++] = t; } }
+  template<class TRange, class = decltype(utility::declval<TRange>().begin(), utility::declval<TRange>().end())> constexpr vector(TRange range) { for (const T& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
   constexpr void emplace_back(T&& t) { data[size_++] = static_cast<T&&>(t); }
   [[nodiscard]] constexpr auto begin() const { return &data[0]; }
@@ -173,8 +173,8 @@ struct vector {
   }
   constexpr void clear() { size_ = {}; }
 
-  T data[Size];
-  size_t size_;
+  T data[Size]{};
+  size_t size_{};
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1 + sizeof...(Ts)>;
 
