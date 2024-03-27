@@ -42,9 +42,7 @@ using meta_t = const meta_info*;
 #endif
 
 namespace detail {
-template<meta_t> struct meta_id {
-  constexpr auto friend get(meta_id);
-};
+template<meta_t>  struct meta_id { constexpr auto friend get(meta_id); };
 template<class T> struct meta_info {
   using value_type = T;
 #if defined(MP_META_INFO)
@@ -239,8 +237,17 @@ template<template<class...> class R, auto V>
  * @endcode
  */
 #if defined(__cpp_nontype_template_args)
+#if defined(__clang__) || defined(_MSC_VER)
 template<template<class...> class R, auto V>
 using apply_t = decltype(apply<R, V>());
+#else
+namespace detail {
+template<template<class...> class R, auto V, size_t... Ns>
+using apply_t = R<type_of<V[Ns]>...>;
+} // namespace detail
+template<template<class...> class R, auto V>
+using apply_t = detail::apply_t<R, V, __integer_pack(V.size())...>;
+#endif
 #endif
 
 /**
