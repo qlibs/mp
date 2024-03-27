@@ -400,7 +400,7 @@ cmake ..
 make benchmark
 ```
 
-> Results (https://godbolt.org/z/cx3Ws6Ka8)
+> Results (https://godbolt.org/z/6KzzEMGbe)
 
 - https://boost-ext.github.io/mp/metabench/results/at
 - https://boost-ext.github.io/mp/metabench/results/drop
