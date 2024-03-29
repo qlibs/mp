@@ -25,7 +25,7 @@ template<int> struct x;
 <% env[:k].times do |k| %>
 
 #if defined(METABENCH)
-using <%= "result#{k}" %> = insert<<%= k*n/env[:k] %>, void, <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>>;
+using <%= "result#{k}" %> = insert<<%= k*n/env[:k] %>, void, <%= ((1)..(n)).map { |i| "x<#{i}>" }.join(', ') %>>;
 #endif
 
 <% end %>
