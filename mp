@@ -275,7 +275,7 @@ namespace mp::inline v1_0_0::test {
   template<class...> struct type_list { };
   template<auto I> struct _i { static constexpr auto value = I; };
   template<class...> inline constexpr auto is_same = false;
-  template<class TLhs, class TRhs> inline constexpr auto is_same<TLhs, TRhs> = true;
+  template<class T> inline constexpr auto is_same<T, T> = true;
   void fail(); constexpr void expect(bool cond) { if (!cond) { fail(); } }
 } // namespace mp::test
 
