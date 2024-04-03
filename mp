@@ -282,6 +282,16 @@ namespace mp::inline v1_0_0::test {
 static_assert(([] {
   using mp::test::expect;
 
+  // mp::test
+  {
+    static_assert(!mp::test::is_same<int, void>);
+    static_assert(!mp::test::is_same<void, int>);
+    static_assert(!mp::test::is_same<void*, int>);
+    static_assert(!mp::test::is_same<int, const int>);
+    static_assert(mp::test::is_same<void, void>);
+    static_assert(mp::test::is_same<int, int>);
+  }
+
   // mp::utilty::declval
   {
     struct s { s() = delete; };
