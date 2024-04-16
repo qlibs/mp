@@ -12,6 +12,7 @@ option(METABENCH_METAL      "Benchmark Metal"   ON)
 option(METABENCH_MP11       "Benchmark mp11"    ON)
 option(METABENCH_MPL        "Benchmark MPL"     ON)
 option(METABENCH_MP         "Benchmark MP"      ON)
+option(METABENCH_P2996      "Benchmark P2296"   ON)
 
 include(benchmark/dependencies/brigand)
 include(benchmark/dependencies/fusion)
@@ -23,6 +24,7 @@ include(benchmark/dependencies/metal)
 include(benchmark/dependencies/mpl)
 include(benchmark/dependencies/mp11)
 include(benchmark/dependencies/mp)
+include(benchmark/dependencies/p2996)
 include(benchmark/dependencies/std)
 
 macro(add_dataset datasets category case lib datatype path_to_template k range)
@@ -60,6 +62,8 @@ macro(add_dataset datasets category case lib datatype path_to_template k range)
         Mp11_add_dataset(${args})
     elseif ("${lib}" STREQUAL "mp")
         MP_add_dataset(${args})
+    elseif ("${lib}" STREQUAL "p2996")
+        MP_add_dataset(${args})
     elseif ("${lib}" STREQUAL "std")
         Std_add_dataset(${args})
     else()
@@ -90,17 +94,18 @@ macro(add_chart category case)
 endmacro()
 
 
-set(CMAKE_CXX_STANDARD 20)
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-ftemplate-depth=5000 HAS_FTEMPLATE_DEPTH)
 if(HAS_FTEMPLATE_DEPTH)
     add_compile_options(-ftemplate-depth=5000)
 endif()
 
+add_compile_options(-stdlib=libc++ -freflection -std=c++2c)
+
 file(GLOB benchmark_dirs
     LIST_DIRECTORIES true
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "type/*"
+    "type/at"
 )
 
 foreach(benchmark_dir ${benchmark_dirs})

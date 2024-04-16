@@ -13,7 +13,7 @@ if (METABENCH_MP
     function(MP_add_dataset dataset datatype)
         set(color "hsl(118, 41%, 49%)")
         metabench_add_dataset(${dataset} ${ARGN} COLOR ${color})
-        add_dependencies(${dataset} mp11)
+        #add_dependencies(${dataset} mp)
     endfunction()
 endif()
 
