@@ -118,6 +118,10 @@ template<class T, size_t Size>
 struct array {
   using value_type = T;
 
+  [[nodiscard]] constexpr auto begin() const { return &data[0]; }
+  [[nodiscard]] constexpr auto begin() { return &data[0]; }
+  [[nodiscard]] constexpr auto end() const { return &data[0]+Size; }
+  [[nodiscard]] constexpr auto end() { return &data[0]+Size; }
   [[nodiscard]] constexpr auto operator[](size_t I) const { return data[I]; }
   [[nodiscard]] constexpr auto& operator[](size_t I) { return data[I]; }
   [[nodiscard]] constexpr auto size() const { return Size; }
@@ -276,7 +280,7 @@ namespace mp::inline v1_0_0::test {
   template<auto I> struct _i { static constexpr auto value = I; };
   template<class...> inline constexpr auto is_same = false;
   template<class T> inline constexpr auto is_same<T, T> = true;
-  void fail(); constexpr void expect(bool cond) { if (!cond) { fail(); } }
+  void failed(); constexpr void expect(bool cond) { if (!cond) { failed(); } }
 } // namespace mp::test
 
 static_assert(([] {
@@ -395,6 +399,14 @@ static_assert(([] {
       mp::array a{1};
       a[0] = 2;
       expect(2 == a[0]);
+    }
+
+    {
+      mp::array a{1, 2, 3};
+      expect(3 == a.size());
+      expect(a.begin() != a.end());
+      expect(a.size() == a.end() - a.begin());
+      expect(a.end() == a.begin() + a.size());
     }
   }
 
