@@ -44,6 +44,8 @@ mp::type_of<meta> i{}; // same as int i{};
 mp::type_of<mp::meta<bool>> b = true; // same as bool b = true;
 ```
 
+> https://godbolt.org/z/h5eacKPcY
+
 ---
 
 ### Examples
