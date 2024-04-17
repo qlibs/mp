@@ -175,7 +175,7 @@ struct vector {
   }
   constexpr void clear() { size_ = {}; }
 
-  T data[Size]{};
+  union { T data[Size]; }; /// unitialized
   size_t size_{};
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1 + sizeof...(Ts)>;
