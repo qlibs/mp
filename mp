@@ -175,13 +175,7 @@ struct vector {
   }
   constexpr void clear() { size_ = {}; }
 
-  union {
-    T data[Size]
-#if !defined(__clang__) || (__cplusplus < 202002L)
-    {} // !trivial union
-#endif
-    ;
-  };
+  union { T data[Size]{}; }; // !trivial union
   size_t size_{};
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1 + sizeof...(Ts)>;
