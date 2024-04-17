@@ -177,8 +177,8 @@ struct vector {
 
   union {
     T data[Size]
-#if !defined(__clang__)
-    { } // !trivial union
+#if !defined(__clang__) || (__cplusplus < 202002L)
+    {} // !trivial union
 #endif
     ;
   };
