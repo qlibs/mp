@@ -1,24 +1,18 @@
 // Copyright Louis Dionne 2017
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+#include <cstddef>
 
-#include <brigand/sequences/at.hpp>
-#include <brigand/sequences/list.hpp>
-#include <brigand/types/integer.hpp>
+template<std::size_t N, class... Ts>
+using at_c = __type_pack_element<N, Ts...>;
 
 template<int> struct x;
 
 <% env[:k].times do |k| %>
-
-using <%= "xs#{k}" %> = brigand::list<
-    <%= ((k*n+1)..(k*n+n)).map { |i| "x<#{i}>" }.join(', ') %>
->;
-
     <% (env[:p]*n/100).times do |p| %>
     #if defined(METABENCH)
-    using <%= "result#{p}#{k}" %> = brigand::at<<%= "xs#{k}" %>, brigand::int32_t<<%= p*100/env[:p] %>>>;
+    using <%= "result#{p}#{k}" %> = at_c<<%= p*100/env[:p] %>, <%= ((1)..(n)).map { |i| "x<#{i}>" }.join(', ') %>>;
     #endif
-
     <% end %>
 <% end %>
 

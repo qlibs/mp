@@ -11,7 +11,7 @@ if (METABENCH_P2996
              CMAKE_CXX_COP2996ILER_VERSION VERSION_LESS "12")
 )
     function(P2996_add_dataset dataset datatype)
-        set(color "hsl(218, 11%, 49%)")
+        set(color "hsl(240, 100%, 50%)") #blue
         metabench_add_dataset(${dataset} ${ARGN} COLOR ${color})
         add_dependencies(${dataset} p2996)
     endfunction()

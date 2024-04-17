@@ -13,6 +13,8 @@ option(METABENCH_MP11       "Benchmark mp11"    ON)
 option(METABENCH_MPL        "Benchmark MPL"     ON)
 option(METABENCH_MP         "Benchmark MP"      ON)
 option(METABENCH_P2996      "Benchmark P2296"   ON)
+option(METABENCH_P1858      "Benchmark P1858"   ON)
+option(METABENCH_TYPE_PACK_ELEMENT      "Benchmark __type_pack_element"   ON)
 
 include(benchmark/dependencies/brigand)
 include(benchmark/dependencies/fusion)
@@ -25,6 +27,8 @@ include(benchmark/dependencies/mpl)
 include(benchmark/dependencies/mp11)
 include(benchmark/dependencies/mp)
 include(benchmark/dependencies/p2996)
+include(benchmark/dependencies/p1858)
+include(benchmark/dependencies/type_pack_element)
 include(benchmark/dependencies/std)
 
 macro(add_dataset datasets category case lib datatype path_to_template k range)
@@ -63,6 +67,10 @@ macro(add_dataset datasets category case lib datatype path_to_template k range)
     elseif ("${lib}" STREQUAL "mp")
         MP_add_dataset(${args})
     elseif ("${lib}" STREQUAL "p2996")
+        MP_add_dataset(${args})
+    elseif ("${lib}" STREQUAL "p1858")
+        MP_add_dataset(${args})
+    elseif ("${lib}" STREQUAL "type_pack_element")
         MP_add_dataset(${args})
     elseif ("${lib}" STREQUAL "std")
         Std_add_dataset(${args})
@@ -105,7 +113,7 @@ add_compile_options(-stdlib=libc++ -freflection -std=c++2c)
 file(GLOB benchmark_dirs
     LIST_DIRECTORIES true
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "type/at"
+    "type/filter_unique"
 )
 
 foreach(benchmark_dir ${benchmark_dirs})

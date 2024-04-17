@@ -11,7 +11,7 @@ if (METABENCH_MP
              CMAKE_CXX_COMPILER_VERSION VERSION_LESS "12")
 )
     function(MP_add_dataset dataset datatype)
-        set(color "hsl(118, 41%, 49%)")
+        set(color "hsl(120, 100%, 50%)") # green
         metabench_add_dataset(${dataset} ${ARGN} COLOR ${color})
         #add_dependencies(${dataset} mp)
     endfunction()
