@@ -151,11 +151,11 @@ template<class T, class... Ts> array(T, Ts...) -> array<T, 1 + sizeof...(Ts)>;
 template<class T, size_t Size>
 struct vector {
   using value_type = T;
-  constexpr vector() {
-#if !defined(__clang__)
-    data[0] = {};
+#if defined(__clang__)
+  constexpr vector() = default;
+#else
+  constexpr vector() : data{} { } 
 #endif
-  }
   template<class... Ts> constexpr explicit vector(Ts&&... ts) : data{ts...}, size_{sizeof...(ts)} { }
   template<class TRange, class = decltype(utility::declval<TRange>().begin(), utility::declval<TRange>().end())> constexpr vector(TRange range) { for (const T& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
@@ -389,7 +389,7 @@ static_assert(([] {
 
     {
       mp::array a{1, 2};
-      expect(2 == a.size());
+      expect(2u == a.size());
       expect(1 == a[0]);
       expect(2 == a[1]);
     }
@@ -407,9 +407,9 @@ static_assert(([] {
 
     {
       mp::array a{1, 2, 3};
-      expect(3 == a.size());
+      expect(3u == a.size());
       expect(a.begin() != a.end());
-      expect(a.size() == a.end() - a.begin());
+      expect(a.size() == mp::size_t(a.end() - a.begin()));
       expect(a.end() == a.begin() + a.size());
     }
   }
@@ -418,35 +418,35 @@ static_assert(([] {
   {
     {
       mp::vector<mp::size_t, 1> v{};
-      expect(0 == v.size());
+      expect(0u == v.size());
       expect(1 == v.capacity());
     }
 
     {
       mp::vector<int, 3> v{1, 2, 3};
-      expect(3 == v.size());
+      expect(3u == v.size());
       expect(3 == v.capacity());
     }
 
     {
       constexpr mp::vector<int, 1> v1{1};
-      static_assert(1 == v1.size());
+      static_assert(1u == v1.size());
       static_assert(1 == v1[0]);
 
       constexpr mp::vector<int, 1> v2{v1};
-      static_assert(1 == v2.size());
+      static_assert(1u == v2.size());
       static_assert(1 == v2[0]);
     }
 
     {
       mp::vector<int, 4> v1{1, 2};
-      expect(2 == v1.size());
+      expect(2u == v1.size());
       expect(4 == v1.capacity());
       expect(1 == v1[0]);
       expect(2 == v1[1]);
 
       mp::vector<int, 2> v2{v1};
-      expect(2 == v2.size());
+      expect(2u == v2.size());
       expect(2 == v2.capacity());
       expect(1 == v2[0]);
       expect(2 == v2[1]);
@@ -454,15 +454,15 @@ static_assert(([] {
 
     {
       mp::vector<int, 2> v;
-      expect(0 == v.size());
+      expect(0u == v.size());
       expect(2 == v.capacity());
 
       v.push_back(1);
-      expect(1 == v.size());
+      expect(1u == v.size());
       expect(1 == v[0]);
 
       v.push_back(2);
-      expect(2 == v.size());
+      expect(2u == v.size());
       expect(2 == v[1]);
     }
 
@@ -477,25 +477,25 @@ static_assert(([] {
 
     {
       mp::vector<int, 2> v{1, 2};
-      expect(2 == v.size());
+      expect(2u == v.size());
       expect(2 == v.capacity());
 
       v.clear();
-      expect(0 == v.size());
+      expect(0u == v.size());
       expect(2 == v.capacity());
     }
 
     {
       mp::vector<int, 42> v{};
-      expect(0 == v.size() && 0 == v.end() - v.begin());
+      expect(0u == v.size() && 0u == mp::size_t(v.end() - v.begin()));
       expect(v.begin() == v.end());
 
       v.emplace_back(1);
-      expect(1 == v.size() && 1 == v.end() - v.begin());
+      expect(1u == v.size() && 1 == mp::size_t(v.end() - v.begin()));
       expect(v.begin() != v.end());
 
       v.emplace_back(2);
-      expect(2 == v.size() && 2 == v.end() - v.begin());
+      expect(2u == v.size() && 2u == mp::size_t(v.end() - v.begin()));
       expect(v.begin() != v.end());
     }
 
