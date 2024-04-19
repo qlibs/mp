@@ -43,7 +43,7 @@
           <option value="unique">unique</option>
         </select>
         |
-        <input type="checkbox" id="include" checked onchange="select_include()"><label for="include">include</label>
+        <input type="checkbox" id="include" onchange="select_include()"><label for="include">with includes</label>
         |
         <button onclick="split()">Compare</button>
         |
@@ -165,7 +165,7 @@
 
         compiler = document.getElementById("compiler").value;
         test = document.getElementById("test").value;
-        include = document.getElementById("include").value;
+        include = document.getElementById("include").checked;
         load();
     </script>
 </body>
