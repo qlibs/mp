@@ -42,8 +42,8 @@
           <option value="take">take</option>
           <option value="unique">unique</option>
         </select>
-				|
-				<button onclick="split()">Compare</button>
+                |
+                <button onclick="split()">Compare</button>
         |
         <a href="https://github.com/boost-ext/mp/tree/benchmark">github</a>
     </div>
@@ -54,18 +54,18 @@
         let test;
         let compiler;
 
-				function split() {
-					var frameset = document.createElement("frameset");
-					frameset.setAttribute("cols", "50%,50%");
-					var frame1 = document.createElement("frame");
-					frame1.setAttribute("src", "index.html");
-					var frame2 = document.createElement("frame");
-					frame2.setAttribute("src", "index.html");
-					frameset.appendChild(frame1);
-					frameset.appendChild(frame2);
-					document.body.innerHTML = "";
-					document.body.appendChild(frameset);
-				}
+        function split() {
+            var frameset = document.createElement("frameset");
+            frameset.setAttribute("cols", "50%,50%");
+            var frame1 = document.createElement("frame");
+            frame1.setAttribute("src", "index.html");
+            var frame2 = document.createElement("frame");
+            frame2.setAttribute("src", "index.html");
+            frameset.appendChild(frame1);
+            frameset.appendChild(frame2);
+            document.body.innerHTML = "";
+            document.body.appendChild(frameset);
+        }
 
         function color(index) {
             return colors[index % colors.length];
