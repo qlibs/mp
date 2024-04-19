@@ -29,6 +29,7 @@
           <option value="clang-p2996">clang-p2996 -stdlib=libc++ -std=c++2c -freflection</option>
           <option value="clang-17">clang++-17 -std=c++20</option>
           <option value="gcc-13">g++-13 -std=c++20</option>
+          <option value="circle">circle -std=c++20</option>
         </select>
         |
         <select id="test" onchange="select_test()">
@@ -46,9 +47,14 @@
     </div>
     <canvas id="chart" style="margin: 25px;"></canvas>
     <script>
+        const colors = ["#0074D9", "#FF4136", "#2ECC40", "#FF851B", "#7FDBFF", "#85144b", "#001f3f", "#39CCCC"];
         let chart;
         let test;
         let compiler;
+
+        function color(index) {
+            return colors[index % colors.length];
+        }
 
         function select_compiler() {
           compiler = document.getElementById("compiler").value
@@ -72,8 +78,10 @@
                         datasets.push({
                             label: headers[i],
                             data: [],
-                            borderWidth: 1,
-                            fill: false
+                            borderWidth: 2,
+                            fill: false,
+                            backgroundColor: color(i),
+                            borderColor: color(i),
                         });
                     }
 
@@ -94,6 +102,7 @@
                         },
 
                           options: {
+                              responsive: true,
                               plugins: {
                                   zoom: {
                                       zoom: {

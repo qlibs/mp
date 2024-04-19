@@ -62,7 +62,7 @@ def timeit(command):
     execution_time = end_time - start_time
     return execution_time
 
-def benchmark(n, step, runs, cxx, test):
+def benchmark(rng, runs, cxx, test):
     results = {}
     for dir in Path('benchmark').iterdir():
         if dir.is_dir():
@@ -73,7 +73,7 @@ def benchmark(n, step, runs, cxx, test):
                     continue
 
                 results[dir.name][sut] = {}
-                for i in range(0, n, step):
+                for i in rng:
                     path = f'/tmp/{dir.name}_{file.name}_{i}'
                     with open(path + '.cpp', 'w') as tmp:
                         with open(f'benchmark/{dir.name}/{file.name}', 'r') as f:
@@ -106,6 +106,7 @@ def save(name, results):
                     str += f',{values}'
                 csv.write(str + '\n')
 
-save('clang-p2996', benchmark(n=100, step=10, runs=3, cxx="clang++-19 -std=c++2c -stdlib=libc++ -freflection", test=['mp', 'mp11', 'nth_pack_element', 'p1858', 'p2996', 'type_pack_element']))
-save('clang-17', benchmark(n=100, step=10, runs=3, cxx="clang++-17 -std=c++20", test=['mp', 'mp11', 'nth_pack_element', 'type_pack_element']))
-save('gcc-13', benchmark(n=100, step=10, runs=3, cxx="g++-13 -std=c++20", test=['mp', 'mp11', 'nth_pack_element']))
+save('clang-p2996', benchmark(range(0, 110, 10), runs=3, cxx="clang++-19 -std=c++2c -stdlib=libc++ -freflection", test=['mp', 'mp11', 'nth_pack_element', 'p1858', 'p2996', 'type_pack_element']))
+save('clang-17', benchmark(range(0, 110, 10), runs=3, cxx="clang++-17 -std=c++20", test=['mp', 'mp11', 'nth_pack_element', 'type_pack_element']))
+save('gcc-13', benchmark(range(0, 110, 10), runs=3, cxx="g++-13 -std=c++20", test=['mp', 'mp11', 'nth_pack_element']))
+save('circle', benchmark(range(0, 110, 10), runs=1, cxx="circle -std=c++20", test=['circle', 'mp11', 'nth_pack_element', 'p1858']))

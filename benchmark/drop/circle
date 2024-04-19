@@ -1,0 +1,4 @@
+template<class...> struct type_list {};
+
+template<auto N, class... Ts>
+using drop = type_list<Ts...[N:]...>;

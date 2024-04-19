@@ -1,0 +1,4 @@
+template<class...> struct type_list{ };
+
+template<class... Ts>
+using reverse = type_list<Ts...[::-1]...>;
