@@ -47,11 +47,14 @@
         |
         <button onclick="split()">Compare</button>
         |
-        <a href="https://github.com/boost-ext/mp/tree/benchmark">github</a>
+        <a target="_blank" href="https://github.com/boost-ext/mp/tree/benchmark">github</a>
+        |
+        <a target="_blank" id="link" href=""></a>
     </div>
     <canvas id="chart" style="margin: 25px;"></canvas>
     <script>
         const colors = ["#0074D9", "#FF4136", "#2ECC40", "#FF851B", "#7FDBFF", "#85144b", "#001f3f", "#39CCCC"];
+
         let chart;
         let test;
         let compiler;
@@ -72,8 +75,8 @@
 
         function color(index) {
           return colors[index % colors.length];
-
         }
+
         function select_include() {
           include = document.getElementById("include").checked;
           load()
@@ -89,7 +92,13 @@
           load()
         }
 
+        function select_link() {
+          document.getElementById("link").text = "https://github.com/boost-ext/mp/tree/benchmark/benchmark/" + test;
+          document.getElementById("link").href = "https://github.com/boost-ext/mp/tree/benchmark/benchmark/" + test;
+        }
+
         function load(element) {
+            select_link();
             fetch("results/" + compiler + "/" + test + (include?'':'.raw') + '.csv')
                 .then(response => response.text())
                 .then(data => {
