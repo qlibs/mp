@@ -404,12 +404,7 @@ make benchmark
 
 > Results (https://godbolt.org/z/6KzzEMGbe)
 
-- https://boost-ext.github.io/mp/metabench/results/at
-- https://boost-ext.github.io/mp/metabench/results/drop
-- https://boost-ext.github.io/mp/metabench/results/erase
-- https://boost-ext.github.io/mp/metabench/results/insert
-- https://boost-ext.github.io/mp/metabench/results/reverse
-- https://boost-ext.github.io/mp/metabench/results/take
+- https://boost-ext.github.io/mp
 
 ---
 
