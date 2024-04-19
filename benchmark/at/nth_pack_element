@@ -1,0 +1,11 @@
+#include <utility>
+
+template<auto...> struct auto_ { auto_(auto&&...) { } };
+
+template<std::size_t N>
+auto nth_pack_element = []<auto... Ns>(std::index_sequence<Ns...>) {
+  return [](auto_<Ns>&&..., auto&& nth, auto&&...) -> decltype(auto) { return nth; };
+}(std::make_index_sequence<N>{});
+
+template<std::size_t N, class... Ts>
+using at = decltype(nth_pack_element<N>(std::declval<Ts>()...));

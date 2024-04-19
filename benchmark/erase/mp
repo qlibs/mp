@@ -1,0 +1,16 @@
+#define DISABLE_STATIC_ASSERT_TESTS
+#include <mp>
+
+template<class...> struct type_list { };
+
+template<mp::size_t N, class... Ts>
+constexpr auto erase_impl() {
+  mp::array v{mp::meta<Ts>...};
+  mp::array<mp::meta_t, sizeof...(Ts)-1> r{};
+  for (auto i = 0u; i < N; ++i) { r[i] = v[i]; }
+  for (auto i = N+1; i < v.size(); ++i) { r[i-1] = v[i]; }
+  return r;
+}
+
+template<mp::size_t N, class... Ts>
+using erase = mp::apply_t<type_list, erase_impl<N, Ts...>()>;

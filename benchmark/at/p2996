@@ -1,0 +1,5 @@
+#include <array>
+#include <experimental/meta>
+
+template<std::size_t N, class... Ts>
+using at = typename [:std::array{^Ts...}[N]:];

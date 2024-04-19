@@ -1,0 +1,4 @@
+#include <boost/mp11.hpp>
+
+template<std::size_t N, class... Ts>
+using erase = boost::mp11::mp_append<boost::mp11::mp_take_c<boost::mp11::mp_list<Ts...>, N>, boost::mp11::mp_drop_c<boost::mp11::mp_list<Ts...>, N+1>>;

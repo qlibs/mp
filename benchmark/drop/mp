@@ -1,0 +1,15 @@
+#define DISABLE_STATIC_ASSERT_TESTS
+#include <mp>
+
+template<class...> struct type_list { };
+
+template<mp::size_t N, class... Ts>
+constexpr auto drop_impl() {
+  mp::array v{mp::meta<Ts>...};
+  mp::array<mp::meta_t, sizeof...(Ts)-N> r;
+  for (auto i=N; i < v.size(); ++i) { r[i-N] = v[i]; }
+  return r;
+}
+
+template<mp::size_t N, class... Ts>
+using drop = mp::apply_t<type_list, drop_impl<N, Ts...>()>;

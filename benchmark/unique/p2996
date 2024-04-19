@@ -1,0 +1,21 @@
+#include <vector>
+#include <array>
+#include <ranges>
+#include <experimental/meta>
+
+template<class...> struct type_list { };
+
+template<class... Ts>
+constexpr auto unique_impl = [] {
+  std::vector<std::meta::info> r;
+  std::array in{^Ts...};
+  for (auto i = 0u; i < in.size(); ++i) {
+    if (std::ranges::find(r, in[i]) == r.cend()) {
+      r.push_back(in[i]);
+    }
+  }
+  return substitute(^type_list, r);
+};
+
+template<class... Ts>
+using unique = typename [:unique_impl<Ts...>():];

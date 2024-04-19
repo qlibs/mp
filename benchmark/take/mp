@@ -1,0 +1,14 @@
+#define DISABLE_STATIC_ASSERT_TESTS
+#include <mp>
+
+template<class...> struct type_list { };
+
+template<mp::size_t N, class... Ts>
+constexpr auto take_impl() {
+ mp::vector v{mp::meta<Ts>...};
+ v.size() = N;
+ return v;
+}
+
+template<mp::size_t N, class... Ts>
+using take = mp::apply_t<type_list, take_impl<N, Ts...>()>;

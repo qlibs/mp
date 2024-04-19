@@ -1,0 +1,14 @@
+#define DISABLE_STATIC_ASSERT_TESTS
+#include <mp>
+
+template<class...> struct type_list {};
+
+template<class... Ts>
+constexpr auto reverse_impl() {
+  mp::array v{mp::meta<Ts>...};
+  mp::size_t i = sizeof...(Ts) - 1;
+  return mp::array{v[(void((Ts*)0),i)--]...};
+}
+
+template<class... Ts>
+using reverse = mp::apply_t<type_list, reverse_impl<Ts...>()>;

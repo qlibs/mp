@@ -1,0 +1,4 @@
+#include <boost/mp11.hpp>
+
+template<std::size_t N, class T, class... Ts>
+using insert = boost::mp11::mp_insert_c<boost::mp11::mp_list<Ts...>, N, T>;

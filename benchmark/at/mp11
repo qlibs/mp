@@ -1,0 +1,4 @@
+#include <boost/mp11.hpp>
+
+template<std::size_t N, class... Ts>
+using at = boost::mp11::mp_at_c<boost::mp11::mp_list<Ts...>, N>;

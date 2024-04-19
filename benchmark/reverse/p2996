@@ -1,0 +1,10 @@
+#include <array>
+#include <ranges>
+#include <experimental/meta>
+
+template<class...> struct type_list { };
+
+template<class... Ts>
+using reverse = typename [:substitute(^type_list, std::array{^Ts...}
+                                                      | std::views::reverse
+                                                      | std::ranges::to<std::vector>()):];

@@ -1,0 +1,8 @@
+#include <array>
+#include <ranges>
+#include <experimental/meta>
+
+template<class...> struct type_list { };
+
+template<std::size_t N, class... Ts>
+using drop = typename [:substitute(^type_list, std::array{^Ts...} | std::views::drop(N) | std::ranges::to<std::vector>()):];

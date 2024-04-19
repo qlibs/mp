@@ -1,0 +1,2 @@
+template<auto N, class... Ts>
+using at = Ts...[N];

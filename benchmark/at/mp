@@ -1,0 +1,5 @@
+#define DISABLE_STATIC_ASSERT_TESTS
+#include <mp>
+
+template<mp::size_t N, class... Ts>
+using at = mp::type_of<mp::array{mp::meta<Ts>...}[N]>;

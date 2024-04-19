@@ -1,0 +1,22 @@
+#include <vector>
+#include <array>
+#include <ranges>
+#include <experimental/meta>
+
+template<class...> struct type_list { };
+
+template<class... Ts>
+constexpr auto filter_impl = [] {
+  std::vector<std::meta::info> r;
+  std::array in{^Ts...};
+  std::array vs{(Ts::value % 2)...};
+  for (auto i = 0u; i < in.size(); ++i) {
+    if (vs[i]) {
+      r.push_back(in[i]);
+    }
+  }
+  return substitute(^type_list, r);
+};
+
+template<class... Ts>
+using filter = typename [:filter_impl<Ts...>():];

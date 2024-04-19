@@ -1,0 +1,16 @@
+#define DISABLE_STATIC_ASSERT_TESTS
+#include <mp>
+
+template<class...> struct type_list { };
+
+template<class... Ts>
+constexpr auto filter_impl = [] {
+  mp::vector<mp::meta_t, sizeof...(Ts)> v;
+  ([&] {
+      if constexpr (Ts::value % 2) { v.push_back(mp::meta<Ts>); }
+  }(), ...);
+  return v;
+};
+
+template<class... Ts>
+using filter = mp::apply_t<type_list, filter_impl<Ts...>()>;

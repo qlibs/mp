@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benchmark</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.1.1/chartjs-plugin-zoom.min.js"></script>
+    <style>
+        .topbar {
+            background-color: #333;
+            color: #FFF;
+            padding: 10px;
+            text-align: center;
+            text-align: left;
+        }
+        .topbar a {
+            color: #FFF;
+            text-decoration: none;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a class="none" href="#" onclick="loadCSV('results/at.csv', this)">at</a>
+        <a class="none" href="#" onclick="loadCSV('results/drop.csv', this)">drop</a>
+        <a class="none" href="#" onclick="loadCSV('results/erase.csv', this)">erase</a>
+        <a class="none" href="#" onclick="loadCSV('results/filter.csv', this)">filter</a>
+        <a class="none" href="#" onclick="loadCSV('results/insert.csv', this)">insert</a>
+        <a class="none" href="#" onclick="loadCSV('results/reverse.csv', this)">reverse</a>
+        <a class="none" href="#" onclick="loadCSV('results/take.csv', this)">take</a>
+        <a class="none" href="#" onclick="loadCSV('results/unique.csv', this)">unique</a>
+        |
+        <a href="https://github.com/bloomberg/clang-p2996">clang-p2996 -stdlib=libc++ -std=c++2c -freflection</a>
+        |
+        <a href="https://github.com/boost-ext/mp/tree/benchmark">github</a>
+        |
+    </div>
+    <canvas id="chart" style="margin: 25px;"></canvas>
+    <script>
+        let chart;
+        function loadCSV(filename, element) {
+            elements = document.getElementsByClassName('none');
+            for (var i = 0; i < elements.length; ++i) {
+              elements[i].style.color='gray';
+            }
+            if (element.style.color == "white") {
+              element.style.color='gray';
+            } else {
+              element.style.color='white';
+            }
+
+            fetch(filename)
+                .then(response => response.text())
+                .then(data => {
+                    const rows = data.trim().split('\n');
+                    const headers = rows[0].split(',');
+                    const datasets = [];
+
+                    for (let i = 1; i < headers.length; i++) {
+                        datasets.push({
+                            label: headers[i],
+                            data: [],
+                            borderWidth: 1,
+                            fill: false
+                        });
+                    }
+
+                    rows.slice(1).forEach(row => {
+                        const values = row.split(',');
+                        for (let i = 1; i < values.length; i++) {
+                            datasets[i - 1].data.push(values[i]);
+                        }
+                    });
+
+                    const ctx = document.getElementById('chart').getContext('2d');
+                    if (chart) { chart.destroy(); }
+                    chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: rows.slice(1).map(row => row.split(',')[0]),
+                            datasets: datasets
+                        },
+
+                          options: {
+                              plugins: {
+                                  zoom: {
+                                      zoom: {
+                                          wheel: { enabled: true, },
+                                          pinch: { enabled: true, },
+                                          mode: 'xy',
+                                      },
+                                  },
+                                  pan: {
+                                      enabled: true,
+                                      mode: 'xy',
+                                  },
+                                  legend: {
+                                      display: true,
+                                      position: 'top',
+                                      align: 'end',
+                                  }
+                              },
+                              scales: {
+                                  x: {
+                                      title: {
+                                          display: true,
+                                          text: 'Number of elements'
+                                      },
+                                  },
+                                  y: {
+                                      title: {
+                                          display: true,
+                                          text: 'Compilation time [seconds]',
+                                      },
+                                  }
+                              }
+                          }
+                    });
+                })
+        }
+
+        loadCSV('results/at.csv', document.getElementsByClassName('none')[0]);
+    </script>
+</body>
+</html>

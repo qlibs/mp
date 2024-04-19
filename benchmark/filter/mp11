@@ -1,0 +1,7 @@
+#include <boost/mp11.hpp>
+
+template<class T>
+using has_value = boost::mp11::mp_bool<(T::value % 2)>;
+
+template<class... Ts>
+using filter = boost::mp11::mp_filter<has_value, boost::mp11::mp_list<Ts...>>;
