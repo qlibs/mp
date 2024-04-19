@@ -75,17 +75,25 @@ def benchmark(rng, runs, cxx, test):
                 results[dir.name][sut] = {}
                 for i in rng:
                     path = f'/tmp/{dir.name}_{file.name}_{i}'
-                    with open(path + '.cpp', 'w') as tmp:
-                        with open(f'benchmark/{dir.name}/{file.name}', 'r') as f:
-                            for line in f:
-                                tmp.write(line)
-                            tmp.write(eval(dir.name)(i))
 
-                    time = []
+                    with open(f'benchmark/{dir.name}/{file.name}', 'r') as f:
+                        with open(path + '_include.cpp', 'w') as include:
+                            with open(path + '.cpp', 'w') as cpp:
+                                for line in f:
+                                    if "#include" in line or "#define" in line:
+                                        include.write(line)
+                                    cpp.write(line)
+                                cpp.write(eval(dir.name)(i))
+
+                    include = []
                     for _ in range(runs):
-                        time.append(timeit(f'{cxx} -c {path}.cpp -o {path}.o'))
+                        include.append(timeit(f'{cxx} -c {path}_include.cpp -o {path}.o'))
 
-                    results[dir.name][sut][i] = np.mean(time)
+                    cpp = []
+                    for _ in range(runs):
+                        cpp.append(timeit(f'{cxx} -c {path}.cpp -o {path}.o'))
+
+                    results[dir.name][sut][i] = (np.mean(include), np.mean(cpp))
 
     return results
 
@@ -102,11 +110,21 @@ def save(name, results):
             keys = set().union(*(d.keys() for d in data.values()))
             for key in sorted(keys):
                 str = f'{key}'
-                for name, values in zip(data.keys(), (data[name].get(key) for name in data.keys())):
-                    str += f',{values}'
+                for name, time in zip(data.keys(), (data[name].get(key) for name in data.keys())):
+                    str += f',{time[1]}'
+                csv.write(str + '\n')
+
+        with open(f'{path}/{result}.raw.csv', 'w') as csv:
+            data = results[result]
+            csv.write('n,' + ','.join(data) + '\n')
+            keys = set().union(*(d.keys() for d in data.values()))
+            for key in sorted(keys):
+                str = f'{key}'
+                for name, time in zip(data.keys(), (data[name].get(key) for name in data.keys())):
+                    str += f',{max(0, time[1]-time[0])}'
                 csv.write(str + '\n')
 
 save('clang-p2996', benchmark(range(0, 110, 10), runs=3, cxx="clang++-19 -std=c++2c -stdlib=libc++ -freflection", test=['mp', 'mp11', 'nth_pack_element', 'p1858', 'p2996', 'type_pack_element']))
 save('clang-17', benchmark(range(0, 110, 10), runs=3, cxx="clang++-17 -std=c++20", test=['mp', 'mp11', 'nth_pack_element', 'type_pack_element']))
 save('gcc-13', benchmark(range(0, 110, 10), runs=3, cxx="g++-13 -std=c++20", test=['mp', 'mp11', 'nth_pack_element']))
-save('circle', benchmark(range(0, 110, 10), runs=1, cxx="circle -std=c++20", test=['circle', 'mp11', 'nth_pack_element', 'p1858']))
+save('circle', benchmark(range(0, 110, 10), runs=3, cxx="circle -std=c++20", test=['circle', 'mp11', 'nth_pack_element', 'p1858']))

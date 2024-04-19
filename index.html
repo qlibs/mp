@@ -43,6 +43,8 @@
           <option value="unique">unique</option>
         </select>
         |
+        <input type="checkbox" id="include" checked onchange="select_include()"><label for="include">include</label>
+        |
         <button onclick="split()">Compare</button>
         |
         <a href="https://github.com/boost-ext/mp/tree/benchmark">github</a>
@@ -53,36 +55,42 @@
         let chart;
         let test;
         let compiler;
+        let include;
 
         function split() {
-            var frameset = document.createElement("frameset");
-            frameset.setAttribute("cols", "50%,50%");
-            var frame1 = document.createElement("frame");
-            frame1.setAttribute("src", "index.html");
-            var frame2 = document.createElement("frame");
-            frame2.setAttribute("src", "index.html");
-            frameset.appendChild(frame1);
-            frameset.appendChild(frame2);
-            document.body.innerHTML = "";
-            document.body.appendChild(frameset);
+          var frameset = document.createElement("frameset");
+          frameset.setAttribute("cols", "50%,50%");
+          var frame1 = document.createElement("frame");
+          frame1.setAttribute("src", "index.html");
+          var frame2 = document.createElement("frame");
+          frame2.setAttribute("src", "index.html");
+          frameset.appendChild(frame1);
+          frameset.appendChild(frame2);
+          document.body.innerHTML = "";
+          document.body.appendChild(frameset);
         }
 
         function color(index) {
-            return colors[index % colors.length];
+          return colors[index % colors.length];
+
+        }
+        function select_include() {
+          include = document.getElementById("include").checked;
+          load()
         }
 
         function select_compiler() {
-          compiler = document.getElementById("compiler").value
+          compiler = document.getElementById("compiler").value;
           load()
         }
 
         function select_test() {
-          test = document.getElementById("test").value
+          test = document.getElementById("test").value;
           load()
         }
 
         function load(element) {
-            fetch("results/" + compiler + "/" + test + '.csv')
+            fetch("results/" + compiler + "/" + test + (include?'':'.raw') + '.csv')
                 .then(response => response.text())
                 .then(data => {
                     const rows = data.trim().split('\n');
@@ -157,6 +165,7 @@
 
         compiler = document.getElementById("compiler").value;
         test = document.getElementById("test").value;
+        include = document.getElementById("include").value;
         load();
     </script>
 </body>
