@@ -25,16 +25,20 @@
 </head>
 <body>
     <div class="topbar">
-        <a class="none" href="#" onclick="loadCSV('results/at.csv', this)">at</a>
-        <a class="none" href="#" onclick="loadCSV('results/drop.csv', this)">drop</a>
-        <a class="none" href="#" onclick="loadCSV('results/erase.csv', this)">erase</a>
-        <a class="none" href="#" onclick="loadCSV('results/filter.csv', this)">filter</a>
-        <a class="none" href="#" onclick="loadCSV('results/insert.csv', this)">insert</a>
-        <a class="none" href="#" onclick="loadCSV('results/reverse.csv', this)">reverse</a>
-        <a class="none" href="#" onclick="loadCSV('results/take.csv', this)">take</a>
-        <a class="none" href="#" onclick="loadCSV('results/unique.csv', this)">unique</a>
+        <select onchange="select()">
+          <option value="clang-p2996">clang-p2996 -stdlib=libc++ -std=c++2c -freflection</option>
+          <option value="clang-17">clang++-17 -std=c++20</option>
+          <option value="gcc-13">g++-13 -std=c++20</option>
+        </select>
         |
-        <a href="https://github.com/bloomberg/clang-p2996">clang-p2996 -stdlib=libc++ -std=c++2c -freflection</a>
+        <a id="at" class="none" href="#" onclick="loadCSV('at.csv', this)">at</a>
+        <a id="drop" class="none" href="#" onclick="loadCSV('drop.csv', this)">drop</a>
+        <a id="erase" class="none" href="#" onclick="loadCSV('erase.csv', this)">erase</a>
+        <a id="filter" class="none" href="#" onclick="loadCSV('filter.csv', this)">filter</a>
+        <a id="insert" class="none" href="#" onclick="loadCSV('insert.csv', this)">insert</a>
+        <a id="reverse" class="none" href="#" onclick="loadCSV('reverse.csv', this)">reverse</a>
+        <a id="take" class="none" href="#" onclick="loadCSV('take.csv', this)">take</a>
+        <a id="unique" class="none" href="#" onclick="loadCSV('unique.csv', this)">unique</a>
         |
         <a href="https://github.com/boost-ext/mp/tree/benchmark">github</a>
         |
@@ -42,6 +46,13 @@
     <canvas id="chart" style="margin: 25px;"></canvas>
     <script>
         let chart;
+        let test;
+        let compiler;
+
+        function select() {
+          compiler = document.querySelector("select").value;
+        }
+
         function loadCSV(filename, element) {
             elements = document.getElementsByClassName('none');
             for (var i = 0; i < elements.length; ++i) {
@@ -51,9 +62,10 @@
               element.style.color='gray';
             } else {
               element.style.color='white';
+              test = element.id;
             }
 
-            fetch(filename)
+            fetch("results/" + compiler + "/" + filename)
                 .then(response => response.text())
                 .then(data => {
                     const rows = data.trim().split('\n');
@@ -123,7 +135,8 @@
                 })
         }
 
-        loadCSV('results/at.csv', document.getElementsByClassName('none')[0]);
+        select();
+        loadCSV('at.csv', document.getElementsByClassName('none')[0]);
     </script>
 </body>
 </html>

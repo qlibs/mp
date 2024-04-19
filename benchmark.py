@@ -62,16 +62,18 @@ def timeit(command):
     execution_time = end_time - start_time
     return execution_time
 
-def bench(n, runs, cxx, cxxflags):
+def bench(n, step, runs, cxx, filter):
     results = {}
     for dir in Path('benchmark').iterdir():
         if dir.is_dir():
             results[dir.name] = {}
             for file in dir.iterdir():
                 sut = f'{file.name}'
-                results[dir.name][sut] = {}
+                if sut not in filter:
+                    continue
 
-                for i in range(n):
+                results[dir.name][sut] = {}
+                for i in range(n, step):
                     path = f'{dir.name}_{file.name}_{i}.cpp'
                     with open(path, 'w') as tmp:
                         with open(f'benchmark/{dir.name}/{file.name}', 'r') as f:
@@ -81,15 +83,20 @@ def bench(n, runs, cxx, cxxflags):
 
                     time = []
                     for _ in range(runs):
-                        time.append(timeit(f'{cxx} {cxxflags} -c {path}'))
+                        time.append(timeit(f'{cxx} -c {path}'))
 
                     results[dir.name][sut][i] = np.mean(time)
 
     return results
 
-def results(bench):
+def results(cxx, bench):
     for result in bench:
-        with open(f'results/{result}.csv', 'w') as csv:
+        path = f'results/{cxx}'
+        if os.path.exists(path):
+            os.rmdir(path)
+            os.mkdir(path)
+
+        with open(f'{path}/{result}.csv', 'w') as csv:
             csv.write('n,' + ','.join(bench[result]) + '\n')
             data = bench[result]
             all_keys = set().union(*(d.keys() for d in data.values()))
@@ -99,4 +106,6 @@ def results(bench):
                     str += f',{values}'
                 csv.write(str + '\n')
 
-results(bench(n=100, runs=3, cxx="~/Projects/clang-p2996/build/bin/clang++-19", cxxflags="-std=c++2c -stdlib=libc++ -freflection"))
+results('gcc-13:', bench(n=100, step=10, runs=3, cxx="g++-13 -std=c++20", ['mp', 'mp11', 'nth_pack_element']))
+results('clang-17:', bench(n=100, step=10, runs=3, cxx="clang++-17 -std=c++20", ['mp', 'mp11', 'nth_pack_element', 'type_pack_element']))
+results('clang-p2996', bench(n=100, step=10, runs=3, cxx="clang++-19 -std=c++2c -stdlib=libc++ -freflection", ['mp', 'mp11', 'nth_pack_element', 'p1858', 'p2996', 'type_pack_element']))
