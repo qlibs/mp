@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 from pathlib import Path
-import os, sys, time, subprocess
+import os, sys, time, subprocess, shutil
 import numpy as np
 
 def at(N):
-    str = f"template<int> struct x;\n"
+    str = f"template<int> struct x{{}};\n"
     for i in range(N):
         str += f"using x_{i} = at<{i}, {','.join([f'x<{n}>' for n in range(N)])}>;\n"
     return str
@@ -62,20 +62,20 @@ def timeit(command):
     execution_time = end_time - start_time
     return execution_time
 
-def bench(n, step, runs, cxx, filter):
+def benchmark(n, step, runs, cxx, test):
     results = {}
     for dir in Path('benchmark').iterdir():
         if dir.is_dir():
             results[dir.name] = {}
             for file in dir.iterdir():
                 sut = f'{file.name}'
-                if sut not in filter:
+                if sut not in test:
                     continue
 
                 results[dir.name][sut] = {}
-                for i in range(n, step):
-                    path = f'{dir.name}_{file.name}_{i}.cpp'
-                    with open(path, 'w') as tmp:
+                for i in range(0, n, step):
+                    path = f'/tmp/{dir.name}_{file.name}_{i}'
+                    with open(path + '.cpp', 'w') as tmp:
                         with open(f'benchmark/{dir.name}/{file.name}', 'r') as f:
                             for line in f:
                                 tmp.write(line)
@@ -83,29 +83,29 @@ def bench(n, step, runs, cxx, filter):
 
                     time = []
                     for _ in range(runs):
-                        time.append(timeit(f'{cxx} -c {path}'))
+                        time.append(timeit(f'{cxx} -c {path}.cpp -o {path}.o'))
 
                     results[dir.name][sut][i] = np.mean(time)
 
     return results
 
-def results(cxx, bench):
-    for result in bench:
-        path = f'results/{cxx}'
-        if os.path.exists(path):
-            os.rmdir(path)
-            os.mkdir(path)
+def save(name, results):
+    path = f'results/{name}'
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.mkdir(path)
 
+    for result in results:
         with open(f'{path}/{result}.csv', 'w') as csv:
-            csv.write('n,' + ','.join(bench[result]) + '\n')
-            data = bench[result]
-            all_keys = set().union(*(d.keys() for d in data.values()))
-            for key in sorted(all_keys):
+            data = results[result]
+            csv.write('n,' + ','.join(data) + '\n')
+            keys = set().union(*(d.keys() for d in data.values()))
+            for key in sorted(keys):
                 str = f'{key}'
                 for name, values in zip(data.keys(), (data[name].get(key) for name in data.keys())):
                     str += f',{values}'
                 csv.write(str + '\n')
 
-results('gcc-13:', bench(n=100, step=10, runs=3, cxx="g++-13 -std=c++20", ['mp', 'mp11', 'nth_pack_element']))
-results('clang-17:', bench(n=100, step=10, runs=3, cxx="clang++-17 -std=c++20", ['mp', 'mp11', 'nth_pack_element', 'type_pack_element']))
-results('clang-p2996', bench(n=100, step=10, runs=3, cxx="clang++-19 -std=c++2c -stdlib=libc++ -freflection", ['mp', 'mp11', 'nth_pack_element', 'p1858', 'p2996', 'type_pack_element']))
+save('gcc-13', benchmark(n=100, step=10, runs=3, cxx="g++-13 -std=c++20", test=['mp', 'mp11', 'nth_pack_element']))
+save('clang-p2996', benchmark(n=100, step=10, runs=3, cxx="clang++-19 -std=c++2c -stdlib=libc++ -freflection", test=['mp', 'mp11', 'nth_pack_element', 'p1858', 'p2996', 'type_pack_element']))
+save('clang-17', benchmark(n=100, step=10, runs=3, cxx="clang++-17 -std=c++20", test=['mp', 'mp11', 'nth_pack_element', 'type_pack_element']))

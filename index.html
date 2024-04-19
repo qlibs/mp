@@ -25,23 +25,24 @@
 </head>
 <body>
     <div class="topbar">
-        <select onchange="select()">
+        <select id="compiler" onchange="select_compiler()">
           <option value="clang-p2996">clang-p2996 -stdlib=libc++ -std=c++2c -freflection</option>
           <option value="clang-17">clang++-17 -std=c++20</option>
           <option value="gcc-13">g++-13 -std=c++20</option>
         </select>
         |
-        <a id="at" class="none" href="#" onclick="loadCSV('at.csv', this)">at</a>
-        <a id="drop" class="none" href="#" onclick="loadCSV('drop.csv', this)">drop</a>
-        <a id="erase" class="none" href="#" onclick="loadCSV('erase.csv', this)">erase</a>
-        <a id="filter" class="none" href="#" onclick="loadCSV('filter.csv', this)">filter</a>
-        <a id="insert" class="none" href="#" onclick="loadCSV('insert.csv', this)">insert</a>
-        <a id="reverse" class="none" href="#" onclick="loadCSV('reverse.csv', this)">reverse</a>
-        <a id="take" class="none" href="#" onclick="loadCSV('take.csv', this)">take</a>
-        <a id="unique" class="none" href="#" onclick="loadCSV('unique.csv', this)">unique</a>
+        <select id="test" onchange="select_test()">
+          <option value="at">at</option>
+          <option value="drop">drop</option>
+          <option value="erase">erase</option>
+          <option value="filter">filter</option>
+          <option value="insert">insert</option>
+          <option value="reverse">reverse</option>
+          <option value="take">take</option>
+          <option value="unique">unique</option>
+        </select>
         |
         <a href="https://github.com/boost-ext/mp/tree/benchmark">github</a>
-        |
     </div>
     <canvas id="chart" style="margin: 25px;"></canvas>
     <script>
@@ -49,23 +50,18 @@
         let test;
         let compiler;
 
-        function select() {
-          compiler = document.querySelector("select").value;
+        function select_compiler() {
+          compiler = document.getElementById("compiler").value
+          load()
         }
 
-        function loadCSV(filename, element) {
-            elements = document.getElementsByClassName('none');
-            for (var i = 0; i < elements.length; ++i) {
-              elements[i].style.color='gray';
-            }
-            if (element.style.color == "white") {
-              element.style.color='gray';
-            } else {
-              element.style.color='white';
-              test = element.id;
-            }
+        function select_test() {
+          test = document.getElementById("test").value
+          load()
+        }
 
-            fetch("results/" + compiler + "/" + filename)
+        function load(element) {
+            fetch("results/" + compiler + "/" + test + '.csv')
                 .then(response => response.text())
                 .then(data => {
                     const rows = data.trim().split('\n');
@@ -135,8 +131,9 @@
                 })
         }
 
-        select();
-        loadCSV('at.csv', document.getElementsByClassName('none')[0]);
+        compiler = document.getElementById("compiler").value;
+        test = document.getElementById("test").value;
+        load();
     </script>
 </body>
 </html>
