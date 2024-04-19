@@ -123,42 +123,41 @@
                             labels: rows.slice(1).map(row => row.split(',')[0]),
                             datasets: datasets
                         },
-
-                          options: {
-                              responsive: true,
-                              plugins: {
-                                  zoom: {
-                                      zoom: {
-                                          wheel: { enabled: true, },
-                                          pinch: { enabled: true, },
-                                          mode: 'xy',
-                                      },
-                                  },
-                                  pan: {
-                                      enabled: true,
-                                      mode: 'xy',
-                                  },
-                                  legend: {
-                                      display: true,
-                                      position: 'top',
-                                      align: 'end',
-                                  }
-                              },
-                              scales: {
-                                  x: {
-                                      title: {
-                                          display: true,
-                                          text: 'Number of elements'
-                                      },
-                                  },
-                                  y: {
-                                      title: {
-                                          display: true,
-                                          text: 'Compilation time [seconds]',
-                                      },
-                                  }
-                              }
-                          }
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                zoom: {
+                                    zoom: {
+                                        wheel: { enabled: true, },
+                                        pinch: { enabled: true, },
+                                        mode: 'xy',
+                                    },
+                                },
+                                pan: {
+                                    enabled: true,
+                                    mode: 'xy',
+                                },
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    align: 'end',
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Number of elements'
+                                    },
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Compilation time [seconds]',
+                                    },
+                                }
+                            }
+                        }
                     });
                 })
         }
