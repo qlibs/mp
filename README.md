@@ -389,22 +389,15 @@ constexpr void for_each(Fn fn);
 
 ---
 
-### Benchmarks
+### Benchmarks (https://boost-ext.github.io/mp)
 
-> To build/run benchmarks
+> To build/run benchmarks (https://godbolt.org/z/6KzzEMGbe)
 
 ```cpp
 git clone https://github.com/boost-ext/mp
 git co benchmark
-cd benchmark
-mkdir build && cd build
-cmake ..
-make benchmark
+./benchmark.py # https://github.com/boost-ext/mp/tree/benchmark/benchmark
 ```
-
-> Results (https://godbolt.org/z/6KzzEMGbe)
-
-- https://boost-ext.github.io/mp
 
 ---
 
