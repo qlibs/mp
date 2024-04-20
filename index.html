@@ -60,9 +60,9 @@
         |
         <button onclick="split()">Compare</button>
         |
-        <u><a target="_blank" id="link" href=""></a></u>
+        <u><a target="_blank" href="https://github.com/boost-ext/mp/tree/benchmark/benchmark/">benchmarks/</a></u>
         |
-        <u><a target="_blank" id="result" href=""></a></u>
+        <u><a target="_blank" href="https://github.com/boost-ext/mp/tree/benchmark/results/">results/</a></u>
         |
     </div>
     <canvas id="chart" style="margin: 25px;"></canvas>
@@ -113,15 +113,7 @@
           load()
         }
 
-        function select_link() {
-          document.getElementById("link").text = "benchmark/";
-          document.getElementById("link").href = "https://github.com/boost-ext/mp/tree/benchmark/benchmark/" + test;
-          document.getElementById("result").text = "results/";
-          document.getElementById("result").href = "https://github.com/boost-ext/mp/tree/benchmark/results";
-        }
-
         function load(element) {
-            select_link();
             fetch("results/" + compiler + "/" + test + (include?'':'.raw') + '.csv')
                 .then(response => response.text())
                 .then(data => {
