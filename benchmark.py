@@ -62,7 +62,7 @@ def timeit(command):
     execution_time = end_time - start_time
     return execution_time
 
-def benchmark(rng, runs, cxx, test):
+def benchmark(rng, runs, cxx, test, trace = None):
     results = {}
     for dir in Path('benchmark').iterdir():
         if dir.is_dir():
@@ -93,7 +93,11 @@ def benchmark(rng, runs, cxx, test):
                     for _ in range(runs):
                         cpp.append(timeit(f'{cxx} -c {path}.cpp -o {path}.o'))
 
-                    results[dir.name][sut][i] = (np.mean(include), np.mean(cpp))
+                    if trace:
+                        timeit(f'{cxx} {trace} -c {path}.cpp -o {path}.o')
+                        results[dir.name][sut][i] = (np.mean(include), np.mean(cpp), f'{path}.json')
+                    else:
+                        results[dir.name][sut][i] = (np.mean(include), np.mean(cpp))
 
     return results
 
@@ -112,6 +116,9 @@ def save(name, results):
                 str = f'{key}'
                 for name, time in zip(data.keys(), (data[name].get(key) for name in data.keys())):
                     str += f',{time[1]}'
+                    if len(time) > 2:
+                        shutil.copyfile(time[2], f'{path}/{result}_{name}_{key}.json')
+
                 csv.write(str + '\n')
 
         with open(f'{path}/{result}.raw.csv', 'w') as csv:
@@ -124,7 +131,7 @@ def save(name, results):
                     str += f',{max(0, time[1]-time[0])}'
                 csv.write(str + '\n')
 
-save('clang-p2996', benchmark(range(0, 110, 10), runs=3, cxx="clang++-19 -std=c++2c -stdlib=libc++ -freflection", test=['mp', 'mp11', 'nth_pack_element', 'p1858', 'p2996', 'type_pack_element']))
-save('clang-17', benchmark(range(0, 110, 10), runs=3, cxx="clang++-17 -std=c++20", test=['mp', 'mp11', 'nth_pack_element', 'type_pack_element']))
+save('clang-p2996', benchmark(range(0, 110, 10), runs=3, cxx="clang++-19 -std=c++2c -stdlib=libc++ -freflection", test=['mp', 'mp11', 'nth_pack_element', 'p1858', 'p2996', 'type_pack_element'], trace="-ftime-trace"))
+save('clang-17', benchmark(range(0, 110, 10), runs=3, cxx="clang++-17 -std=c++20", test=['mp', 'mp11', 'nth_pack_element', 'type_pack_element'], trace="-ftime-trace"))
 save('gcc-13', benchmark(range(0, 110, 10), runs=3, cxx="g++-13 -std=c++20", test=['mp', 'mp11', 'nth_pack_element']))
 save('circle', benchmark(range(0, 110, 10), runs=3, cxx="circle -std=c++20", test=['circle', 'mp11', 'nth_pack_element', 'p1858']))

@@ -60,7 +60,10 @@
         |
         <button onclick="split()">Compare</button>
         |
-        <a target="_blank" id="link" href=""></a>
+        <u><a target="_blank" id="link" href=""></a></u>
+        |
+        <u><a target="_blank" id="result" href=""></a></u>
+        |
     </div>
     <canvas id="chart" style="margin: 25px;"></canvas>
     <script>
@@ -111,8 +114,10 @@
         }
 
         function select_link() {
-          document.getElementById("link").text = "https://github.com/boost-ext/mp/tree/benchmark/benchmark/" + test;
+          document.getElementById("link").text = "benchmark/";
           document.getElementById("link").href = "https://github.com/boost-ext/mp/tree/benchmark/benchmark/" + test;
+          document.getElementById("result").text = "results/";
+          document.getElementById("result").href = "https://github.com/boost-ext/mp/tree/benchmark/results";
         }
 
         function load(element) {
