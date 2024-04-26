@@ -139,7 +139,7 @@
         }
 
         function load(element) {
-            fetch("/results/" + compiler + "/" + test + (include?'':'.raw') + '.csv')
+            fetch("/mp/results/" + compiler + "/" + test + (include?'':'.raw') + '.csv')
                 .then(response => response.text())
                 .then(data => {
                     var rows = data.trim().split('\n');
