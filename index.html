@@ -43,7 +43,7 @@
           <option value="unique">unique</option>
         </select>
         |
-        <input type="checkbox" id="include" onchange="select_include()"><label for="include">with includes</label>
+        <input type="checkbox" id="include" onchange="select_include()"><label for="include">includes</label>
         |
         <select id="elements" onchange="select_elements()">
           <option value=100>100</option>
@@ -64,6 +64,8 @@
         |
         <u><a target="_blank" href="https://github.com/boost-ext/mp/tree/benchmark/results/">results/</a></u>
         |
+        <select style="float:right;" id="commits" onchange="select_commit()">
+        </select>
     </div>
     <canvas id="chart" style="margin: 25px;"></canvas>
     <script>
@@ -75,6 +77,24 @@
         let compiler;
         let include;
         let elements;
+
+        fetch(`https://api.github.com/repos/boost-ext/mp/commits?sha=benchmark`)
+            .then(response => response.json())
+            .then(data => {
+                commits = data.map(commit => ({
+                    sha: commit.sha,
+                    message: commit.commit.message,
+                }))
+
+            const select = document.getElementById("commits");
+
+            commits.forEach(commit => {
+                const option = document.createElement("option");
+                option.value = commit.sha;
+                option.text = commit.sha;
+                select.appendChild(option);
+            });
+        })
 
         function split() {
           var frameset = document.createElement("frameset");
@@ -98,6 +118,11 @@
           load()
         }
 
+        function select_commit() {
+          commit = document.getElementById("commits").value;
+          window.location.href = "https://boost-ext.github.io/mp/?commit=" + commit;
+        }
+
         function select_compiler() {
           compiler = document.getElementById("compiler").value;
           load()
@@ -114,7 +139,7 @@
         }
 
         function load(element) {
-            fetch("results/" + compiler + "/" + test + (include?'':'.raw') + '.csv')
+            fetch("/results/" + compiler + "/" + test + (include?'':'.raw') + '.csv')
                 .then(response => response.text())
                 .then(data => {
                     var rows = data.trim().split('\n');
