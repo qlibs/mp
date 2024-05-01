@@ -7,7 +7,9 @@
 //
 #ifndef MP
 #define MP 1'0'0 // SemVer
+#if defined(__GNUC__)
 #pragma GCC system_header // -Wnon-template-friend
+#endif
 
 /**
  * ~~Template~~ Meta-Programming library (https://github.com/boost-ext/mp)
