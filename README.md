@@ -25,8 +25,6 @@
 
 - C++17* ([clang++13+, g++12+, msvc-19.34+](https://godbolt.org/z/5vjba7ezY))
 
-    - No STL headers required
-
 > \* Limited compiler support and functionality (see [API](#api))
 
 ---
@@ -425,7 +423,3 @@ constexpr void for_each(Fn fn);
 
 - Similar projects?
     > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.mpl](https://github.com/boostorg/mpl)
-
----
-
-**Disclaimer** `mp` is not an official Boost library.

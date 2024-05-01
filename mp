@@ -5,15 +5,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#if !defined(MP)
+#ifndef MP
 #define MP 1'0'0 // SemVer
-
-#if defined(__GNUC__)
 #pragma GCC system_header // -Wnon-template-friend
-#endif
 
 /**
- * ~~Template~~ Meta-Programming library ($CXX -x c++ -std=c++17/20 -c mp)
+ * ~~Template~~ Meta-Programming library (https://github.com/boost-ext/mp)
  */
 namespace mp::inline v1_0_0 {
 using size_t = decltype(sizeof(int));
@@ -278,8 +275,8 @@ constexpr void for_each(Fn fn) {
 namespace mp::inline v1_0_0::test {
   template<class...> struct type_list { };
   template<auto I> struct _i { static constexpr auto value = I; };
-  template<class...> inline constexpr auto is_same = false;
-  template<class T> inline constexpr auto is_same<T, T> = true;
+  template<class...> inline constexpr auto is_same_v = false;
+  template<class T> inline constexpr auto is_same_v<T, T> = true;
   void failed(); constexpr void expect(bool cond) { if (!cond) { failed(); } }
 } // namespace mp::test
 
@@ -288,12 +285,12 @@ static_assert(([] {
 
   // mp::test
   {
-    static_assert(!mp::test::is_same<int, void>);
-    static_assert(!mp::test::is_same<void, int>);
-    static_assert(!mp::test::is_same<void*, int>);
-    static_assert(!mp::test::is_same<int, const int>);
-    static_assert(mp::test::is_same<void, void>);
-    static_assert(mp::test::is_same<int, int>);
+    static_assert(!mp::test::is_same_v<int, void>);
+    static_assert(!mp::test::is_same_v<void, int>);
+    static_assert(!mp::test::is_same_v<void*, int>);
+    static_assert(!mp::test::is_same_v<int, const int>);
+    static_assert(mp::test::is_same_v<void, void>);
+    static_assert(mp::test::is_same_v<int, int>);
   }
 
   // mp::utilty::declval
@@ -325,14 +322,14 @@ static_assert(([] {
   // mp::type_of
   {
     enum class e : int { };
-    static_assert(mp::test::is_same<void, mp::type_of<mp::meta<void>>>);
-    static_assert(mp::test::is_same<const int, mp::type_of<mp::meta<const int>>>);
-    static_assert(mp::test::is_same<const void*, mp::type_of<mp::meta<const void*>>>);
-    static_assert(mp::test::is_same<e, mp::type_of<mp::meta<e>>>);
+    static_assert(mp::test::is_same_v<void, mp::type_of<mp::meta<void>>>);
+    static_assert(mp::test::is_same_v<const int, mp::type_of<mp::meta<const int>>>);
+    static_assert(mp::test::is_same_v<const void*, mp::type_of<mp::meta<const void*>>>);
+    static_assert(mp::test::is_same_v<e, mp::type_of<mp::meta<e>>>);
 
     constexpr mp::vector v{mp::meta<int>, mp::meta<e>};
-    static_assert(mp::test::is_same<int, mp::type_of<v[0]>>);
-    static_assert(mp::test::is_same<e, mp::type_of<v[1]>>);
+    static_assert(mp::test::is_same_v<int, mp::type_of<v[0]>>);
+    static_assert(mp::test::is_same_v<e, mp::type_of<v[1]>>);
   }
 
   // mp::value_of
