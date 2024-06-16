@@ -31,27 +31,17 @@ template<size_t Size> using make_index_sequence =
 /**
  * Meta type object representation
  */
-struct meta_info { };
-#if defined(MP_META_INFO)
-using meta_t = const MP_META_INFO*;
-#elif (__cpp_constexpr >= 202306L) // [C++23] Constexpr cast from void*
-using meta_t = const void*;
-#else
-using meta_t = const meta_info*;
-#endif
-
-namespace detail {
-template<meta_t>  struct meta_id { constexpr auto friend get(meta_id); };
-template<class T> struct meta_info {
-  using value_type = T;
-#if defined(MP_META_INFO)
-  static constexpr MP_META_INFO info{};
-#else
-  static constexpr mp::meta_info info{};
-#endif
-  constexpr auto friend get(meta_id<meta_t{&info}>) { return meta_info{}; }
-};
-} // namespace detail
+using meta_t = const struct meta_info {
+  template<auto> struct meta { 
+    constexpr auto friend get(meta); 
+  };
+  template<class T> struct info {
+    using value_type = T;
+    static const meta_info* fn();
+    constexpr auto friend get(meta<fn>) { return meta_info{}; }
+  };
+  using type = int;
+}(*)();
 
 /**
  * Creates meta type
@@ -62,7 +52,7 @@ template<class T> struct meta_info {
  * @endcode
  */
 template<class T>
-inline constexpr meta_t meta = meta_t{&detail::meta_info<T>::info};
+inline constexpr meta_t meta = meta_info::info<T>::fn;
 
 /**
  * Returns underlying meta_info from meta type
@@ -72,7 +62,7 @@ inline constexpr meta_t meta = meta_t{&detail::meta_info<T>::info};
  * @endcode
  */
 template<meta_t meta>
-using meta_info_of = decltype(get(detail::meta_id<meta>{}));
+using meta_info_of = decltype(get(meta_info::meta<meta>{}));
 
 /**
  * Returns underlying type from meta type
@@ -273,7 +263,7 @@ constexpr void for_each(Fn fn) {
 #endif
 } // namespace mp
 
-#if !defined(DISABLE_STATIC_ASSERT_TESTS)
+#if !defined(NTEST)
 namespace mp::inline v1_0_0::test {
   template<class...> struct type_list { };
   template<auto I> struct _i { static constexpr auto value = I; };

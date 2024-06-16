@@ -16,7 +16,7 @@
 - Minimal [API](#api)
 - Minimal learning curve (reuses stl, ranges or any third-party library/algorithms operating on stl like containers)
 - Easy debugging (meta-functions can simply be executed and debugged at run-time - see [examples](#examples))
-- Self verfication upon include (<.05s overhead - can be disabled by `DISABLE_STATIC_ASSERT_TESTS`)
+- Self verfication upon include (<.05s overhead - can be disabled by `NTEST`)
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/on3qb6n9M))
 - Fast compilation-times (see [benchmarks](#benchmarks))
 - Support for reflection (see [examples](#examples) / https://github.com/boost-ext/reflect)
@@ -401,7 +401,7 @@ constexpr void for_each(Fn fn);
 
 - Can I disable running tests at compile-time for faster compilation times?
 
-    > When `DISABLE_STATIC_ASSERT_TESTS` is defined static_asserts tests won't be executed upon inclusion.
+    > When `NTEST` is defined static_asserts tests won't be executed upon inclusion.
     Note: Use with caution as disabling tests means that there are no gurantees upon inclusion that given compiler/env combination works as expected.
 
 - How to integrate with CMake/CPM?
