@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
-<a href="https://godbolt.org/z/5vjba7ezY">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/44q1jEsea">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/nhrqWWr3W">![build](https://img.shields.io/badge/build-blue.svg)</a>
+<a href="https://godbolt.org/z/zKK981h8j">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 ---------------------------------------
 
@@ -42,7 +42,7 @@ mp::type_of<meta> i{}; // same as int i{};
 mp::type_of<mp::meta<bool>> b = true; // same as bool b = true;
 ```
 
-> https://godbolt.org/z/h5eacKPcY
+> https://godbolt.org/z/xYb3hsoYq
 
 ---
 
