@@ -174,7 +174,7 @@ struct vector {
   }
   constexpr void clear() { size_ = {}; }
 
-  union { T data[Size]{}; }; // !trivial union
+  union { T data[Size]{}; }; // __cpp_trivial_union
   size_t size_{};
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1 + sizeof...(Ts)>;
@@ -348,7 +348,7 @@ static_assert(([] {
     static_assert([](mp::test::type_list<void, void>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<void>, mp::meta<void>}; })));
   }
 
-#if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
+  #if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
   // mp::for_each
   {
     {
@@ -362,7 +362,7 @@ static_assert(([] {
       mp::for_each<mp::vector{mp::meta<int>}>([&]<auto meta> { expect(meta == mp::meta<int>); });
     }
 
-#if !defined(_MSC_VER)
+    #if !defined(_MSC_VER)
     {
       constexpr mp::vector m{mp::meta<int>, mp::meta<void>};
       mp::vector<mp::meta_t, 42> v{};
@@ -371,9 +371,9 @@ static_assert(([] {
       expect(m[0] == v[0]);
       expect(m[1] == v[1]);
     }
-#endif
+    #endif
   }
-#endif
+  #endif
 
   // mp::array
   {
