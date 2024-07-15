@@ -5,7 +5,7 @@
 
 ---------------------------------------
 
-## MP - ~~Template~~ Meta-Programming (Back to the future)
+## MP - ~~Template~~ Meta-Programming
 
 > https://en.wikipedia.org/wiki/Metaprogramming
 
@@ -14,16 +14,16 @@
 - Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp)
     - Easy integration (see [FAQ](#faq))
 - Minimal [API](#api)
-- Minimal learning curve (reuses stl, ranges or any third-party library/algorithms operating on stl like containers)
+- Minimal learning curve (reuses stl, ranges or any third-party library/algorithms operating on stl-like containers)
 - Easy debugging (meta-functions can simply be executed and debugged at run-time - see [examples](#examples))
-- Self verfication upon include (<.05s overhead - can be disabled by `NTEST`)
+- Self verfication upon include (can be disabled by `NTEST`)
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/on3qb6n9M))
 - Fast compilation-times (see [benchmarks](#benchmarks))
 - Support for reflection (see [examples](#examples) / https://github.com/boost-ext/reflect)
 
 ### Requirements
 
-- C++20 ([clang++13+, g++12+, msvc-19.34+](https://godbolt.org/z/5vjba7ezY))
+- C++20 ([clang++13+, g++11+, msvc-19.34+](https://godbolt.org/z/5vjba7ezY))
 
 ---
 
@@ -46,7 +46,7 @@ mp::type_of<mp::meta<bool>> b = true; // same as bool b = true;
 
 ### Examples
 
-> [C++17] Hello world
+> Hello world
 
 ```cpp
 template<auto N, class... Ts>
@@ -61,7 +61,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> [C++17] Algorithms
+> Algorithms
 
 ```cpp
 template<class... Ts>
@@ -81,7 +81,7 @@ static_assert(std::is_same_v<std::variant<int, double>,
 
 ---
 
-> [C++17/C++20] Reduce
+> Reduce
 
 ```cpp
 template<class... Ts>
@@ -104,7 +104,7 @@ static_assert(std::is_same_v<double*,
 
 ---
 
-> [C++20] Ranges
+> Ranges
 
 ```cpp
 template<class... Ts>
@@ -122,7 +122,7 @@ static_assert(std::is_same_v<std::variant<int, double>,
 
 ---
 
-> [C++20] Reflection (https://github.com/boost-ext/reflect)
+> Reflection (https://github.com/boost-ext/reflect)
 
 ```cpp
 struct foo {
@@ -155,28 +155,7 @@ std::apply([](auto... args) {
 
 ---
 
-> [C++20] Simple Domain Specific Language (DSL)
-
-```cpp
-int main() {
-  using namespace dsl;
-  constexpr auto v =
-        type_list<int, const double, float>
-      | filter([]<class T> { return not std::is_const_v<T>; })
-      | transform([]<class T>() -> T* { })
-      | reverse
-      | take<1>
-      ;
-
-  static_assert(type_list<float*> == v);
-}
-```
-
-> https://godbolt.org/z/r936cErdd
-
----
-
-> [C++17] Run-time testing/debugging
+> Run-time testing/debugging
 
 ```cpp
 template<class... Ts>
@@ -210,9 +189,9 @@ int main() {
 
 ```cpp
 /**
- * Meta type object representation
+ * Meta info type
  */
-using meta_t = /* unspecified */;
+enum info : size_t { };
 ```
 
 ```cpp
@@ -224,7 +203,7 @@ using meta_t = /* unspecified */;
  * static_assert(meta<void> != meta<int>);
  * @endcode
  */
-template<class T> inline constexpr meta_t meta = /* unspecified */;
+template<class T> inline constexpr info meta = /* unspecified */;
 ```
 
 ```cpp
@@ -237,58 +216,7 @@ template<class T> inline constexpr meta_t meta = /* unspecified */;
                  typeid(void));
  * @endcode
  */
-template<meta_t meta> using type_of = /* unspecified */;
-```
-
-```cpp
-/**
- * Returns value of meta type
- *
- * @code
- * static_assert(42 = value_of_v<mp::meta<std::integral_constant<int, 42>>>);
- * @endcode
- */
-template<meta_t meta>
-[[nodiscard]] constexpr auto value_of_v;
-```
-
-```cpp
-/**
- * Returns value of meta type underlying object
- */
-template<meta_t meta, class T>
-[[nodiscard]] constexpr decltype(auto) value_of(T&& t);
-```
-
-```cpp
-/**
- * Minimal (not standard compliant) array
- * implementation optimized for fast compilation-times with meta_t
- *
- * @code
- * array v{meta<void>, meta<int>};
- * assert(2 == v.size());
- * assert(meta<void> == v[0]);
- * assert(meta<int> == v[1]);
- * @endcode
- */
-template<class T, size_t Size>
-struct array;
-```
-
-```cpp
-/**
- * Minimal (not standard compliant) inplace/static vector
- * implementation optimized for fast compilation-times with meta_t
- *
- * @code
- * vector v{meta<void>, meta<int>};
- * assert(2 == v.size());
- * assert(meta<void> == v[0]);
- * assert(meta<int>  == v[1]);
- * @endcode
- */
-template<class T, size_t Size> struct vector;
+template<info meta> using type_of = /* unspecified */;
 ```
 
 ```cpp
@@ -332,7 +260,7 @@ template<template<class...> class R, class Expr>
  */
 #if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class R, auto V>
-inline constexpr auto apply_v = /* unspecified */;
+inline constexpr auto apply_v = decltype(apply<R, [] { return V; }>);
 ```
 
 ```cpp
@@ -356,8 +284,24 @@ template<template<class...> class R, auto V, class T>
  * @endcode
  */
 #if (__cpp_nontype_template_args >= 201911L)
-template<template<class...> class T, auto V> using apply_t = /* unspecified */;
+template<template<class...> class T, auto V>
+using apply_t = decltype(apply_v<T, V>);
 #endif
+```
+
+```cpp
+/**
+ * Invokes function with compile-time info based on run-time info
+ *
+ * @code
+ * info i = meta<conts int>; // run-time
+ * static_assert(invoke<bool>([]<info m> {
+ *   return std::is_const_v<type_of<m>>;
+ * }, i));
+ * @endcode
+ */
+template<class Fn, auto tag = []{}>
+constexpr auto invoke(Fn fn, info meta);
 ```
 
 ```cpp
@@ -380,7 +324,7 @@ constexpr void for_each(Fn fn);
 > Configuration
 
 ```cpp
-#define MP 1'0'0 // Current library version (SemVer)
+#define MP 2'0'0 // Current library version (SemVer)
 ```
 
 ---
