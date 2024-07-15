@@ -201,6 +201,7 @@ template<template<class...> class T, class Expr>
 #if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class R, auto V>
 inline constexpr auto apply_v = decltype(apply<R, [] { return V; }>);
+#endif
 ```
 
 ```cpp
