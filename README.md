@@ -191,7 +191,7 @@ template<template<class...> class T, class Expr>
 
 ```cpp
 /**
- * Applies vector V to `R<type_of<info>...>`
+ * Applies vector V to `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>) ==
@@ -199,8 +199,8 @@ template<template<class...> class T, class Expr>
  * @endcode
  */
 #if (__cpp_nontype_template_args >= 201911L)
-template<template<class...> class R, auto V>
-inline constexpr auto apply_v = decltype(apply<R, [] { return V; }>);
+template<template<class...> class T, auto V>
+inline constexpr auto apply_v = decltype(apply<T, [] { return V; }>);
 #endif
 ```
 
