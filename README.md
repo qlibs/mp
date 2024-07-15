@@ -79,7 +79,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 ```cpp
 template<class... Ts>
 constexpr auto stl() {
-  mp::vector r{};
+  mp::vector<mp::meta> r{};
   for (const auto& meta : mp::array{mp::meta<Ts>...}) {
     if (not mp::invoke<std::is_const>(meta)) {
       r.push_back(mp::invoke<std::add_const>(meta));
