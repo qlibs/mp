@@ -30,31 +30,30 @@
 ### Overview (https://godbolt.org/z/44q1jEsea)
 
 ```cpp
+// mp::meta
 static_assert(mp::meta<int> != mp::meta<void>);
 static_assert(typeid(mp::meta<int>) == typeid(mp::meta<void>));
-```
 
-```cpp
+// mp::type_of
 constexpr mp::info meta = mp::meta<int>;
 mp::type_of<meta> i{}; // same as int i{};
 mp::type_of<mp::meta<bool>> b = true; // same as bool b = true;
-```
 
-```cpp
+// mp::apply
 template<class...> struct type_list{ };
-static_assert(std::is_same_v<type_list<int>, mp::apply_t<type_list, mp::array{meta}>>);
-```
+static_assert(typeid(type_list<int>) == typeid(mp::apply_t<type_list, mp::array{meta}>>);
 
-```cpp
+// mp::invoke
 static_assert(not mp::invoke<std::is_const>(meta));
 static_assert(std::is_same_v<const int, mp::type_of<mp::invoke<std::add_const>(meta)>>);
-```
 
-```cpp
 int main() {
+  // mp::for_each
   constexpr auto v = mp::vector{meta};
   mp::for_each<v>([&]<mp::info meta>{ /* ... */ });
 }
+
+// and more (see API)...
 ```
 
 > https://godbolt.org/z/Gqe8s4416
@@ -63,7 +62,7 @@ int main() {
 
 ### Examples
 
-> Hello World
+> Hello World (https://godbolt.org/z/44q1jEsea)
 
 ```cpp
 template<auto N, class... Ts>
