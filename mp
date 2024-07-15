@@ -168,8 +168,8 @@ using type_of = typename decltype(get(detail::meta_id<meta>{}))::value_type;
  * static_assert(typeid(variant<int>) == typeid(apply<variant>([] { return vector{meta<int>}; })));
  * @endcode
  */
-template<template<class...> class T, class TExpr>
-[[nodiscard]] constexpr auto apply(TExpr expr) {
+template<template<class...> class T>
+[[nodiscard]] constexpr auto apply(auto expr) {
   constexpr auto v = expr();
   return [v]<size_t... Ns>(utility::index_sequence<Ns...>) {
     return T<type_of<v[Ns]>...>{};
@@ -239,14 +239,14 @@ constexpr auto invoke(Fn fn, info meta) {
  * static_assert(invoke<std::is_const>(meta<const int>));
  * @endcode
  */
-template<template<class...> class T, auto = []{}>
+template<template<class...> class T, class... Ts, auto = []{}>
 constexpr auto invoke(info meta) {
   return invoke([]<info meta> {
     using type = type_of<meta>;
-    if constexpr (requires { T<type>::value; }) {
+    if constexpr (requires { T<type, Ts...>::value; }) {
       return T<type>::value;
     } else {
-      return mp::meta<typename T<type>::type>;
+      return mp::meta<typename T<type, Ts...>::type>;
     }
   }, meta);
 }
@@ -261,8 +261,8 @@ constexpr auto invoke(info meta) {
  * });
  * @endcode
  */
-template<auto V, class Fn>
-constexpr void for_each(Fn fn) {
+template<auto V>
+constexpr void for_each(auto fn) {
   [fn]<size_t... Ns>(utility::index_sequence<Ns...>) {
     (fn.template operator()<V[Ns]>(), ...);
   }(utility::make_index_sequence<V.size()>{});
