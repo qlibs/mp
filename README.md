@@ -42,7 +42,7 @@ mp::type_of<mp::meta<bool>> b = true; // same as bool b = true;
 
 // mp::apply
 template<class...> struct type_list{ };
-static_assert(typeid(type_list<int, int>) == typeid(mp::apply_t<type_list, mp::array{meta, meta}>>);
+static_assert(typeid(type_list<int>) == typeid(mp::apply_t<type_list, mp::array{meta}>>);
 
 // mp::invoke
 static_assert(not mp::invoke<std::is_const>(meta));
