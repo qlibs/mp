@@ -230,7 +230,7 @@ using apply_t = detail::apply_t<R, V, __integer_pack(V.size())...>;
  *
  * @code
  * info i = meta<conts int>; // run-time
- * static_assert(invoke<bool>([]<info m> { return std::is_const_v<type_of<m>>; }, i));
+ * static_assert(invoke([]<info m> { return std::is_const_v<type_of<m>>; }, i));
  * @endcode
  */
 template<class Fn, auto tag = []{}>

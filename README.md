@@ -221,7 +221,7 @@ using apply_t = decltype(apply_v<T, V>);
  *
  * @code
  * info i = meta<conts int>; // run-time
- * static_assert(invoke<bool>([]<info m> { return std::is_const_v<type_of<m>>; }, i));
+ * static_assert(invoke([]<info m> { return std::is_const_v<type_of<m>>; }, i));
  * @endcode
  */
 template<class Fn>
