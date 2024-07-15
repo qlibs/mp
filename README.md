@@ -23,9 +23,7 @@
 
 ### Requirements
 
-- C++17* ([clang++13+, g++12+, msvc-19.34+](https://godbolt.org/z/5vjba7ezY))
-
-> \* Limited compiler support and functionality (see [API](#api))
+- C++20 ([clang++13+, g++12+, msvc-19.34+](https://godbolt.org/z/5vjba7ezY))
 
 ---
 

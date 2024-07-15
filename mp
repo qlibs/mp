@@ -276,7 +276,8 @@ constexpr void for_each(Fn fn) {
 template<template<class> class T, auto = []{}>
 constexpr auto invoke(info m) {
   return invoke([]<info m> {
-    if constexpr (using type = type_of<m>; requires { T<type>::value; }) {
+    using type = type_of<m>;
+    if constexpr (requires { T<type>::value; }) {
       return T<type>::value;
     } else {
       return meta<typename T<type>::type>;
