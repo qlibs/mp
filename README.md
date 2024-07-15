@@ -276,6 +276,7 @@ constexpr void for_each(Fn fn);
     | ----- | -- |
     | `^T`  | `meta<T>` |
     | `typename [: T :]`  | `type_of<T>` |
+    | ` template for` | `for_each` |
     | `substitute`  | `apply` |
     | ` value_of<R>(reflect_invoke(^fn, {substitute(^meta, {reflect_value(m)})}))` | `invoke(fn, m)` |
 
