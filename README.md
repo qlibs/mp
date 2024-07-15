@@ -246,7 +246,7 @@ constexpr void for_each(Fn fn);
 > Configuration
 
 ```cpp
-#define MP 2'0'0 // Current library version (SemVer)
+#define MP 2'0'1 // Current library version (SemVer)
 ```
 
 ---
@@ -286,7 +286,7 @@ constexpr void for_each(Fn fn);
     CPMAddPackage(
       Name mp
       GITHUB_REPOSITORY boost-ext/mp
-      GIT_TAG v2.0.0
+      GIT_TAG v2.0.1
     )
     add_library(mp INTERFACE)
     target_include_directories(mp SYSTEM INTERFACE ${mp_SOURCE_DIR})
