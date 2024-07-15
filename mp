@@ -195,8 +195,17 @@ inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>)
  * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
-template<template<class...> class T, auto V>
-using apply_t = decltype(apply_v<T, V>());
+#if defined(__clang__) || defined(_MSC_VER)
+template<template<class...> class R, auto V>
+using apply_t = decltype(apply<R>([] { return V; }));
+#else
+namespace detail {
+template<template<class...> class R, auto V, size_t... Ns>
+using apply_t = R<type_of<V[Ns]>...>;
+} // namespace detail
+template<template<class...> class R, auto V>
+using apply_t = detail::apply_t<R, V, __integer_pack(V.size())...>;
+#endif
 
 /**
  * Invokes function with compile-time info based on run-time info
