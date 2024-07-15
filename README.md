@@ -74,7 +74,32 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> STL/Ranges (https://godbolt.org/z/Kc7ofbboM)
+> STL (https://godbolt.org/z/sr8K9b14c)
+
+```cpp
+template<class... Ts>
+constexpr auto stl() {
+  mp::vector r{};
+  for (const auto& meta : mp::array{mp::meta<Ts>...}) {
+    if (not mp::invoke<std::is_const>(meta)) {
+      r.push_back(mp::invoke<std::add_const>(meta));
+    }
+  }
+  std::sort(r.begin(), r.end(), [](auto lhs, auto rhs) {
+    return size_of(lhs) < size_of(rhs);
+  });
+  return r;
+}
+
+static_assert(std::is_same_v<
+  std::variant<const char[1], const char[2], const char[3]>,
+  mp::apply_t<std::variant, stl<char[2], char[1], const char[42], char[3]>()>
+>);
+```
+
+---
+
+> Ranges (https://godbolt.org/z/Kc7ofbboM)
 
 ```cpp
 template<class... Ts>
