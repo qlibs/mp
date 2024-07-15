@@ -45,8 +45,8 @@ struct array {
   using value_type = T;
   [[nodiscard]] constexpr auto begin() const { return &data[0]; }
   [[nodiscard]] constexpr auto begin() { return &data[0]; }
-  [[nodiscard]] constexpr auto end() const { return &data[0]+Size; }
-  [[nodiscard]] constexpr auto end() { return &data[0]+Size; }
+  [[nodiscard]] constexpr auto end() const { return &data[0] + Size; }
+  [[nodiscard]] constexpr auto end() { return &data[0] + Size; }
   [[nodiscard]] constexpr auto operator[](size_t I) const { return data[I]; }
   [[nodiscard]] constexpr auto& operator[](size_t I) { return data[I]; }
   [[nodiscard]] constexpr auto size() const { return Size; }
@@ -55,11 +55,11 @@ struct array {
     return true;
   }
   [[nodiscard]] constexpr auto operator!=(const array& other) const -> bool {
-    return !operator==(other);
+    return not operator==(other);
   }
   T data[Size];
 };
-template<class T, class... Ts> array(T, Ts...) -> array<T, 1 + sizeof...(Ts)>;
+template<class T, class... Ts> array(T, Ts...) -> array<T, 1u + sizeof...(Ts)>;
 
 /**
  * Minimal (not standard compliant) inplace vector optimized for fast compilation-times
@@ -94,14 +94,14 @@ struct inplace_vector {
     return true;
   }
   template<size_t size> [[nodiscard]] constexpr auto operator!=(const inplace_vector<T, size>& other) const -> bool {
-    return !operator==(other);
+    return not operator==(other);
   }
   constexpr void clear() { size_ = {}; }
 
   union { T data[Size]{}; }; // __cpp_trivial_union
   size_t size_{};
 };
-template<class T, class... Ts> inplace_vector(T, Ts...) -> inplace_vector<T, 1 + sizeof...(Ts)>;
+template<class T, class... Ts> inplace_vector(T, Ts...) -> inplace_vector<T, 1u + sizeof...(Ts)>;
 
 /**
  * Meta info type
@@ -111,7 +111,7 @@ enum info : size_t { };
 /**
  * Meta info vector
  */
-#if !defined(MP_SIZE)
+#if not defined(MP_SIZE)
 #define MP_SIZE 1024
 #endif
 #if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201907L)
@@ -125,7 +125,7 @@ struct vector : inplace_vector<T, Size> {
     for (const T& t : range) { inplace_vector<T, Size>::data[inplace_vector<T, Size>::size_++] = t; }
   }
 };
-template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1 + sizeof...(Ts)>;
+template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1u + sizeof...(Ts)>;
 #endif
 
 namespace detail {
@@ -269,7 +269,7 @@ constexpr void for_each(Fn fn) {
 }
 } // namespace mp
 
-#if !defined(NTEST)
+#if not defined(NTEST)
 namespace mp::test {
   template<class...> struct type_list { };
   template<class...> inline constexpr auto is_same_v = false;
@@ -277,7 +277,7 @@ namespace mp::test {
   template<class T> struct is_const { static constexpr auto value = false; };
   template<class T> struct is_const<const T> { static constexpr auto value = true; };
   template<class T> struct add_const { using type = const T; };
-  void failed(); constexpr void expect(bool cond) { if (!cond) { failed(); } }
+  void failed(); constexpr void expect(bool cond) { if (not cond) { failed(); } }
 } // namespace mp::test
 
 static_assert(([] {
@@ -285,10 +285,10 @@ static_assert(([] {
 
   // mp::test
   {
-    static_assert(!mp::test::is_same_v<int, void>);
-    static_assert(!mp::test::is_same_v<void, int>);
-    static_assert(!mp::test::is_same_v<void*, int>);
-    static_assert(!mp::test::is_same_v<int, const int>);
+    static_assert(not mp::test::is_same_v<int, void>);
+    static_assert(not mp::test::is_same_v<void, int>);
+    static_assert(not mp::test::is_same_v<void*, int>);
+    static_assert(not mp::test::is_same_v<int, const int>);
     static_assert(mp::test::is_same_v<void, void>);
     static_assert(mp::test::is_same_v<int, int>);
   }
