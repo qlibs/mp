@@ -5,7 +5,7 @@
 
 ---------------------------------------
 
-## MP - ~~Template~~ Meta-Programming
+## MP - ~~Template~~ Meta-Programming (Back to the future)
 
 > https://en.wikipedia.org/wiki/Metaprogramming
 
@@ -410,7 +410,7 @@ constexpr void for_each(Fn fn);
     CPMAddPackage(
       Name mp
       GITHUB_REPOSITORY boost-ext/mp
-      GIT_TAG v1.1.0
+      GIT_TAG v2.0.0
     )
     add_library(mp INTERFACE)
     target_include_directories(mp SYSTEM INTERFACE ${mp_SOURCE_DIR})
