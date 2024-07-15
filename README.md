@@ -27,7 +27,7 @@
 
 ---
 
-### Overview
+### Overview (https://godbolt.org/z/44q1jEsea)
 
 ```cpp
 static_assert(mp::meta<int> != mp::meta<void>);
@@ -35,18 +35,35 @@ static_assert(typeid(mp::meta<int>) == typeid(mp::meta<void>));
 ```
 
 ```cpp
-constexpr mp::meta_t meta = mp::meta<int>;
+constexpr mp::info meta = mp::meta<int>;
 mp::type_of<meta> i{}; // same as int i{};
 mp::type_of<mp::meta<bool>> b = true; // same as bool b = true;
 ```
 
-> https://godbolt.org/z/xYb3hsoYq
+```cpp
+template<class...> struct type_list{ };
+static_assert(std::is_same_v<type_list<int>, mp::apply_t<type_list, mp::array{meta}>>);
+```
+
+```cpp
+static_assert(not mp::invoke<std::is_const>(meta));
+static_assert(std::is_same_v<const int, mp::type_of<mp::invoke<std::add_const>(meta)>>);
+```
+
+```cpp
+int main() {
+  constexpr auto v = mp::vector{meta};
+  mp::for_each<v>([&]<mp::info meta>{ /* ... */ });
+}
+```
+
+> https://godbolt.org/z/Gqe8s4416
 
 ---
 
 ### Examples
 
-> Hello world
+> Hello World
 
 ```cpp
 template<auto N, class... Ts>
@@ -57,68 +74,26 @@ static_assert(std::is_same_v<bool, at_c<1, int, bool, float>>);
 static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 ```
 
-> https://godbolt.org/z/44q1jEsea
-
 ---
 
-> Algorithms
+> STL/Ranges (https://godbolt.org/z/aE8GeW8ad)
 
 ```cpp
 template<class... Ts>
-auto drop_1_reverse = [] {
-  std::array v{mp::meta<Ts>...}; // or mp::array{mp::meta<Ts>...};
-  std::array<mp::meta_t, sizeof...(Ts)-1> r{};
-  // fuse operations for faster compilation times (can use STL)
-  for (auto i = 1u; i < v.size(); ++i) { r[i-1] = v[v.size()-i]; }
-  return r;
-};
-
-static_assert(std::is_same_v<std::variant<int, double>,
-              decltype(mp::apply<std::variant>(drop_1_reverse<float, double, int>))>);
-```
-
-> https://godbolt.org/z/fhahKPqK1
-
----
-
-> Reduce
-
-```cpp
-template<class... Ts>
-constexpr auto reduce() {
-  constexpr auto v = drop_1_reverse<Ts...>();
-  mp::meta_t result = mp::meta<void>;
-  mp::for_each<v>([&]<auto m> {
-    if (using type = mp::type_of<m>; std::is_same_v<double, type>) {
-      result = mp::meta<type*>;
-    }
-  });
-  return result;
-}
-
-static_assert(std::is_same_v<double*,
-              mp::type_of<reduce<float, double, int>()>>);
-```
-
-> https://godbolt.org/z/KEEPoxKK5
-
----
-
-> Ranges
-
-```cpp
-template<class... Ts>
-constexpr mp::vector drop_1_reverse =
+constexpr mp::vector ranges =
     std::array{mp::meta<Ts>...}
   | std::views::drop(1)
   | std::views::reverse
+  | std::views::filter([](auto m) { return mp::invoke<std::is_integral>(m); })
+  | std::views::transform([](auto m) { return mp::invoke<std::add_const>(m); })
+  | std::views::take(2)
   ;
 
-static_assert(std::is_same_v<std::variant<int, double>,
-              mp::apply_t<std::variant, drop_1_reverse<float, double, int>>>);
+static_assert(std::is_same_v<
+  std::variant<const int, const short>,
+  mp::apply_t<std::variant, ranges<double, void, const short, int>>
+>);
 ```
-
-> https://godbolt.org/z/93GTe7xGx
 
 ---
 
@@ -155,13 +130,13 @@ std::apply([](auto... args) {
 
 ---
 
-> Run-time testing/debugging
+> Run-time testing/debugging (https://godbolt.org/z/4cP5cPbe4)
 
 ```cpp
 template<class... Ts>
 constexpr auto reverse() {
   std::array v{mp::meta<Ts>...};
-  std::array<mp::meta_t, sizeof...(Ts)> r;
+  std::array<mp::info, sizeof...(Ts)> r;
   for (auto i = 0u; i < v.size(); ++i) { r[i] = v[v.size()-i-1]; }
   return r;
 }
@@ -180,8 +155,6 @@ int main() {
   ));
 }
 ```
-
-> https://godbolt.org/z/h9K3bnaea
 
 ---
 
@@ -221,8 +194,8 @@ template<info meta> using type_of = /* unspecified */;
 
 ```cpp
 /**
- * Applies invocable `[] { return vector<meta_t>{...}; }` to
- *                   `T<type_of<meta_t>...>`
+ * Applies invocable `[] { return vector<info>{...}; }` to
+ *                   `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>)
@@ -236,7 +209,7 @@ template<template<class...> class T, class Expr>
 
 ```cpp
 /**
- * Applies expression expr to `R<type_of<meta_t>...>`
+ * Applies expression expr to `R<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>)
@@ -250,7 +223,7 @@ template<template<class...> class R, class Expr>
 
 ```cpp
 /**
- * Applies vector V to `R<type_of<meta_t>...>`
+ * Applies vector V to `R<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>)
@@ -310,7 +283,7 @@ constexpr auto invoke(Fn fn, info meta);
  *
  * @code
  * constexpr vector v{meta<int>};
- * for_each<v>([]<meta_t m> {
+ * for_each<v>([]<info m> {
  *   static_assert(typeid(int) == typeid(type_of<m>));
  * });
  * @endcode
@@ -345,6 +318,10 @@ constexpr void for_each(Fn fn);
 
     > When `NTEST` is defined static_asserts tests won't be executed upon inclusion.
     Note: Use with caution as disabling tests means that there are no gurantees upon inclusion that given compiler/env combination works as expected.
+
+- How `mp` compores to Reflection for C++26 (https://wg21.link/P2996):
+
+    > `mp` meta-programming model is very simpilar to P2996 and it's based on type erased info object and meta-functions. `mp` also supports all C++ standard library and since verion 2.0.0+ `mp` type names have been adopted to closer reflect the reflection proposal.
 
 - How to integrate with CMake/CPM?
 

@@ -78,7 +78,7 @@ struct inplace_vector {
   using value_type = T;
   constexpr inplace_vector() = default;
   template<class... Ts> constexpr explicit inplace_vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
-  constexpr inplace_vector(const utility::range auto& range) { for (const T& t : range) { data[size_++] = t; } }
+  constexpr inplace_vector(utility::range auto range) { for (const T& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
   constexpr void emplace_back(T&& t) { data[size_++] = static_cast<T&&>(t); }
   [[nodiscard]] constexpr auto begin() const { return &data[0]; }
@@ -123,7 +123,7 @@ using vector = inplace_vector<T, Size>;
 template<class T = info, size_t Size = MP_SIZE>
 struct vector : inplace_vector<T, Size> {
   using inplace_vector<T, Size>::inplace_vector;
-  constexpr vector(const utility::range auto& range) {
+  constexpr vector(utility::range auto range) {
     for (const T& t : range) { inplace_vector<T, Size>::data[inplace_vector<T, Size>::size_++] = t; }
   }
 };
