@@ -15,7 +15,7 @@
 - Minimal [API](#api) and learning curve (supports STL, ranges, ...)
 - Supports debugging (meta-functions can be executed and debugged at run-time - see [examples](#examples))
 - Supports reflection (requires https://github.com/boost-ext/reflect - see [examples](#examples))
-- Self verfication upon include (can be disabled by `-DNTEST` - see [FAQ](#faq) for details)
+- Verifies itself upon include (can be disabled with `-DNTEST` - see [FAQ](#faq))
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/on3qb6n9M))
 - Optimized compilation-times (see [benchmarks](#benchmarks))
 
