@@ -88,7 +88,7 @@ struct inplace_vector {
   [[nodiscard]] constexpr auto operator[](size_t i) const { return data[i]; }
   [[nodiscard]] constexpr auto& operator[](size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
-  [[nodiscard]] constexpr auto& size() { return size_; }
+  [[nodiscard]] constexpr auto resize(size_t size) { size_ = size; }
   [[nodiscard]] constexpr auto capacity() const { return Size; }
   template<size_t size> [[nodiscard]] constexpr auto operator==(const inplace_vector<T, size>& other) const -> bool {
     if (size_ != other.size_) { return false; }
@@ -369,6 +369,13 @@ static_assert(([] {
       mp::vector<int, 3> v{1, 2, 3};
       expect(3u == v.size());
       expect(3 == v.capacity());
+    }
+
+    {
+      mp::vector<int, 3> v{1, 2, 3};
+      expect(3u == v.size());
+      v.resize(2);
+      expect(2u == v.size());
     }
 
     {
