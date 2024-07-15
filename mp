@@ -489,7 +489,6 @@ static_assert(([] {
       mp::for_each<mp::vector{mp::meta<int>}>([&]<auto meta> { expect(meta == mp::meta<int>); });
     }
 
-    #if !defined(_MSC_VER)
     {
       constexpr mp::vector m{mp::meta<int>, mp::meta<void>};
       mp::vector<mp::info, 42> v{};
@@ -498,7 +497,6 @@ static_assert(([] {
       expect(m[0] == v[0]);
       expect(m[1] == v[1]);
     }
-    #endif
   }
 }(), true));
 #endif
