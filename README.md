@@ -198,10 +198,8 @@ template<template<class...> class T, class Expr>
  *               typeid(apply<variant, vector{meta<int>}>));
  * @endcode
  */
-#if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class T, auto V>
 inline constexpr auto apply_v = decltype(apply<T, [] { return V; }>);
-#endif
 ```
 
 ```cpp
@@ -213,10 +211,8 @@ inline constexpr auto apply_v = decltype(apply<T, [] { return V; }>);
  *               typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
-#if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class T, auto V>
 using apply_t = decltype(apply_v<T, V>);
-#endif
 ```
 
 ```cpp
@@ -243,10 +239,8 @@ constexpr auto invoke(Fn fn, info meta);
  * });
  * @endcode
  */
-#if (__cpp_generic_lambdas >= 201707L)
 template<auto V, class Fn>
 constexpr void for_each(Fn fn);
-#endif
 ```
 
 > Configuration
