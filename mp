@@ -106,7 +106,7 @@ template<class T, class... Ts> inplace_vector(T, Ts...) -> inplace_vector<T, 1u 
 /**
  * Meta info type
  */
-enum info : size_t { };
+enum class info : size_t { };
 
 /**
  * Meta info vector
@@ -134,7 +134,7 @@ template<info> struct meta_id { constexpr auto friend get(meta_id); };
 template<class T> struct meta_info {
   using value_type = T;
   template<info N = info{}> static constexpr auto idx() -> info {
-    if constexpr (requires { get(meta_id<N>{}); }) { return idx<info(size_t(N+1))>(); } else { return N; }
+    if constexpr (requires { get(meta_id<N>{}); }) { return idx<info{size_t(N) + 1u}>(); } else { return N; }
   };
   static constexpr info id = idx();
   constexpr auto friend get(meta_id<id>) { return meta_info{}; }
@@ -226,10 +226,10 @@ constexpr auto invoke(Fn fn, info meta) {
             return fn.template operator()<N>();
           }
         };
-      }.template operator()<info(Ns)>()...
+      }.template operator()<info{Ns}>()...
     };
-  }(utility::make_index_sequence<detail::meta_info<decltype(tag)>::id>{});
-  return dispatch[meta](fn);
+  }(utility::make_index_sequence<size_t(detail::meta_info<decltype(tag)>::id)>{});
+  return dispatch[size_t(meta)](fn);
 }
 
 /**
