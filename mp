@@ -240,15 +240,15 @@ constexpr auto invoke(Fn fn, info meta) {
  * @endcode
  */
 template<template<class...> class T, auto = []{}>
-constexpr auto invoke(info m) {
-  return invoke([]<info m> {
-    using type = type_of<m>;
+constexpr auto invoke(info meta) {
+  return invoke([]<info meta> {
+    using type = type_of<meta>;
     if constexpr (requires { T<type>::value; }) {
       return T<type>::value;
     } else {
-      return meta<typename T<type>::type>;
+      return mp::meta<typename T<type>::type>;
     }
-  }, m);
+  }, meta);
 }
 
 /**
