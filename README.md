@@ -204,7 +204,7 @@ inline constexpr auto apply_v = decltype(apply<T, [] { return V; }>);
 
 ```cpp
 /**
- * Alternative to write `decltype(apply_v<T, Expr>))`
+ * Applies vector V to `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>) ==

@@ -164,66 +164,41 @@ template<info meta>
 using type_of = typename decltype(get(detail::meta_id<meta>{}))::value_type;
 
 /**
- * Applies expression expr to `R<type_of<info>...>`
+ * Applies expression expr to `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>) == typeid(apply<variant>([] { return vector{meta<int>}; })));
  * @endcode
  */
-template<template<class...> class R, class TExpr>
+template<template<class...> class T, class TExpr>
 [[nodiscard]] constexpr auto apply(TExpr expr) {
   constexpr auto v = expr();
   return [v]<size_t... Ns>(utility::index_sequence<Ns...>) {
-    return R<type_of<v[Ns]>...>{};
+    return T<type_of<v[Ns]>...>{};
   }(utility::make_index_sequence<v.size()>{});
 }
 
 /**
- * Applies vector V to `R<type_of<info>...>`
+ * Applies vector V to `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>) == typeid(apply<variant, vector{meta<int>}>));
  * @endcode
  */
-#if defined(__cpp_nontype_template_args)
-template<template<class...> class R, auto V>
+template<template<class...> class T, auto V>
 inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>) {
-  return R<type_of<V[Ns]>...>{};
+  return T<type_of<V[Ns]>...>{};
 }(utility::make_index_sequence<V.size()>{});
-#endif
 
 /**
- * Applies vector V with object t to `R<type_of<V>...>
- */
-#if defined(__cpp_nontype_template_args)
-template<template<class...> class R, auto V>
-[[nodiscard]] constexpr auto apply() {
-  return []<size_t... Ns>(utility::index_sequence<Ns...>) {
-    return R<type_of<V[Ns]>...>{};
-  }(utility::make_index_sequence<V.size()>{});
-}
-#endif
-
-/**
- * Alternative to write `decltype(apply_v<T, Expr>))`
+ * Applies vector V to `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
-#if defined(__cpp_nontype_template_args)
-#if defined(__clang__) || defined(_MSC_VER)
-template<template<class...> class R, auto V>
-using apply_t = decltype(apply<R, V>());
-#else
-namespace detail {
-template<template<class...> class R, auto V, size_t... Ns>
-using apply_t = R<type_of<V[Ns]>...>;
-} // namespace detail
-template<template<class...> class R, auto V>
-using apply_t = detail::apply_t<R, V, __integer_pack(V.size())...>;
-#endif
-#endif
+template<template<class...> class T, auto V>
+using apply_t = decltype(apply_v<T, V>());
 
 /**
  * Invokes function with compile-time info based on run-time info
@@ -257,7 +232,7 @@ constexpr auto invoke(Fn fn, info meta) {
  * static_assert(invoke<std::is_const>(meta<const int>));
  * @endcode
  */
-template<template<class> class T, auto = []{}>
+template<template<class...> class T, auto = []{}>
 constexpr auto invoke(info m) {
   return invoke([]<info m> {
     using type = type_of<m>;
@@ -279,14 +254,12 @@ constexpr auto invoke(info m) {
  * });
  * @endcode
  */
-#if (__cpp_generic_lambdas >= 201707L)
 template<auto V, class Fn>
 constexpr void for_each(Fn fn) {
   [fn]<size_t... Ns>(utility::index_sequence<Ns...>) {
     (fn.template operator()<V[Ns]>(), ...);
   }(utility::make_index_sequence<V.size()>{});
 }
-#endif
 } // namespace mp
 
 #if !defined(NTEST)
@@ -505,7 +478,6 @@ static_assert(([] {
     static_assert(mp::test::is_same_v<const int, mp::type_of<mp::invoke<mp::test::add_const>(mp::meta<const int>)>>);
   }
 
-  #if defined(__cpp_generic_lambdas) && (__cpp_generic_lambdas >= 201707L)
   // mp::for_each
   {
     {
@@ -530,7 +502,6 @@ static_assert(([] {
     }
     #endif
   }
-  #endif
 }(), true));
 #endif
 #endif // MP
