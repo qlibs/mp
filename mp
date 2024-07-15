@@ -115,10 +115,10 @@ enum info : size_t { };
 #define MP_SIZE 1024
 #endif
 #if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201907L)
-template<class T = info, size_t Size = MP_SIZE>
+template<class T, size_t Size = MP_SIZE>
 using vector = inplace_vector<T, Size>;
 #else
-template<class T = info, size_t Size = MP_SIZE>
+template<class T, size_t Size = MP_SIZE>
 struct vector : inplace_vector<T, Size> {
   using inplace_vector<T, Size>::inplace_vector;
   constexpr vector() = default;

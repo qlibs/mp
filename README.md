@@ -74,7 +74,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> STL (https://godbolt.org/z/sr8K9b14c)
+> STL (https://godbolt.org/z/jnfTa3G7E)
 
 ```cpp
 template<class... Ts>
