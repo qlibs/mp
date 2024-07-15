@@ -191,19 +191,6 @@ template<template<class...> class T, class Expr>
 
 ```cpp
 /**
- * Applies expression expr to `R<type_of<info>...>`
- *
- * @code
- * static_assert(typeid(variant<int>) ==
- *               typeid(apply<variant>([] { return vector{meta<int>}; })));
- * @endcode
- */
-template<template<class...> class R, class Expr>
-[[nodiscard]] constexpr auto apply(Expr expr);
-```
-
-```cpp
-/**
  * Applies vector V to `R<type_of<info>...>`
  *
  * @code
@@ -214,16 +201,6 @@ template<template<class...> class R, class Expr>
 #if (__cpp_nontype_template_args >= 201911L)
 template<template<class...> class R, auto V>
 inline constexpr auto apply_v = decltype(apply<R, [] { return V; }>);
-```
-
-```cpp
-/**
- * Applies vector V with object t to `R{value_of<V>(t)...}
- */
-#if (__cpp_nontype_template_args >= 201911L)
-template<template<class...> class R, auto V, class T>
-[[nodiscard]] constexpr auto apply(T&& t);
-#endif
 ```
 
 ```cpp
@@ -247,12 +224,10 @@ using apply_t = decltype(apply_v<T, V>);
  *
  * @code
  * info i = meta<conts int>; // run-time
- * static_assert(invoke<bool>([]<info m> {
- *   return std::is_const_v<type_of<m>>;
- * }, i));
+ * static_assert(invoke<bool>([]<info m> { return std::is_const_v<type_of<m>>; }, i));
  * @endcode
  */
-template<class Fn, auto tag = []{}>
+template<class Fn>
 constexpr auto invoke(Fn fn, info meta);
 ```
 
