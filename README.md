@@ -16,10 +16,10 @@
 - Minimal [API](#api)
 - Minimal learning curve (reuses stl, ranges or any third-party library/algorithms operating on stl-like containers)
 - Easy debugging (meta-functions can simply be executed and debugged at run-time - see [examples](#examples))
-- Self verfication upon include (can be disabled by `NTEST`)
+- Self verfication upon include (can be disabled by `-DNTEST`)
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/on3qb6n9M))
 - Fast compilation-times (see [benchmarks](#benchmarks))
-- Support for reflection (see [examples](#examples) / https://github.com/boost-ext/reflect)
+- Reflection support (requires https://github.com/boost-ext/reflect - see [examples](#examples))
 
 ### Requirements
 
@@ -150,7 +150,7 @@ int main() {
 /**
  * Meta info type
  */
-enum info : size_t { };
+enum class info : size_t { };
 ```
 
 ```cpp
@@ -302,7 +302,7 @@ constexpr void for_each(Fn fn);
 
 - Can running tests at compile-time be disabled?
 
-    > When `NTEST` is defined static_asserts tests won't be executed upon inclusion.
+    > When `-DNTEST` is defined static_asserts tests won't be executed upon inclusion.
     Note: Use with caution as disabling tests means that there are no gurantees upon inclusion that given compiler/env combination works as expected.
 
 - How `mp` compares to Reflection for C++26 (https://wg21.link/P2996):
