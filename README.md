@@ -263,12 +263,12 @@ constexpr void for_each(Fn fn);
 
     > `mp` runs all tests (via static_asserts) upon include. If the include compiled it means all tests are passing and the library works correctly on given compiler, enviornment.
 
-- Can running tests at compile-time be disabled?
+- How to disable running tests at compile-time?
 
-    > When `-DNTEST` is defined static_asserts tests won't be executed upon inclusion.
-    Note: Use with caution as disabling tests means that there are no gurantees upon inclusion that given compiler/env combination works as expected.
+    > When `-DNTEST` is defined static_asserts tests won't be executed upon include.
+    Note: Use with caution as disabling tests means that there are no gurantees upon include that given compiler/env combination works as expected.
 
-- How `mp` compares to Reflection for C++26 (https://wg21.link/P2996):
+- How `mp` compares to Reflection for C++26 (https://wg21.link/P2996)?
 
     > `mp` meta-programming model is very simpilar to P2996 and it's based on type erased info object and meta-functions. `mp` also supports all C++ standard library and since verion 2.0.0+ `mp` type names have been adopted to closer reflect the reflection proposal.
 
