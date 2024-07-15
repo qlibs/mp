@@ -78,7 +78,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ```cpp
 template<class... Ts>
-constexpr auto stl(auto v) {
+constexpr auto stl() {
   std::array v{mp::meta<Ts>...};
   std::sort(v.begin(), v.end(), [](auto lhs, auto rhs) {
     return size_of(lhs) < size_of(rhs);
