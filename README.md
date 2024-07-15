@@ -74,26 +74,21 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> STL (https://godbolt.org/z/jnfTa3G7E)
+> STL (https://godbolt.org/z/aPP6Y995E)
 
 ```cpp
 template<class... Ts>
 constexpr auto stl() {
-  mp::vector<mp::meta> r{};
-  for (const auto& meta : mp::array{mp::meta<Ts>...}) {
-    if (not mp::invoke<std::is_const>(meta)) {
-      r.push_back(mp::invoke<std::add_const>(meta));
-    }
-  }
-  std::sort(r.begin(), r.end(), [](auto lhs, auto rhs) {
+  mp::array v{mp::meta<Ts>...};
+  std::sort(v.begin(), v.end(), [](auto lhs, auto rhs) {
     return size_of(lhs) < size_of(rhs);
   });
-  return r;
+  return v;
 }
 
 static_assert(std::is_same_v<
-  std::variant<const char[1], const char[2], const char[3]>,
-  mp::apply_t<std::variant, stl<char[2], char[1], const char[42], char[3]>()>
+  std::variant<char[1], char[2], char[3]>,
+  mp::apply_t<std::variant, stl<char[2], char[1], char[3]>()>
 >);
 ```
 
