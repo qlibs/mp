@@ -11,15 +11,13 @@
 
 ### Features
 
-- Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp)
-    - Easy integration (see [FAQ](#faq))
-- Minimal [API](#api)
-- Minimal learning curve (reuses stl, ranges or any third-party library/algorithms operating on stl-like containers)
-- Easy debugging (meta-functions can simply be executed and debugged at run-time - see [examples](#examples))
+- Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp - integration see [FAQ](#faq))
+- Minimal [API](#api) and learning curve (supports STL, ranges, ...)
+- Supports debugging (meta-functions can be executed and debugged at run-time - see [examples](#examples))
+- Supports reflection (requires https://github.com/boost-ext/reflect - see [examples](#examples))
 - Self verfication upon include (can be disabled by `-DNTEST`)
 - Compiles cleanly with ([`-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`](https://godbolt.org/z/on3qb6n9M))
-- Fast compilation-times (see [benchmarks](#benchmarks))
-- Reflection support (requires https://github.com/boost-ext/reflect - see [examples](#examples))
+- Optimized compilation-times (see [benchmarks](#benchmarks))
 
 ### Requirements
 
@@ -29,10 +27,11 @@
 
 ### Overview
 
-> API (https://godbolt.org/z/MhGs4WW1j)
+> API (https://godbolt.org/z/joqcoMedq)
 
 ```cpp
 // mp::meta
+static_assert(mp::meta<int> == mp::meta<int>);
 static_assert(mp::meta<int> != mp::meta<void>);
 static_assert(typeid(mp::meta<int>) == typeid(mp::meta<void>));
 
@@ -43,7 +42,7 @@ mp::type_of<mp::meta<bool>> b = true; // same as bool b = true;
 
 // mp::apply
 template<class...> struct type_list{ };
-static_assert(typeid(type_list<int>) == typeid(mp::apply_t<type_list, mp::array{meta}>>);
+static_assert(typeid(type_list<int, int>) == typeid(mp::apply_t<type_list, mp::array{meta, meta}>>);
 
 // mp::invoke
 static_assert(not mp::invoke<std::is_const>(meta));
@@ -65,7 +64,7 @@ int main() {
 > Hello World (https://godbolt.org/z/69jGzqPs1)
 
 ```cpp
-template<auto N, class... Ts>
+template<size_t N, class... Ts>
 using at_c = mp::type_of<std::array{mp::meta<Ts>...}[N]>;
 
 static_assert(std::is_same_v<int, at_c<0, int, bool, float>>);
@@ -170,9 +169,7 @@ template<class T> inline constexpr info meta = /* unspecified */;
  * Returns underlying type from meta type
  *
  * @code
- * static_assert(typeid(type_of<meta<void>>)
-                 ==
-                 typeid(void));
+ * static_assert(typeid(type_of<meta<void>>) == typeid(void));
  * @endcode
  */
 template<info meta> using type_of = /* unspecified */;
@@ -184,8 +181,7 @@ template<info meta> using type_of = /* unspecified */;
  *                   `T<type_of<info>...>`
  *
  * @code
- * static_assert(typeid(variant<int>)
- *               ==
+ * static_assert(typeid(variant<int>) ==
  *               typeid(apply<variant>([] { return vector{meta<int>}; })));
  * @endcode
  */
@@ -198,8 +194,7 @@ template<template<class...> class T, class Expr>
  * Applies expression expr to `R<type_of<info>...>`
  *
  * @code
- * static_assert(typeid(variant<int>)
- *               ==
+ * static_assert(typeid(variant<int>) ==
  *               typeid(apply<variant>([] { return vector{meta<int>}; })));
  * @endcode
  */
@@ -212,8 +207,7 @@ template<template<class...> class R, class Expr>
  * Applies vector V to `R<type_of<info>...>`
  *
  * @code
- * static_assert(typeid(variant<int>)
- *               ==
+ * static_assert(typeid(variant<int>) ==
  *               typeid(apply<variant, vector{meta<int>}>));
  * @endcode
  */
@@ -237,8 +231,7 @@ template<template<class...> class R, auto V, class T>
  * Alternative to write `decltype(apply_v<T, Expr>))`
  *
  * @code
- * static_assert(typeid(variant<int>)
- *               ==
+ * static_assert(typeid(variant<int>) ==
  *               typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
