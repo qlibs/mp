@@ -250,6 +250,26 @@ constexpr auto invoke(Fn fn, info meta) {
 }
 
 /**
+ * Invokes meta-function
+ *
+ * @code
+ * static_assert(not invoke<std::is_const>(meta<int>));
+ * static_assert(invoke<std::is_const>(meta<const int>));
+ * @endcode
+ */
+template<template<class> class T, auto = []{}>
+constexpr auto invoke(info m) {
+  return invoke([]<info m> {
+    using type = type_of<m>;
+    if constexpr (requires { T<type>::value; }) {
+      return T<type>::value;
+    } else {
+      return meta<typename T<type>::type>;
+    }
+  }, m);
+}
+
+/**
  * Iterates over all elements of constexpr container
  *
  * @code
@@ -267,25 +287,6 @@ constexpr void for_each(Fn fn) {
   }(utility::make_index_sequence<V.size()>{});
 }
 #endif
-
-/**
- * Invokes trait
- *
- * @code
- * static_assert(trait<std::is_const>(meta<const int>));
- * @endcode
- */
-template<template<class> class T, auto = []{}>
-constexpr auto invoke(info m) {
-  return invoke([]<info m> {
-    using type = type_of<m>;
-    if constexpr (requires { T<type>::value; }) {
-      return T<type>::value;
-    } else {
-      return meta<typename T<type>::type>;
-    }
-  }, m);
-}
 } // namespace mp
 
 #if !defined(NTEST)
