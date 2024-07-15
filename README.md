@@ -224,8 +224,7 @@ using apply_t = decltype(apply_v<T, V>);
  * static_assert(invoke([]<info m> { return std::is_const_v<type_of<m>>; }, i));
  * @endcode
  */
-template<class Fn>
-constexpr auto invoke(Fn fn, info meta);
+constexpr auto invoke(auto fn, info meta);
 ```
 
 ```cpp
@@ -239,8 +238,8 @@ constexpr auto invoke(Fn fn, info meta);
  * });
  * @endcode
  */
-template<auto V, class Fn>
-constexpr void for_each(Fn fn);
+template<auto V>
+constexpr void for_each(auto fn);
 ```
 
 > Configuration
