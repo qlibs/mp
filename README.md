@@ -27,7 +27,9 @@
 
 ---
 
-### Overview (https://godbolt.org/z/MhGs4WW1j)
+### Overview
+
+> API (https://godbolt.org/z/MhGs4WW1j)
 
 ```cpp
 // mp::meta
@@ -94,7 +96,7 @@ static_assert(std::is_same_v<
 
 ---
 
-> Reflection (https://github.com/boost-ext/reflect)
+> Reflection - https://github.com/boost-ext/reflect (https://godbolt.org/z/ds3KMGhqP)
 
 ```cpp
 struct foo {
@@ -103,27 +105,14 @@ struct foo {
   float c;
 };
 
-foo f{.a = 42, .b = true, .c = 3.2f};
+constexpr foo f{.a = 42, .b = true, .c = 3.2f};
 
-constexpr mp::vector v =
-    reflect::reflect(f)
-  | std::views::filter([](auto meta) { return meta->name() == "b" ; })
-  | std::views::reverse
+constexpr mp::vector v = reflexpr(f)
+  | std::views::filter([&](auto meta) { return member_name(meta, f) != "b"; })
   ;
 
-mp::for_each<v>([&]<auto meta>{
-  std::cout << reflect::type_name<mp::type_of<meta>>() << '\n'; // prints bool
-  std::cout << mp::value_of<meta>(f) << '\n';                   // prints true
-});
-
-auto&& t = mp::apply<std::tuple, v>(f);
-
-std::apply([](auto... args) {
-  ((std::cout << args << '\n'), ...); // prints true
-}, t);
+static_assert(std::tuple{42, 3.2f} == unreflexpr<std::tuple, v>(f));
 ```
-
-> https://godbolt.org/z/s7ce6bh5d
 
 ---
 

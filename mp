@@ -239,7 +239,9 @@ constexpr auto invoke(Fn fn, info meta) {
     return array{
       []<info N> {
         return +[](Fn fn) {
-          return fn.template operator()<N>();
+          if constexpr (requires { fn.template operator()<N>(); }) {
+            return fn.template operator()<N>();
+          }
         };
       }.template operator()<info(Ns)>()...
     };
