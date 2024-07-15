@@ -121,6 +121,7 @@ using vector = inplace_vector<T, Size>;
 template<class T = info, size_t Size = MP_SIZE>
 struct vector : inplace_vector<T, Size> {
   using inplace_vector<T, Size>::inplace_vector;
+  constexpr vector() = default;
   constexpr vector(utility::range auto range) {
     for (const T& t : range) { inplace_vector<T, Size>::data[inplace_vector<T, Size>::size_++] = t; }
   }
