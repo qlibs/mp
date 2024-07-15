@@ -31,8 +31,7 @@ concept range = requires (TRange range) { range.begin(); range.end(); };
 } // namespace utility
 
 /**
- * Minimal (not standard compliant) array
- * implementation optimized for fast compilation-times with info
+ * Minimal (not standard compliant) array optimized for fast compilation-times
  *
  * @code
  * array v{meta<void>, meta<int>};
@@ -63,8 +62,7 @@ struct array {
 template<class T, class... Ts> array(T, Ts...) -> array<T, 1 + sizeof...(Ts)>;
 
 /**
- * Minimal (not standard compliant) inplace vector
- * implementation optimized for fast compilation-times with info
+ * Minimal (not standard compliant) inplace vector optimized for fast compilation-times
  *
  * @code
  * inplace_vector v{meta<void>, meta<int>};
