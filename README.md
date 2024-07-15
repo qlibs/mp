@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
 <a href="https://godbolt.org/z/qarWdbK79">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/zKK981h8j">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/h97qe9feP">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 ---------------------------------------
 
@@ -27,7 +27,7 @@
 
 ---
 
-### Overview (https://godbolt.org/z/44q1jEsea)
+### Overview (https://godbolt.org/z/MhGs4WW1j)
 
 ```cpp
 // mp::meta
@@ -56,13 +56,11 @@ int main() {
 // and more (see API)...
 ```
 
-> https://godbolt.org/z/Gqe8s4416
-
 ---
 
 ### Examples
 
-> Hello World (https://godbolt.org/z/44q1jEsea)
+> Hello World (https://godbolt.org/z/69jGzqPs1)
 
 ```cpp
 template<auto N, class... Ts>
