@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
 <a href="https://godbolt.org/z/qarWdbK79">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/WToxvjcnn">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/Y1TxTo68K">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 ---------------------------------------
 
@@ -27,7 +27,7 @@
 
 ### Overview
 
-> API (https://godbolt.org/z/WToxvjcnn)
+> API (https://godbolt.org/z/nWWxYqzdG)
 
 ```cpp
 // mp::meta
@@ -94,7 +94,7 @@ static_assert(std::is_same_v<
 
 ---
 
-> Ranges (https://godbolt.org/z/Kc7ofbboM)
+> Ranges (https://godbolt.org/z/6dnroa9We)
 
 ```cpp
 template<class... Ts>
