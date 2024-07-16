@@ -20,7 +20,7 @@
 
 ### Requirements
 
-- C++20 ([clang++13+/g++11+ -Wall -Wextra -Werror -pedantic -pedantic-errors, msvc-19.34+ /W4 /WX](https://godbolt.org/z/qarWdbK79))
+- C++20 ([clang++13+, g++11+, msvc-19.34+ -Wall](https://godbolt.org/z/qarWdbK79)) / `-Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`
 
 ---
 
