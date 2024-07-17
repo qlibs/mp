@@ -27,7 +27,7 @@
 
 ### Overview
 
-> API (https://godbolt.org/z/nWWxYqzdG)
+> API (https://godbolt.org/z/zTdYGvKKW)
 
 ```cpp
 // mp::meta
@@ -74,7 +74,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> Algorithms (https://godbolt.org/z/Pc57zE4a6)
+> Algorithms (https://godbolt.org/z/Y3rT58xMq)
 
 ```cpp
 template<class... Ts>
@@ -99,7 +99,7 @@ static_assert(
 
 ---
 
-> Reflection - https://github.com/boost-ext/reflect (https://godbolt.org/z/8PYEveWza)
+> Reflection (https://github.com/boost-ext/reflect | https://godbolt.org/z/bPPjY3b3v)
 
 ```cpp
 struct foo {
@@ -110,7 +110,7 @@ struct foo {
 
 constexpr foo f{.a = 42, .b = true, .c = 3.2f};
 
-constexpr mp::vector v =
+constexpr mp::vector<mp::info> v =
     members(f)
   | std::views::filter([&](auto meta) { return member_name(meta, f) != "b"; })
   ;

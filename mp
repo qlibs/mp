@@ -33,11 +33,6 @@ template<size_t Size> using make_index_sequence =
 } // namespace utility
 
 /**
- * Meta info type
- */
-enum class info : size_t { };
-
-/**
  * Minimal - non-conforming - array optimized for fast compilation-times
  *
  * @code
@@ -78,7 +73,7 @@ template<class T, class... Ts> array(T, Ts...) -> array<T, 1u + sizeof...(Ts)>;
  * assert(meta<int> == v[1]);
  * @endcode
  */
-template<class T = info, size_t Size = MP_SIZE>
+template<class T, size_t Size = MP_SIZE>
 struct vector {
   using value_type = T;
   constexpr vector() = default;
@@ -111,6 +106,11 @@ struct vector {
   size_t size_{};
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1u + sizeof...(Ts)>;
+
+/**
+ * Meta info type
+ */
+enum class info : size_t { };
 
 namespace detail {
 template<info> struct meta_type { constexpr auto friend get(meta_type); };
