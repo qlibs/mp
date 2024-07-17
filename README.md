@@ -247,7 +247,8 @@ constexpr void for_each(auto fn);
 > Configuration
 
 ```cpp
-#define MP 2'0'2 // Current library version (SemVer)
+#define MP 2'0'2     // Current library version (SemVer)
+#define MP_SIZE 1024 // Max number of meta types (compilation times optimization)
 ```
 
 ---

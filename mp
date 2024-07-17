@@ -11,6 +11,10 @@
 #pragma GCC system_header
 #endif
 
+#if not defined(MP_SIZE)
+#define MP_SIZE 1024
+#endif
+
 /**
  * ~~Template~~ Meta-Programming library (https://github.com/boost-ext/mp)
  */
@@ -26,9 +30,12 @@ template<size_t Size> using make_index_sequence =
 #else
    index_sequence<__integer_pack(Size)...>;
 #endif
-template<class TRange>
-concept range = requires (TRange range) { range.begin(); range.end(); };
 } // namespace utility
+
+/**
+ * Meta info type
+ */
+enum class info : size_t { };
 
 /**
  * Minimal - non-conforming - array optimized for fast compilation-times
@@ -65,19 +72,20 @@ template<class T, class... Ts> array(T, Ts...) -> array<T, 1u + sizeof...(Ts)>;
  * Minimal - non-conforming - static vector optimized for fast compilation-times
  *
  * @code
- * static_vector v{meta<void>, meta<int>};
+ * vector v{meta<void>, meta<int>};
  * assert(2 == v.size());
  * assert(meta<void> == v[0]);
  * assert(meta<int> == v[1]);
  * @endcode
  */
-template<class T, size_t Size>
-struct static_vector {
+template<class T = info, size_t Size = MP_SIZE>
+struct vector {
   using value_type = T;
-  constexpr static_vector() = default;
-  constexpr static_vector(size_t size) : size_{size} { }
-  template<class... Ts> constexpr explicit static_vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
-  constexpr static_vector(utility::range auto range) { for (const T& t : range) { data[size_++] = t; } }
+  constexpr vector() = default;
+  constexpr vector(size_t size) : size_{size} { }
+  constexpr explicit vector(const auto&... ts) : data{ts...}, size_{sizeof...(ts)} { }
+  template<class TRange> requires requires(TRange range) { range.begin(); range.end(); }
+  constexpr vector(TRange range) { for (const auto& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
   constexpr void emplace_back(T&& t) { data[size_++] = static_cast<T&&>(t); }
   [[nodiscard]] constexpr auto begin() const { return &data[0]; }
@@ -89,12 +97,12 @@ struct static_vector {
   [[nodiscard]] constexpr auto size() const { return size_; }
   [[nodiscard]] constexpr auto resize(size_t size) { size_ = size; }
   [[nodiscard]] constexpr auto capacity() const { return Size; }
-  template<size_t size> [[nodiscard]] constexpr auto operator==(const static_vector<T, size>& other) const -> bool {
+  template<size_t size> [[nodiscard]] constexpr auto operator==(const vector<T, size>& other) const -> bool {
     if (size_ != other.size_) { return false; }
     for (auto i = 0u; i < size_; ++i) { if (data[i] != other.data[i]) { return false; } }
     return true;
   }
-  template<size_t size> [[nodiscard]] constexpr auto operator!=(const static_vector<T, size>& other) const -> bool {
+  template<size_t size> [[nodiscard]] constexpr auto operator!=(const vector<T, size>& other) const -> bool {
     return not operator==(other);
   }
   constexpr void clear() { size_ = {}; }
@@ -102,43 +110,25 @@ struct static_vector {
   union { T data[Size]{}; }; // __cpp_trivial_union
   size_t size_{};
 };
-template<class T, class... Ts> static_vector(T, Ts...) -> static_vector<T, 1u + sizeof...(Ts)>;
-
-/**
- * Meta info type
- */
-enum class info : size_t { };
-
-/**
- * Meta info vector
- */
-#if not defined(MP_SIZE)
-#define MP_SIZE 1024
-#endif
-#if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201907L)
-template<class T = info, size_t Size = MP_SIZE>
-using vector = static_vector<T, Size>;
-#else
-template<class T = info, size_t Size = MP_SIZE>
-struct vector : static_vector<T, Size> {
-  using static_vector<T, Size>::static_vector;
-  constexpr vector() = default;
-  constexpr vector(utility::range auto range) {
-    for (const T& t : range) { static_vector<T, Size>::data[static_vector<T, Size>::size_++] = t; }
-  }
-};
 template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1u + sizeof...(Ts)>;
-#endif
 
 namespace detail {
-template<info> struct meta_id { constexpr auto friend get(meta_id); };
+template<info> struct meta_type { constexpr auto friend get(meta_type); };
 template<class T> struct meta_info {
   using value_type = T;
-  template<info N = info{}> static constexpr auto idx() -> info {
-    if constexpr (requires { get(meta_id<N>{}); }) { return idx<info{size_t(N) + 1u}>(); } else { return N; }
-  };
-  static constexpr info id = idx();
-  constexpr auto friend get(meta_id<id>) { return meta_info{}; }
+  template<size_t left = 0u, size_t right = MP_SIZE - 1u>
+  static constexpr auto id() -> size_t {
+    if constexpr (left >= right) {
+      return left + requires { get(meta_type<info{left}>{}); };
+    } else if constexpr (constexpr auto mid = left + (right - left) / 2u;
+      requires { get(meta_type<info{mid}>{}); }) {
+      return id<mid + 1u, right>();
+    } else {
+      return id<left, mid - 1u>();
+    }
+  }
+  static constexpr auto type_id = info{id()};
+  constexpr auto friend get(meta_type<type_id>) { return meta_info{}; }
 };
 } // namespace detail
 
@@ -151,7 +141,7 @@ template<class T> struct meta_info {
  * @endcode
  */
 template<class T>
-inline constexpr info meta = detail::meta_info<T>::id;
+inline constexpr info meta = detail::meta_info<T>::type_id;
 
 /**
  * Returns underlying type from meta type
@@ -161,7 +151,7 @@ inline constexpr info meta = detail::meta_info<T>::id;
  * @endcode
  */
 template<info meta>
-using type_of = typename decltype(get(detail::meta_id<meta>{}))::value_type;
+using type_of = typename decltype(get(detail::meta_type<meta>{}))::value_type;
 
 /**
  * Applies expression expr to `T<type_of<info>...>`
@@ -197,17 +187,8 @@ inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>)
  * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
-#if defined(__clang__) || defined(_MSC_VER)
 template<template<class...> class R, auto V>
 using apply_t = decltype(apply<R>([] { return V; }));
-#else
-namespace detail {
-template<template<class...> class R, auto V, size_t... Ns>
-using apply_t = R<type_of<V[Ns]>...>;
-} // namespace detail
-template<template<class...> class R, auto V>
-using apply_t = detail::apply_t<R, V, __integer_pack(V.size())...>;
-#endif
 
 /**
  * Invokes function with compile-time info based on run-time info
@@ -229,7 +210,7 @@ constexpr auto invoke(Fn fn, info meta) {
         };
       }.template operator()<info{Ns}>()...
     };
-  }(utility::make_index_sequence<size_t(detail::meta_info<decltype(tag)>::id)>{});
+  }(utility::make_index_sequence<size_t(detail::meta_info<decltype(tag)>::type_id)>{});
   return dispatch[size_t(meta)](fn);
 }
 
@@ -283,16 +264,16 @@ namespace mp::test {
 } // namespace mp::test
 
 static_assert(([] {
-  using mp::test::expect;
+  using namespace mp::test;
 
   // mp::test
   {
-    static_assert(not mp::test::is_same_v<int, void>);
-    static_assert(not mp::test::is_same_v<void, int>);
-    static_assert(not mp::test::is_same_v<void*, int>);
-    static_assert(not mp::test::is_same_v<int, const int>);
-    static_assert(mp::test::is_same_v<void, void>);
-    static_assert(mp::test::is_same_v<int, int>);
+    static_assert(not is_same_v<int, void>);
+    static_assert(not is_same_v<void, int>);
+    static_assert(not is_same_v<void*, int>);
+    static_assert(not is_same_v<int, const int>);
+    static_assert(is_same_v<void, void>);
+    static_assert(is_same_v<int, int>);
   }
 
   // mp::utility::index_sequence
@@ -441,9 +422,9 @@ static_assert(([] {
 
   // mp::detail
   {
-    static_assert(mp::detail::meta_info<int>::id == mp::detail::meta_info<int>::id);
-    static_assert(mp::detail::meta_info<int>::id != mp::detail::meta_info<void>::id);
-    static_assert(mp::detail::meta_info<void>::id == mp::detail::meta_info<void>::id);
+    static_assert(mp::detail::meta_info<int>::type_id == mp::detail::meta_info<int>::type_id);
+    static_assert(mp::detail::meta_info<int>::type_id != mp::detail::meta_info<void>::type_id);
+    static_assert(mp::detail::meta_info<void>::type_id == mp::detail::meta_info<void>::type_id);
   }
 
   // mp::meta
@@ -458,21 +439,21 @@ static_assert(([] {
   // mp::type_of
   {
     enum class e : int { };
-    static_assert(mp::test::is_same_v<void, mp::type_of<mp::meta<void>>>);
-    static_assert(mp::test::is_same_v<const int, mp::type_of<mp::meta<const int>>>);
-    static_assert(mp::test::is_same_v<const void*, mp::type_of<mp::meta<const void*>>>);
-    static_assert(mp::test::is_same_v<e, mp::type_of<mp::meta<e>>>);
+    static_assert(is_same_v<void, mp::type_of<mp::meta<void>>>);
+    static_assert(is_same_v<const int, mp::type_of<mp::meta<const int>>>);
+    static_assert(is_same_v<const void*, mp::type_of<mp::meta<const void*>>>);
+    static_assert(is_same_v<e, mp::type_of<mp::meta<e>>>);
 
     constexpr mp::vector v{mp::meta<int>, mp::meta<e>};
-    static_assert(mp::test::is_same_v<int, mp::type_of<v[0]>>);
-    static_assert(mp::test::is_same_v<e, mp::type_of<v[1]>>);
+    static_assert(is_same_v<int, mp::type_of<v[0]>>);
+    static_assert(is_same_v<e, mp::type_of<v[1]>>);
   }
 
   // mp::apply
   {
-    static_assert([](mp::test::type_list<>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector<mp::info, 1>{}; })));
-    static_assert([](mp::test::type_list<int>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<int>}; })));
-    static_assert([](mp::test::type_list<void, void>){ return true; }(mp::apply<mp::test::type_list>([] { return mp::vector{mp::meta<void>, mp::meta<void>}; })));
+    static_assert([](type_list<>){ return true; }(mp::apply<type_list>([] { return mp::vector<mp::info, 1>{}; })));
+    static_assert([](type_list<int>){ return true; }(mp::apply<type_list>([] { return mp::vector{mp::meta<int>}; })));
+    static_assert([](type_list<void, void>){ return true; }(mp::apply<type_list>([] { return mp::vector{mp::meta<void>, mp::meta<void>}; })));
   }
 
   // mp::invoke
@@ -480,11 +461,11 @@ static_assert(([] {
     static_assert(mp::invoke([]<mp::info meta> { return meta == mp::meta<int>; }, mp::meta<int>));
     static_assert(not mp::invoke([]<mp::info meta> { return meta == mp::meta<void>; }, mp::meta<int>));
 
-    static_assert(not mp::invoke<mp::test::is_const>(mp::meta<int>));
-    static_assert(mp::invoke<mp::test::is_const>(mp::meta<const int>));
+    static_assert(not mp::invoke<is_const>(mp::meta<int>));
+    static_assert(mp::invoke<is_const>(mp::meta<const int>));
 
-    static_assert(mp::test::is_same_v<const int, mp::type_of<mp::invoke<mp::test::add_const>(mp::meta<int>)>>);
-    static_assert(mp::test::is_same_v<const int, mp::type_of<mp::invoke<mp::test::add_const>(mp::meta<const int>)>>);
+    static_assert(is_same_v<const int, mp::type_of<mp::invoke<add_const>(mp::meta<int>)>>);
+    static_assert(is_same_v<const int, mp::type_of<mp::invoke<add_const>(mp::meta<const int>)>>);
   }
 
   // mp::for_each
