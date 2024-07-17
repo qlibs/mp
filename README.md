@@ -99,7 +99,7 @@ static_assert(
 
 ---
 
-> Reflection (https://github.com/boost-ext/reflect | https://godbolt.org/z/bPPjY3b3v)
+> Reflection (https://github.com/boost-ext/reflect / https://godbolt.org/z/bPPjY3b3v)
 
 ```cpp
 struct foo {
