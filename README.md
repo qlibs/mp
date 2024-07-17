@@ -20,7 +20,7 @@
 
 ### Requirements
 
-- C++20 ([clang++13+, g++11+, msvc-19.34+ -Wall](https://godbolt.org/z/qarWdbK79)) 
+- C++20 ([clang++13+, g++11+, msvc-19.34+ -Wall](https://godbolt.org/z/qarWdbK79))
     - `-Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`
 
 ---
@@ -135,28 +135,25 @@ static_assert(std::tuple{42, 3.2f} == unreflexpr<std::tuple, v>(f));
 
 ---
 
-> Run-time testing/debugging (https://godbolt.org/z/4cP5cPbe4)
+> Run-time testing/debugging (https://godbolt.org/z/crbeMfo3r)
 
 ```cpp
-template<class... Ts>
-constexpr auto reverse() {
-  std::array v{mp::meta<Ts>...};
-  std::array<mp::info, sizeof...(Ts)> r;
-  for (auto i = 0u; i < v.size(); ++i) { r[i] = v[v.size()-i-1]; }
-  return r;
+constexpr auto reverse(std::ranges::range auto v) {
+  std::reverse(v.begin(), v.end());
+  return v;
 }
 
 int main() {
   static_assert(
     std::array{mp::meta<float>, mp::meta<double>, mp::meta<int>}
     ==
-    reverse<int, double, float>()
+    reverse(std::array{mp::meta<int>, mp::meta<double>, mp::meta<float>})
   );
 
   assert((
     std::array{mp::meta<float>, mp::meta<double>, mp::meta<int>}
     ==
-    reverse<int, double, float>()
+    reverse(std::array{mp::meta<int>, mp::meta<double>, mp::meta<float>})
   ));
 }
 ```

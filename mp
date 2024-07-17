@@ -31,7 +31,7 @@ concept range = requires (TRange range) { range.begin(); range.end(); };
 } // namespace utility
 
 /**
- * Minimal (not standard compliant) array optimized for fast compilation-times
+ * Minimal - non-conforming - array optimized for fast compilation-times
  *
  * @code
  * array v{meta<void>, meta<int>};
@@ -62,21 +62,22 @@ struct array {
 template<class T, class... Ts> array(T, Ts...) -> array<T, 1u + sizeof...(Ts)>;
 
 /**
- * Minimal (not standard compliant) inplace vector optimized for fast compilation-times
+ * Minimal - non-conforming - static vector optimized for fast compilation-times
  *
  * @code
- * inplace_vector v{meta<void>, meta<int>};
+ * static_vector v{meta<void>, meta<int>};
  * assert(2 == v.size());
  * assert(meta<void> == v[0]);
  * assert(meta<int> == v[1]);
  * @endcode
  */
 template<class T, size_t Size>
-struct inplace_vector {
+struct static_vector {
   using value_type = T;
-  constexpr inplace_vector() = default;
-  template<class... Ts> constexpr explicit inplace_vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
-  constexpr inplace_vector(utility::range auto range) { for (const T& t : range) { data[size_++] = t; } }
+  constexpr static_vector() = default;
+  constexpr static_vector(size_t size) : size_{size} { }
+  template<class... Ts> constexpr explicit static_vector(const Ts&... ts) : data{ts...}, size_{sizeof...(ts)} { }
+  constexpr static_vector(utility::range auto range) { for (const T& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
   constexpr void emplace_back(T&& t) { data[size_++] = static_cast<T&&>(t); }
   [[nodiscard]] constexpr auto begin() const { return &data[0]; }
@@ -88,12 +89,12 @@ struct inplace_vector {
   [[nodiscard]] constexpr auto size() const { return size_; }
   [[nodiscard]] constexpr auto resize(size_t size) { size_ = size; }
   [[nodiscard]] constexpr auto capacity() const { return Size; }
-  template<size_t size> [[nodiscard]] constexpr auto operator==(const inplace_vector<T, size>& other) const -> bool {
+  template<size_t size> [[nodiscard]] constexpr auto operator==(const static_vector<T, size>& other) const -> bool {
     if (size_ != other.size_) { return false; }
     for (auto i = 0u; i < size_; ++i) { if (data[i] != other.data[i]) { return false; } }
     return true;
   }
-  template<size_t size> [[nodiscard]] constexpr auto operator!=(const inplace_vector<T, size>& other) const -> bool {
+  template<size_t size> [[nodiscard]] constexpr auto operator!=(const static_vector<T, size>& other) const -> bool {
     return not operator==(other);
   }
   constexpr void clear() { size_ = {}; }
@@ -101,7 +102,7 @@ struct inplace_vector {
   union { T data[Size]{}; }; // __cpp_trivial_union
   size_t size_{};
 };
-template<class T, class... Ts> inplace_vector(T, Ts...) -> inplace_vector<T, 1u + sizeof...(Ts)>;
+template<class T, class... Ts> static_vector(T, Ts...) -> static_vector<T, 1u + sizeof...(Ts)>;
 
 /**
  * Meta info type
@@ -116,14 +117,14 @@ enum class info : size_t { };
 #endif
 #if defined(__cpp_deduction_guides) && (__cpp_deduction_guides >= 201907L)
 template<class T = info, size_t Size = MP_SIZE>
-using vector = inplace_vector<T, Size>;
+using vector = static_vector<T, Size>;
 #else
 template<class T = info, size_t Size = MP_SIZE>
-struct vector : inplace_vector<T, Size> {
-  using inplace_vector<T, Size>::inplace_vector;
+struct vector : static_vector<T, Size> {
+  using static_vector<T, Size>::static_vector;
   constexpr vector() = default;
   constexpr vector(utility::range auto range) {
-    for (const T& t : range) { inplace_vector<T, Size>::data[inplace_vector<T, Size>::size_++] = t; }
+    for (const T& t : range) { static_vector<T, Size>::data[static_vector<T, Size>::size_++] = t; }
   }
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1u + sizeof...(Ts)>;
