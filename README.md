@@ -74,7 +74,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> STL/Ranges (https://godbolt.org/z/jKjrsa6qv)
+> STL/Ranges (https://godbolt.org/z/Pc57zE4a6)
 
 ```cpp
 template<class... Ts>
@@ -90,10 +90,11 @@ struct example {
   > v;
 };
 
-static_assert(std::is_same_v<
-  std::variant<const int, const short>,
-  decltype(example<double, void, const short, int>::v)
->);
+static_assert(
+  typeid(std::variant<const int, const short>)
+  ==
+  typeid(example<double, void, const short, int>::v)
+);
 ```
 
 ---
