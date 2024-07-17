@@ -86,7 +86,7 @@ struct example {
     | std::views::filter([](auto m) { return mp::invoke<std::is_integral>(m); })
     | std::views::transform([](auto m) { return mp::invoke<std::add_const>(m); })
     | std::views::take(2)
-    | std::ranges::to<mp::vector<>>()
+    | std::ranges::to<mp::vector>()
   > v;
 };
 
