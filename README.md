@@ -74,7 +74,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> STL/Ranges (https://godbolt.org/z/Pc57zE4a6)
+> Algorithms (https://godbolt.org/z/Pc57zE4a6)
 
 ```cpp
 template<class... Ts>
