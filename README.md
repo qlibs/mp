@@ -74,48 +74,31 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> STL (https://godbolt.org/z/aPP6Y995E)
+> STL/Ranges (https://godbolt.org/z/jKjrsa6qv)
 
 ```cpp
 template<class... Ts>
-constexpr auto stl() {
-  std::array v{mp::meta<Ts>...};
-  std::sort(v.begin(), v.end(), [](auto lhs, auto rhs) {
-    return size_of(lhs) < size_of(rhs);
-  });
-  return v;
-}
-
-static_assert(std::is_same_v<
-  std::variant<char[1], char[2], char[3]>,
-  mp::apply_t<std::variant, stl<char[2], char[1], char[3]>()>
->);
-```
-
----
-
-> Ranges (https://godbolt.org/z/6dnroa9We)
-
-```cpp
-template<class... Ts>
-constexpr mp::vector ranges =
-    std::array{mp::meta<Ts>...}
-  | std::views::drop(1)
-  | std::views::reverse
-  | std::views::filter([](auto m) { return mp::invoke<std::is_integral>(m); })
-  | std::views::transform([](auto m) { return mp::invoke<std::add_const>(m); })
-  | std::views::take(2)
-  ;
+struct example {
+  mp::apply_t<std::variant,
+      std::array{mp::meta<Ts>...}
+    | std::views::drop(1)
+    | std::views::reverse
+    | std::views::filter([](auto m) { return mp::invoke<std::is_integral>(m); })
+    | std::views::transform([](auto m) { return mp::invoke<std::add_const>(m); })
+    | std::views::take(2)
+    | std::ranges::to<mp::vector<>>()
+  > v;
+};
 
 static_assert(std::is_same_v<
   std::variant<const int, const short>,
-  mp::apply_t<std::variant, ranges<double, void, const short, int>>
+  decltype(example<double, void, const short, int>::v)
 >);
 ```
 
 ---
 
-> Reflection - https://github.com/boost-ext/reflect (https://godbolt.org/z/ds3KMGhqP)
+> Reflection - https://github.com/boost-ext/reflect (https://godbolt.org/z/8PYEveWza)
 
 ```cpp
 struct foo {
@@ -126,11 +109,12 @@ struct foo {
 
 constexpr foo f{.a = 42, .b = true, .c = 3.2f};
 
-constexpr mp::vector v = reflexpr(f)
+constexpr mp::vector v =
+    members(f)
   | std::views::filter([&](auto meta) { return member_name(meta, f) != "b"; })
   ;
 
-static_assert(std::tuple{42, 3.2f} == unreflexpr<std::tuple, v>(f));
+static_assert(std::tuple{42, 3.2f} == to<std::tuple, v>(f));
 ```
 
 ---
