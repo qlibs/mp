@@ -170,7 +170,7 @@ template<template<class...> class T>
   constexpr concepts::range auto range = expr();
   return [range]<size_t... Ns>(utility::index_sequence<Ns...>) {
     return T<type_of<range[Ns]>...>{};
-  }(utility::make_index_sequence<range .size()>{});
+  }(utility::make_index_sequence<range.size()>{});
 }
 
 /**
@@ -192,8 +192,8 @@ inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>)
  * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
-template<template<class...> class R, concepts::range auto range>
-using apply_t = decltype(apply<R>([] { return range; }));
+template<template<class...> class T, concepts::range auto range>
+using apply_t = decltype(apply<T>([] { return range; }));
 
 /**
  * Invokes function with compile-time info based on run-time info
