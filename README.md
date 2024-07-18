@@ -247,7 +247,7 @@ constexpr auto for_each(auto fn);
 > Configuration
 
 ```cpp
-#define MP 2'0'3     // Current library version (SemVer)
+#define MP 2'0'4     // Current library version (SemVer)
 #define MP_SIZE 1024 // Max number of meta types (compilation times optimization)
 ```
 
@@ -288,7 +288,7 @@ constexpr auto for_each(auto fn);
     CPMAddPackage(
       Name mp
       GITHUB_REPOSITORY boost-ext/mp
-      GIT_TAG v2.0.3
+      GIT_TAG v2.0.4
     )
     add_library(mp INTERFACE)
     target_include_directories(mp SYSTEM INTERFACE ${mp_SOURCE_DIR})

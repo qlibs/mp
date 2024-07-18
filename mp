@@ -6,7 +6,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #ifndef MP
-#define MP 2'0'3 // SemVer
+#define MP 2'0'4 // SemVer
 
 #if defined(__GNUC__)
 #pragma GCC system_header
@@ -19,7 +19,7 @@
 /**
  * ~~Template~~ Meta-Programming library (https://github.com/boost-ext/mp)
  */
-namespace mp::inline v2_0_3 {
+namespace mp::inline v2_0_4 {
 using size_t = decltype(sizeof(int));
 
 namespace utility {
