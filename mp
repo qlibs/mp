@@ -167,10 +167,10 @@ using type_of = typename decltype(get(detail::meta_type<meta>{}))::value_type;
  */
 template<template<class...> class T>
 [[nodiscard]] constexpr auto apply(auto expr) {
-  constexpr concepts::range auto v = expr();
-  return [v]<size_t... Ns>(utility::index_sequence<Ns...>) {
-    return T<type_of<v[Ns]>...>{};
-  }(utility::make_index_sequence<v.size()>{});
+  constexpr concepts::range auto range = expr();
+  return [range]<size_t... Ns>(utility::index_sequence<Ns...>) {
+    return T<type_of<range[Ns]>...>{};
+  }(utility::make_index_sequence<range .size()>{});
 }
 
 /**
