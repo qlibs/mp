@@ -187,8 +187,8 @@ template<info meta> using type_of = /* unspecified */;
  *               typeid(apply<variant>([] { return vector{meta<int>}; })));
  * @endcode
  */
-template<template<class...> class T, class Expr>
-[[nodiscard]] constexpr auto apply(Expr expr);
+template<template<class...> class T>
+[[nodiscard]] constexpr auto apply(concepts::invocable auto expr);
 ```
 
 ```cpp

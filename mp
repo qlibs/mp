@@ -36,6 +36,8 @@ template<size_t N> using make_index_sequence =
 namespace concepts {
 template<class TRange>
 concept range = requires(TRange range) { range.begin(); range.end(); };
+template<class Fn, class... TArgs>
+concept invocable = requires (Fn fn, TArgs... args) { fn(args...); };
 } // namespace concepts
 
 /**
@@ -166,7 +168,7 @@ using type_of = typename decltype(get(detail::meta_type<meta>{}))::value_type;
  * @endcode
  */
 template<template<class...> class T>
-[[nodiscard]] constexpr auto apply(auto expr) {
+[[nodiscard]] constexpr auto apply(concepts::invocable auto expr) {
   constexpr concepts::range auto range = expr();
   return [range]<size_t... Ns>(utility::index_sequence<Ns...>) {
     return T<type_of<range[Ns]>...>{};
