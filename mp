@@ -7,6 +7,7 @@
 //
 #ifndef MP
 #define MP 2'0'3 // SemVer
+
 #if defined(__GNUC__)
 #pragma GCC system_header
 #endif
@@ -24,16 +25,21 @@ using size_t = decltype(sizeof(int));
 namespace utility {
 template<class T, T...> struct integer_sequence { };
 template<size_t... Ns> using index_sequence = integer_sequence<size_t, Ns...>;
-template<size_t Size> using make_index_sequence =
+template<size_t N> using make_index_sequence =
 #if defined(__clang__) || defined(_MSC_VER)
-  __make_integer_seq<integer_sequence, size_t, Size>;
+  __make_integer_seq<integer_sequence, size_t, N>;
 #else
-   index_sequence<__integer_pack(Size)...>;
+   index_sequence<__integer_pack(N)...>;
 #endif
 } // namespace utility
 
+namespace concepts {
+template<class TRange>
+concept range = requires(TRange range) { range.begin(); range.end(); };
+} // namespace concepts
+
 /**
- * Minimal - non-conforming - array optimized for fast compilation-times
+ * Minimal (non-conforming) array
  *
  * @code
  * array v{meta<void>, meta<int>};
@@ -42,29 +48,29 @@ template<size_t Size> using make_index_sequence =
  * assert(meta<int> == v[1]);
  * @endcode
  */
-template<class T, size_t Size>
+template<class T, size_t N>
 struct array {
   using value_type = T;
   [[nodiscard]] constexpr auto begin() const { return &data[0]; }
   [[nodiscard]] constexpr auto begin() { return &data[0]; }
-  [[nodiscard]] constexpr auto end() const { return &data[0] + Size; }
-  [[nodiscard]] constexpr auto end() { return &data[0] + Size; }
+  [[nodiscard]] constexpr auto end() const { return &data[0] + N; }
+  [[nodiscard]] constexpr auto end() { return &data[0] + N; }
   [[nodiscard]] constexpr auto operator[](size_t I) const { return data[I]; }
   [[nodiscard]] constexpr auto& operator[](size_t I) { return data[I]; }
-  [[nodiscard]] constexpr auto size() const { return Size; }
-  [[nodiscard]] constexpr bool operator==(const array& other) const {
-    for (auto i = 0u; i < Size; ++i) { if (data[i] != other.data[i]) { return false; } }
+  [[nodiscard]] constexpr auto size() const { return N; }
+  [[nodiscard]] constexpr auto operator==(const array& other) const -> bool {
+    for (auto i = 0u; i < N; ++i) { if (data[i] != other.data[i]) { return false; } }
     return true;
   }
   [[nodiscard]] constexpr auto operator!=(const array& other) const -> bool {
     return not operator==(other);
   }
-  T data[Size];
+  T data[N];
 };
 template<class T, class... Ts> array(T, Ts...) -> array<T, 1u + sizeof...(Ts)>;
 
 /**
- * Minimal - non-conforming - static vector optimized for fast compilation-times
+ * Minimal (non-conforming) vector
  *
  * @code
  * vector v{meta<void>, meta<int>};
@@ -73,14 +79,13 @@ template<class T, class... Ts> array(T, Ts...) -> array<T, 1u + sizeof...(Ts)>;
  * assert(meta<int> == v[1]);
  * @endcode
  */
-template<class T, size_t Size = MP_SIZE>
+template<class T, size_t N = MP_SIZE>
 struct vector {
   using value_type = T;
   constexpr vector() = default;
   constexpr vector(size_t size) : size_{size} { }
   constexpr explicit vector(const auto&... ts) : data{ts...}, size_{sizeof...(ts)} { }
-  template<class TRange> requires requires(TRange range) { range.begin(); range.end(); }
-  constexpr vector(TRange range) { for (const auto& t : range) { data[size_++] = t; } }
+  constexpr vector(concepts::range auto range) { for (const auto& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
   constexpr void emplace_back(T&& t) { data[size_++] = static_cast<T&&>(t); }
   [[nodiscard]] constexpr auto begin() const { return &data[0]; }
@@ -91,7 +96,7 @@ struct vector {
   [[nodiscard]] constexpr auto& operator[](size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
   [[nodiscard]] constexpr auto resize(size_t size) { size_ = size; }
-  [[nodiscard]] constexpr auto capacity() const { return Size; }
+  [[nodiscard]] constexpr auto capacity() const { return N; }
   template<size_t size> [[nodiscard]] constexpr auto operator==(const vector<T, size>& other) const -> bool {
     if (size_ != other.size_) { return false; }
     for (auto i = 0u; i < size_; ++i) { if (data[i] != other.data[i]) { return false; } }
@@ -102,7 +107,7 @@ struct vector {
   }
   constexpr void clear() { size_ = {}; }
 
-  union { T data[Size]{}; }; // __cpp_trivial_union
+  union { T data[N]{}; }; // __cpp_trivial_union
   size_t size_{};
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1u + sizeof...(Ts)>;
@@ -162,33 +167,33 @@ using type_of = typename decltype(get(detail::meta_type<meta>{}))::value_type;
  */
 template<template<class...> class T>
 [[nodiscard]] constexpr auto apply(auto expr) {
-  constexpr auto v = expr();
+  constexpr concepts::range auto v = expr();
   return [v]<size_t... Ns>(utility::index_sequence<Ns...>) {
     return T<type_of<v[Ns]>...>{};
   }(utility::make_index_sequence<v.size()>{});
 }
 
 /**
- * Applies vector V to `T<type_of<info>...>`
+ * Applies range to `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>) == typeid(apply<variant, vector{meta<int>}>));
  * @endcode
  */
-template<template<class...> class T, auto V>
+template<template<class...> class T, concepts::range auto range>
 inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>) {
-  return T<type_of<V[Ns]>...>{};
-}(utility::make_index_sequence<V.size()>{});
+  return T<type_of<range[Ns]>...>{};
+}(utility::make_index_sequence<range.size()>{});
 
 /**
- * Applies vector V to `T<type_of<info>...>`
+ * Applies range to `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>) == typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
-template<template<class...> class R, auto V>
-using apply_t = decltype(apply<R>([] { return V; }));
+template<template<class...> class R, concepts::range auto range>
+using apply_t = decltype(apply<R>([] { return range; }));
 
 /**
  * Invokes function with compile-time info based on run-time info
@@ -235,7 +240,7 @@ constexpr auto invoke(info meta) {
 }
 
 /**
- * Iterates over all elements of constexpr container
+ * Iterates over all elements of over range
  *
  * @code
  * constexpr vector v{meta<int>};
@@ -244,11 +249,11 @@ constexpr auto invoke(info meta) {
  * });
  * @endcode
  */
-template<auto V>
-constexpr void for_each(auto fn) {
+template<concepts::range auto range>
+constexpr auto for_each(auto fn) {
   [fn]<size_t... Ns>(utility::index_sequence<Ns...>) {
-    (fn.template operator()<V[Ns]>(), ...);
-  }(utility::make_index_sequence<V.size()>{});
+    (fn.template operator()<range[Ns]>(), ...);
+  }(utility::make_index_sequence<range.size()>{});
 }
 } // namespace mp
 

@@ -1,7 +1,7 @@
 <a href="http://www.boost.org/LICENSE_1_0.txt" target="_blank">![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)</a>
 <a href="https://github.com/boost-ext/mp/releases" target="_blank">![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)</a>
 <a href="https://godbolt.org/z/qarWdbK79">![build](https://img.shields.io/badge/build-blue.svg)</a>
-<a href="https://godbolt.org/z/Y1TxTo68K">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
+<a href="https://godbolt.org/z/847qEqWzh">![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)</a>
 
 ---------------------------------------
 
@@ -193,28 +193,28 @@ template<template<class...> class T, class Expr>
 
 ```cpp
 /**
- * Applies vector V to `T<type_of<info>...>`
+ * Applies range to `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>) ==
  *               typeid(apply<variant, vector{meta<int>}>));
  * @endcode
  */
-template<template<class...> class T, auto V>
-inline constexpr auto apply_v = decltype(apply<T, [] { return V; }>);
+template<template<class...> class T, concepts::range auto range>
+inline constexpr auto apply_v = decltype(apply<T, [] { return range; }>);
 ```
 
 ```cpp
 /**
- * Applies vector V to `T<type_of<info>...>`
+ * Applies range to `T<type_of<info>...>`
  *
  * @code
  * static_assert(typeid(variant<int>) ==
  *               typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
  * @endcode
  */
-template<template<class...> class T, auto V>
-using apply_t = decltype(apply_v<T, V>);
+template<template<class...> class T, concepts::range auto range>
+using apply_t = decltype(apply_v<T, range>);
 ```
 
 ```cpp
@@ -231,7 +231,7 @@ constexpr auto invoke(auto fn, info meta);
 
 ```cpp
 /**
- * Iterates over all elements of constexpr continer
+ * Iterates over all elements of a range
  *
  * @code
  * constexpr vector v{meta<int>};
@@ -240,8 +240,8 @@ constexpr auto invoke(auto fn, info meta);
  * });
  * @endcode
  */
-template<auto V>
-constexpr void for_each(auto fn);
+template<concepts::range auto range>
+constexpr auto for_each(auto fn);
 ```
 
 > Configuration
