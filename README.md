@@ -274,13 +274,13 @@ constexpr auto for_each(auto fn);
 
     > `mp` meta-programming model is very simpilar to P2996 and it's based on type erased info object and meta-functions. `mp` also supports all C++ standard library and since verion 2.0.0+ `mp` type names have been adopted to closer reflect the reflection proposal.
 
-    | P2996 (C++26*) | mp (C++20) |
-    | ----- | -- |
-    | `^T`  | `meta<T>` |
-    | `typename [: T :]`  | `type_of<T>` |
-    | ` template for` (https://wg21.link/p1306) | `for_each` |
-    | `substitute`  | `apply` |
-    | `value_of<R>(reflect_invoke(^fn, {substitute(^meta, {reflect_value(m)})}))` | `invoke(fn, m)` |
+    | mp (C++20) | P2996 (C++26*) |
+    | - | - |
+    | `meta<T>` | `^T` |
+    | `type_of<T>` | `typename [: T :]` |
+    | `for_each` | ` template for` (https://wg21.link/p1306) |
+    | `apply` | `substitute` |
+    | `invoke(fn, m)` | ```value_of<R>(reflect_invoke(^fn, {substitute(^meta, {reflect_value(m)})}))``` |
 
 - How to integrate with CMake/CPM?
 
