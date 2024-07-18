@@ -37,7 +37,7 @@ namespace concepts {
 template<class TRange>
 concept range = requires(TRange range) { range.begin(); range.end(); };
 template<class Fn, class... TArgs>
-concept invocable = requires (Fn fn, TArgs... args) { fn(args...); };
+concept invocable = requires(Fn fn, TArgs... args) { fn(args...); };
 } // namespace concepts
 
 /**
