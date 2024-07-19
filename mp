@@ -6,7 +6,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifdef DOC
+#if defined(README)
 // -->
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)](https://github.com/boost-ext/mp/releases)
@@ -312,8 +312,7 @@ constexpr auto for_each(auto fn);
 - Similar projects?
     > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.mpl](https://github.com/boostorg/mpl)
 <!--
-#endif // DOC
-
+#else
 #ifndef MP
 #define MP 2'0'4 // SemVer
 
@@ -806,3 +805,4 @@ static_assert(([] {
 }(), true));
 #endif // NTEST
 #endif // MP
+#endif // README
