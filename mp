@@ -316,7 +316,10 @@ constexpr auto for_each(auto fn);
 
 #ifndef MP
 #define MP 2'0'4 // SemVer
+
+#if defined(__GNUC__)
 #pragma GCC system_header
+#endif
 
 #if not defined(MP_SIZE)
 #define MP_SIZE 1024
