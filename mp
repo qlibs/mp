@@ -8,7 +8,6 @@
 //
 #ifdef DOC
 // -->
-
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)](https://github.com/boost-ext/mp/releases)
 [![build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/qarWdbK79)
