@@ -6,8 +6,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#if defined(DOC)
+#ifdef DOC
 // -->
+
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)](https://github.com/boost-ext/mp/releases)
 [![build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/qarWdbK79)
@@ -312,7 +313,9 @@ constexpr auto for_each(auto fn);
 - Similar projects?
     > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.mpl](https://github.com/boostorg/mpl)
 <!--
-#elif not defined(MP)
+#endif // DOC
+
+#ifndef MP
 #define MP 2'0'4 // SemVer
 
 #if defined(__GNUC__)
@@ -563,7 +566,7 @@ constexpr auto for_each(auto fn) {
 }
 } // namespace mp
 
-#if not defined(NTEST)
+#ifndef NTEST
 namespace mp::test {
   template<class...> struct type_list { };
   template<class...> inline constexpr auto is_same_v = false;
@@ -802,5 +805,5 @@ static_assert(([] {
     }
   }
 }(), true));
-#endif
+#endif // NTEST
 #endif // MP
