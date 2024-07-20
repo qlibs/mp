@@ -10,7 +10,7 @@
 // -->
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)](https://github.com/boost-ext/mp/releases)
-[![build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/qarWdbK79)
+[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/qarWdbK79)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/847qEqWzh)
 
 ---------------------------------------
@@ -500,7 +500,11 @@ inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>)
  * @endcode
  */
 template<template<class...> class T, concepts::range auto range>
-using apply_t = decltype(apply<T>([] { return range; }));
+using apply_t = decltype(
+  []<size_t... Ns>(utility::index_sequence<Ns...>) {
+    return T<type_of<range[Ns]>...>{};
+  }(utility::make_index_sequence<range.size()>{})
+);
 
 /**
  * Invokes function with compile-time info based on run-time info
@@ -790,7 +794,9 @@ static_assert(([] {
     }
 
     {
-      mp::for_each<mp::vector{mp::meta<int>}>([&]<auto meta> { expect(meta == mp::meta<int>); });
+      mp::for_each<mp::vector{mp::meta<int>}>([&]<auto meta> {
+        expect(meta == mp::meta<int>);
+      });
     }
 
     {
