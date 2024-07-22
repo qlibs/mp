@@ -30,8 +30,8 @@
 
 ### Requirements
 
-- C++20 ([clang++13+, g++11+, msvc-19.34+ -Wall](https://godbolt.org/z/qarWdbK79))
-    - `-Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`
+- C++20 ([clang++13+, g++11+, msvc-19.34+](https://godbolt.org/z/qarWdbK79))
+    - `-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`
 
 ---
 
