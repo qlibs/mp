@@ -288,8 +288,9 @@ constexpr auto for_each(auto fn);
     | - | - |
     | `meta<T>` | `^T` |
     | `type_of<T>` | `typename [: T :]` |
-    | `for_each` | ` template for` (https://wg21.link/p1306) |
+    | `for_each` | `template for` (https://wg21.link/p1306) |
     | `apply` | `substitute` |
+    | `invoke<trait>(m)` | ```test_trait``` |
     | `invoke(fn, m)` | ```value_of<R>(reflect_invoke(^fn, {substitute(^meta, {reflect_value(m)})}))``` |
 
 - How to integrate with CMake/CPM?
