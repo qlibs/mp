@@ -9,7 +9,7 @@
 #ifdef README
 // -->
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
-[![Version](https://badge.fury.io/gh/boost-ext%2Fmp.svg)](https://github.com/boost-ext/mp/releases)
+[![Version](https://badge.fury.io/gh/qlibs%2Fmp.svg)](https://github.com/qlibs/mp/releases)
 [![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/qarWdbK79)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/847qEqWzh)
 
@@ -21,10 +21,10 @@
 
 ### Features
 
-- Single header (https://raw.githubusercontent.com/boost-ext/mp/main/mp - for integration see [FAQ](#faq))
+- Single header (https://raw.githubusercontent.com/qlibs/mp/main/mp - for integration see [FAQ](#faq))
 - Minimal [API](#api) and learning curve (supports STL, ranges, ...)
 - Supports debugging (meta-functions can be executed and debugged at run-time - see [examples](#examples))
-- Supports reflection (requires https://github.com/boost-ext/reflect - see [examples](#examples))
+- Supports reflection (requires https://github.com/qlibs/reflect - see [examples](#examples))
 - Verifies itself upon include (can be disabled with `-DNTEST` - see [FAQ](#faq))
 - Optimized compilation-times (see [benchmarks](#benchmarks))
 
@@ -109,7 +109,7 @@ static_assert(
 
 ---
 
-> Reflection (https://github.com/boost-ext/reflect / https://godbolt.org/z/bPPjY3b3v)
+> Reflection (https://github.com/qlibs/reflect / https://godbolt.org/z/bPPjY3b3v)
 
 ```cpp
 struct foo {
@@ -265,7 +265,7 @@ constexpr auto for_each(auto fn);
 
 ### Benchmarks
 
-> https://boost-ext.github.io/mp
+> https://qlibs.github.io/mp
 
 ---
 
@@ -297,7 +297,7 @@ constexpr auto for_each(auto fn);
     ```
     CPMAddPackage(
       Name mp
-      GITHUB_REPOSITORY boost-ext/mp
+      GITHUB_REPOSITORY qlibs/mp
       GIT_TAG v2.0.4
     )
     add_library(mp INTERFACE)
