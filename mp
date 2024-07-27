@@ -258,7 +258,7 @@ constexpr auto for_each(auto fn);
 
 ```cpp
 #define MP 2'0'4     // Current library version (SemVer)
-#define MP_SIZE 1024 // Max number of meta types (compilation times optimization)
+#define MP_SIZE 1024 // Max number of supported types / -fconstexpr-depth
 ```
 
 ---
@@ -322,7 +322,7 @@ constexpr auto for_each(auto fn);
 #endif
 
 #ifndef MP_SIZE
-#define MP_SIZE 1024
+#define MP_SIZE 1024 // -fconstexpr-depth
 #endif
 
 namespace mp::inline v2_0_4 {
