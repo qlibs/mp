@@ -15,7 +15,7 @@
 
 ---------------------------------------
 
-## MP: ~~Template~~ Meta-Programming
+## MP: ~~Template~~ Meta-Programming library
 
 > https://en.wikipedia.org/wiki/Metaprogramming
 
