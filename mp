@@ -10,8 +10,8 @@
 // -->
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Version](https://badge.fury.io/gh/qlibs%2Fmp.svg)](https://github.com/qlibs/mp/releases)
-[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/qarWdbK79)
-[![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/847qEqWzh)
+[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/dvqhYYGvc)
+[![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/3TqPx5WEG)
 
 ---------------------------------------
 
@@ -84,7 +84,7 @@ static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 
 ---
 
-> Algorithms (https://godbolt.org/z/Y3rT58xMq)
+> Algorithms (https://godbolt.org/z/GvzjvdPq8)
 
 ```cpp
 template<class... Ts>
@@ -109,7 +109,7 @@ static_assert(
 
 ---
 
-> Reflection (https://github.com/qlibs/reflect / https://godbolt.org/z/bPPjY3b3v)
+> Reflection - https://github.com/qlibs/reflect (https://godbolt.org/z/qb37G79Ya)
 
 ```cpp
 struct foo {
@@ -130,7 +130,7 @@ static_assert(std::tuple{42, 3.2f} == to<std::tuple, v>(f));
 
 ---
 
-> Run-time testing/debugging (https://godbolt.org/z/crbeMfo3r)
+> Run-time testing/debugging (https://godbolt.org/z/vTfGGToa4)
 
 ```cpp
 constexpr auto reverse(std::ranges::range auto v) {
