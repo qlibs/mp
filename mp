@@ -31,7 +31,6 @@
 ### Requirements
 
 - C++20 ([clang++13+, g++11+, msvc-19.34+](https://en.cppreference.com/w/cpp/compiler_support))
-    - `-Wall -Wextra -Werror -pedantic -pedantic-errors | /W4 /WX`
 
 ---
 
