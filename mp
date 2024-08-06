@@ -23,7 +23,7 @@
 //
 #ifdef README
 // -->
-[![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
+[![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Version](https://badge.fury.io/gh/qlibs%2Fmp.svg)](https://github.com/qlibs/mp/releases)
 [![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/dvqhYYGvc)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/3TqPx5WEG)
