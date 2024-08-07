@@ -21,7 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-#ifdef README
+#if 0
 // -->
 [![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Version](https://badge.fury.io/gh/qlibs%2Fmp.svg)](https://github.com/qlibs/mp/releases)
@@ -268,13 +268,6 @@ template<concepts::range auto range>
 constexpr auto for_each(auto fn);
 ```
 
-> Configuration
-
-```cpp
-#define MP 2'0'4     // Current library version (SemVer)
-#define MP_SIZE 1024 // Max number of supported types / -fconstexpr-depth
-```
-
 ---
 
 ### Benchmarks
@@ -327,16 +320,15 @@ constexpr auto for_each(auto fn);
 - Similar projects?
     > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.mpl](https://github.com/boostorg/mpl)
 <!--
-#else
-#ifndef MP
-#define MP 2'0'4 // SemVer
+#endif
 
+#pragma once
 #ifdef __GNUC__
 #pragma GCC system_header
 #endif
 
 #ifndef MP_SIZE
-#define MP_SIZE 1024 // -fconstexpr-depth
+#define MP_SIZE 1024u
 #endif
 
 namespace mp::inline v2_0_4 {
@@ -401,12 +393,12 @@ template<class T, class... Ts> array(T, Ts...) -> array<T, 1u + sizeof...(Ts)>;
  * assert(meta<int> == v[1]);
  * @endcode
  */
-template<class T, size_t N = MP_SIZE>
+template<class T>
 struct vector {
   using value_type = T;
   constexpr vector() = default;
   constexpr vector(size_t size) : size_{size} { }
-  constexpr explicit vector(const auto&... ts) : data{ts...}, size_{sizeof...(ts)} { }
+  constexpr explicit vector(const auto&... ts) requires (requires { T(ts); } and ...) : data{ts...}, size_{sizeof...(ts)} { }
   constexpr vector(concepts::range auto range) { for (const auto& t : range) { data[size_++] = t; } }
   constexpr void push_back(const T& t) { data[size_++] = t; }
   constexpr void emplace_back(T&& t) { data[size_++] = static_cast<T&&>(t); }
@@ -418,21 +410,21 @@ struct vector {
   [[nodiscard]] constexpr auto& operator[](size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
   [[nodiscard]] constexpr auto resize(size_t size) { size_ = size; }
-  [[nodiscard]] constexpr auto capacity() const { return N; }
-  template<size_t size> [[nodiscard]] constexpr auto operator==(const vector<T, size>& other) const -> bool {
+  [[nodiscard]] constexpr auto capacity() const { return MP_SIZE; }
+  [[nodiscard]] constexpr auto operator==(const vector<T>& other) const -> bool {
     if (size_ != other.size_) { return false; }
     for (auto i = 0u; i < size_; ++i) { if (data[i] != other.data[i]) { return false; } }
     return true;
   }
-  template<size_t size> [[nodiscard]] constexpr auto operator!=(const vector<T, size>& other) const -> bool {
+  template<size_t size> [[nodiscard]] constexpr auto operator!=(const vector<T>& other) const -> bool {
     return not operator==(other);
   }
   constexpr void clear() { size_ = {}; }
 
-  union { T data[N]{}; }; // __cpp_trivial_union
+  union { T data[MP_SIZE]{}; }; // __cpp_trivial_union
   size_t size_{};
 };
-template<class T, class... Ts> vector(T, Ts...) -> vector<T, 1u + sizeof...(Ts)>;
+template<class T, class... Ts> vector(T, Ts...) -> vector<T>;
 
 /**
  * Meta info type
@@ -654,52 +646,52 @@ static_assert(([] {
   // mp::vector
   {
     {
-      mp::vector<mp::size_t, 1> v{};
+      mp::vector<mp::size_t> v{};
       expect(0u == v.size());
-      expect(1 == v.capacity());
+      expect(1u <= v.capacity());
     }
 
     {
-      mp::vector<int, 3> v{1, 2, 3};
+      mp::vector<int> v{1, 2, 3};
       expect(3u == v.size());
-      expect(3 == v.capacity());
+      expect(3u <= v.capacity());
     }
 
     {
-      mp::vector<int, 3> v{1, 2, 3};
+      mp::vector<int> v{1, 2, 3};
       expect(3u == v.size());
       v.resize(2);
       expect(2u == v.size());
     }
 
     {
-      constexpr mp::vector<int, 1> v1{1};
+      constexpr mp::vector<int> v1{1};
       static_assert(1u == v1.size());
       static_assert(1 == v1[0]);
 
-      constexpr mp::vector<int, 1> v2{v1};
+      constexpr mp::vector<int> v2{v1};
       static_assert(1u == v2.size());
       static_assert(1 == v2[0]);
     }
 
     {
-      mp::vector<int, 4> v1{1, 2};
+      mp::vector<int> v1{1, 2};
       expect(2u == v1.size());
-      expect(4 == v1.capacity());
+      expect(4u <= v1.capacity());
       expect(1 == v1[0]);
       expect(2 == v1[1]);
 
-      mp::vector<int, 2> v2{v1};
+      mp::vector<int> v2{v1};
       expect(2u == v2.size());
-      expect(2 == v2.capacity());
+      expect(2u <= v2.capacity());
       expect(1 == v2[0]);
       expect(2 == v2[1]);
     }
 
     {
-      mp::vector<int, 2> v;
+      mp::vector<int> v;
       expect(0u == v.size());
-      expect(2 == v.capacity());
+      expect(2u <= v.capacity());
 
       v.push_back(1);
       expect(1u == v.size());
@@ -711,7 +703,7 @@ static_assert(([] {
     }
 
     {
-      mp::vector<int, 1> v{42};
+      mp::vector<int> v{42};
       expect(42 == v[0]);
       v[0]++;
       expect(43 == v[0]);
@@ -720,17 +712,17 @@ static_assert(([] {
     }
 
     {
-      mp::vector<int, 2> v{1, 2};
+      mp::vector<int> v{1, 2};
       expect(2u == v.size());
-      expect(2 == v.capacity());
+      expect(2u <= v.capacity());
 
       v.clear();
       expect(0u == v.size());
-      expect(2 == v.capacity());
+      expect(2u <= v.capacity());
     }
 
     {
-      mp::vector<int, 42> v{};
+      mp::vector<int> v{};
       expect(0u == v.size() && 0u == mp::size_t(v.end() - v.begin()));
       expect(v.begin() == v.end());
 
@@ -744,10 +736,8 @@ static_assert(([] {
     }
 
     {
-      expect(mp::vector<int, 1>{1} == mp::vector<int, 1>{1});
-      expect(mp::vector<int, 1>{1} == mp::vector<int, 2>{1});
-      expect(mp::vector<int, 1>{1} != mp::vector<int, 1>{2});
-      expect(mp::vector<int, 1>{1} != mp::vector<int, 2>{2});
+      expect(mp::vector<int>{1} == mp::vector<int>{1});
+      expect(mp::vector<int>{1} != mp::vector<int>{2});
     }
   }
 
@@ -782,7 +772,7 @@ static_assert(([] {
 
   // mp::apply
   {
-    static_assert([](type_list<>){ return true; }(mp::apply<type_list>([] { return mp::vector<mp::info, 1>{}; })));
+    static_assert([](type_list<>){ return true; }(mp::apply<type_list>([] { return mp::vector<mp::info>{}; })));
     static_assert([](type_list<int>){ return true; }(mp::apply<type_list>([] { return mp::vector{mp::meta<int>}; })));
     static_assert([](type_list<void, void>){ return true; }(mp::apply<type_list>([] { return mp::vector{mp::meta<void>, mp::meta<void>}; })));
   }
@@ -802,8 +792,8 @@ static_assert(([] {
   // mp::for_each
   {
     {
-      constexpr mp::vector<mp::info, 1> m{};
-      mp::vector<mp::info, 42> v{};
+      constexpr mp::vector<mp::info> m{};
+      mp::vector<mp::info> v{};
       mp::for_each<m>([&]<auto meta> { v.push_back(meta); });
       expect(0u == v.size());
     }
@@ -816,7 +806,7 @@ static_assert(([] {
 
     {
       constexpr mp::vector m{mp::meta<int>, mp::meta<void>};
-      mp::vector<mp::info, 42> v{};
+      mp::vector<mp::info> v{};
       mp::for_each<m>([&]<mp::info meta> { v.push_back(meta); });
       expect(2u == v.size());
       expect(m[0] == v[0]);
@@ -825,5 +815,3 @@ static_assert(([] {
   }
 }(), true));
 #endif // NTEST
-#endif // MP
-#endif // README
