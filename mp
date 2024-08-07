@@ -41,7 +41,7 @@
 - Supports debugging (meta-functions can be executed and debugged at run-time - see [examples](#examples))
 - Supports reflection (requires https://github.com/qlibs/reflect - see [examples](#examples))
 - Verifies itself upon include (can be disabled with `-DNTEST` - see [FAQ](#faq))
-- Optimized compilation-times (see https://qlibs.github.io/mp)
+- Optimized compilation-times (see [https://qlibs.github.io/mp](benchmarks))
 
 ### Requirements
 
