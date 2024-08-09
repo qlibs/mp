@@ -23,16 +23,16 @@
 //
 #if 0
 // -->
+[Overview](#Overview) / [Examples](#Examples) / [API](#API) / [FAQ](#FAQ)
+
+## MP: ~~Template~~ Meta-Programming library
+
 [![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Version](https://badge.fury.io/gh/qlibs%2Fmp.svg)](https://github.com/qlibs/mp/releases)
 [![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/dvqhYYGvc)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/3TqPx5WEG)
 
----------------------------------------
-
-## MP: ~~Template~~ Meta-Programming library
-
-> https://en.wikipedia.org/wiki/Metaprogramming
+  > https://en.wikipedia.org/wiki/Metaprogramming
 
 ### Features
 
