@@ -304,11 +304,11 @@ constexpr auto for_each(auto fn);
     )
     add_library(mp INTERFACE)
     target_include_directories(mp SYSTEM INTERFACE ${mp_SOURCE_DIR})
-    add_library(mp::mp ALIAS mp)
+    add_library(qlibs::mp ALIAS mp)
     ```
 
     ```
-    target_link_libraries(${PROJECT_NAME} mp::mp);
+    target_link_libraries(${PROJECT_NAME} qlibs::mp);
     ```
 
 - Similar projects?
