@@ -300,7 +300,7 @@ constexpr auto for_each(auto fn);
     CPMAddPackage(
       Name mp
       GITHUB_REPOSITORY qlibs/mp
-      GIT_TAG v2.0.4
+      GIT_TAG v2.0.5
     )
     add_library(mp INTERFACE)
     target_include_directories(mp SYSTEM INTERFACE ${mp_SOURCE_DIR})
@@ -325,7 +325,7 @@ constexpr auto for_each(auto fn);
 #define MP_SIZE 1024u
 #endif
 
-namespace mp::inline v2_0_4 {
+namespace mp::inline v2_0_5 {
 using size_t = decltype(sizeof(int));
 
 namespace utility {
