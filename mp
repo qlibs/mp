@@ -294,21 +294,22 @@ constexpr auto for_each(auto fn);
     | `invoke<trait>` | `test_trait` |
     | `invoke(fn, m)` | `value_of<R>(reflect_invoke(^fn, {substitute(^meta, {reflect_value(m)})}))` |
 
-- How to integrate with CMake/CPM?
+- How to integrate with [CMake.FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)?
 
     ```
-    CPMAddPackage(
-      Name mp
-      GITHUB_REPOSITORY qlibs/mp
+    include(FetchContent)
+
+    FetchContent_Declare(
+      qlibs.mp
+      GIT_REPOSITORY https://github.com/qlibs/mp
       GIT_TAG v2.0.5
     )
-    add_library(mp INTERFACE)
-    target_include_directories(mp SYSTEM INTERFACE ${mp_SOURCE_DIR})
-    add_library(qlibs::mp ALIAS mp)
+
+    FetchContent_MakeAvailable(qlibs.mp)
     ```
 
     ```
-    target_link_libraries(${PROJECT_NAME} qlibs::mp);
+    target_link_libraries(${PROJECT_NAME} PUBLIC qlibs.mp);
     ```
 
 - Similar projects?
