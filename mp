@@ -292,7 +292,7 @@ constexpr auto for_each(auto fn);
     | `for_each` | `template for` (https://wg21.link/p1306) |
     | `apply` | `substitute` |
     | `invoke<Fn>` | `reflect_invoke` |
-    | `invoke<trait>` | `test_trait` |
+    | `invoke<Trait>` | `test_trait` |
     | `invoke<T>` | `extract` |
 
 - How to integrate with [CMake.FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)?
