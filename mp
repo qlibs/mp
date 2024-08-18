@@ -518,7 +518,7 @@ using apply_t = decltype(
  * static_assert(invoke([]<info m> { return std::is_const_v<type_of<m>>; }, i));
  * @endcode
  */
-template<class Fn, auto tag = []{}>
+template<class Fn, class T = decltype([]{})>
 constexpr auto invoke(Fn fn, info meta) {
   constexpr auto dispatch = [&]<size_t... Ns>(utility::index_sequence<Ns...>) {
     return array{
@@ -530,7 +530,7 @@ constexpr auto invoke(Fn fn, info meta) {
         };
       }.template operator()<info{Ns}>()...
     };
-  }(utility::make_index_sequence<size_t(detail::meta<decltype(tag)>::id)>{});
+  }(utility::make_index_sequence<size_t(mp::meta<T>)>{});
   return dispatch[size_t(meta)](fn);
 }
 
