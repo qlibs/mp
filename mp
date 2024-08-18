@@ -32,7 +32,7 @@
 [![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/6asb6K4EK)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/3TqPx5WEG)
 
-  > https://en.wikipedia.org/wiki/Metaprogramming
+  > https://en.wikipedia.org/wiki/Template_metaprogramming
 
 ### Features
 
