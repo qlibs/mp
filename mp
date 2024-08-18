@@ -291,8 +291,9 @@ constexpr auto for_each(auto fn);
     | `type_of<T>` | `typename [: T :]` |
     | `for_each` | `template for` (https://wg21.link/p1306) |
     | `apply` | `substitute` |
+    | `invoke<Fn>` | `reflect_invoke` |
     | `invoke<trait>` | `test_trait` |
-    | `invoke(fn, m)` | `value_of<R>(reflect_invoke(^fn, {substitute(^meta, {reflect_value(m)})}))` |
+    | `invoke<T>` | `extract` |
 
 - How to integrate with [CMake.FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)?
 
@@ -338,6 +339,7 @@ template<size_t N> using make_index_sequence =
 #else
    index_sequence<__integer_pack(N)...>;
 #endif
+template<class T> auto declval() -> T&&;
 } // namespace utility
 
 namespace concepts {
@@ -427,22 +429,22 @@ template<class T, class... Ts> vector(T, Ts...) -> vector<T>;
 enum class info : size_t { };
 
 namespace detail {
-template<info> struct meta_type { constexpr auto friend get(meta_type); };
-template<class T> struct meta_info {
+template<info> struct info { constexpr auto friend get(info); };
+template<class T> struct meta {
   using value_type = T;
   template<size_t left = 0u, size_t right = MP_SIZE - 1u>
-  static constexpr auto id() -> size_t {
+  static constexpr auto gen() -> size_t {
     if constexpr (left >= right) {
-      return left + requires { get(meta_type<info{left}>{}); };
+      return left + requires { get(info<mp::info{left}>{}); };
     } else if constexpr (constexpr auto mid = left + (right - left) / 2u;
-      requires { get(meta_type<info{mid}>{}); }) {
-      return id<mid + 1u, right>();
+      requires { get(info<mp::info{mid}>{}); }) {
+      return gen<mid + 1u, right>();
     } else {
-      return id<left, mid - 1u>();
+      return gen<left, mid - 1u>();
     }
   }
-  static constexpr auto type_id = info{id()};
-  constexpr auto friend get(meta_type<type_id>) { return meta_info{}; }
+  static constexpr auto id = mp::info{gen()};
+  constexpr auto friend get(info<id>) { return meta{}; }
 };
 } // namespace detail
 
@@ -455,7 +457,7 @@ template<class T> struct meta_info {
  * @endcode
  */
 template<class T>
-inline constexpr info meta = detail::meta_info<T>::type_id;
+inline constexpr info meta = detail::meta<T>::id;
 
 /**
  * Returns underlying type from meta type
@@ -465,7 +467,7 @@ inline constexpr info meta = detail::meta_info<T>::type_id;
  * @endcode
  */
 template<info meta>
-using type_of = typename decltype(get(detail::meta_type<meta>{}))::value_type;
+using type_of = typename decltype(get(detail::info<meta>{}))::value_type;
 
 /**
  * Applies expression expr to `T<type_of<info>...>`
@@ -504,7 +506,7 @@ inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>)
 template<template<class...> class T, concepts::range auto range>
 using apply_t = decltype(
   []<size_t... Ns>(utility::index_sequence<Ns...>) {
-    return T<type_of<range[Ns]>...>{};
+    return utility::declval<type_of<range[Ns]>...>();
   }(utility::make_index_sequence<range.size()>{})
 );
 
@@ -528,7 +530,7 @@ constexpr auto invoke(Fn fn, info meta) {
         };
       }.template operator()<info{Ns}>()...
     };
-  }(utility::make_index_sequence<size_t(detail::meta_info<decltype(tag)>::type_id)>{});
+  }(utility::make_index_sequence<size_t(detail::meta<decltype(tag)>::id)>{});
   return dispatch[size_t(meta)](fn);
 }
 
@@ -738,9 +740,9 @@ static_assert(([] {
 
   // mp::detail
   {
-    static_assert(mp::detail::meta_info<int>::type_id == mp::detail::meta_info<int>::type_id);
-    static_assert(mp::detail::meta_info<int>::type_id != mp::detail::meta_info<void>::type_id);
-    static_assert(mp::detail::meta_info<void>::type_id == mp::detail::meta_info<void>::type_id);
+    static_assert(mp::detail::meta<int>::id == mp::detail::meta<int>::id);
+    static_assert(mp::detail::meta<int>::id != mp::detail::meta<void>::id);
+    static_assert(mp::detail::meta<void>::id == mp::detail::meta<void>::id);
   }
 
   // mp::meta
