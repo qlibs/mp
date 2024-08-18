@@ -506,7 +506,7 @@ inline constexpr auto apply_v = []<size_t... Ns>(utility::index_sequence<Ns...>)
 template<template<class...> class T, concepts::range auto range>
 using apply_t = decltype(
   []<size_t... Ns>(utility::index_sequence<Ns...>) {
-    return utility::declval<type_of<range[Ns]>...>();
+    return utility::declval<T<type_of<range[Ns]>...>>();
   }(utility::make_index_sequence<range.size()>{})
 );
 
@@ -772,6 +772,19 @@ static_assert(([] {
     static_assert([](type_list<>){ return true; }(mp::apply<type_list>([] { return mp::vector<mp::info>{}; })));
     static_assert([](type_list<int>){ return true; }(mp::apply<type_list>([] { return mp::vector{mp::meta<int>}; })));
     static_assert([](type_list<void, void>){ return true; }(mp::apply<type_list>([] { return mp::vector{mp::meta<void>, mp::meta<void>}; })));
+  }
+
+  // mp::apply_t
+  {
+    static_assert(is_same_v<
+      type_list<>,
+      mp::apply_t<type_list, mp::vector<mp::info>{}>
+    >);
+
+    static_assert(is_same_v<
+      type_list<int, const short>,
+      mp::apply_t<type_list, mp::array{mp::meta<int>, mp::meta<const short>}>
+    >);
   }
 
   // mp::invoke
