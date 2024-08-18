@@ -250,7 +250,7 @@ using apply_t = decltype(apply_v<T, range>);
  * static_assert(invoke([]<info m> { return std::is_const_v<type_of<m>>; }, i));
  * @endcode
  */
-constexpr auto invoke(auto fn, info meta);
+constexpr auto invoke(auto&& fn, info meta);
 ```
 
 ```cpp
@@ -265,7 +265,7 @@ constexpr auto invoke(auto fn, info meta);
  * @endcode
  */
 template<concepts::range auto range>
-constexpr auto for_each(auto fn);
+constexpr auto for_each(auto&& fn);
 ```
 
 ---
@@ -519,7 +519,7 @@ using apply_t = decltype(
  * @endcode
  */
 template<class Fn, class T = decltype([]{})>
-constexpr auto invoke(Fn fn, info meta) {
+constexpr auto invoke(Fn&& fn, info meta) {
   constexpr auto dispatch = [&]<size_t... Ns>(utility::index_sequence<Ns...>) {
     return array{
       []<info N> {
@@ -565,7 +565,7 @@ constexpr auto invoke(info meta) {
  * @endcode
  */
 template<concepts::range auto range>
-constexpr auto for_each(auto fn) {
+constexpr auto for_each(auto&& fn) {
   [fn]<size_t... Ns>(utility::index_sequence<Ns...>) {
     (fn.template operator()<range[Ns]>(), ...);
   }(utility::make_index_sequence<range.size()>{});
