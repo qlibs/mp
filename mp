@@ -29,7 +29,7 @@
 
 [![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Version](https://badge.fury.io/gh/qlibs%2Fmp.svg)](https://github.com/qlibs/mp/releases)
-[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/dvqhYYGvc)
+[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/6asb6K4EK)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/3TqPx5WEG)
 
   > https://en.wikipedia.org/wiki/Metaprogramming
@@ -303,7 +303,7 @@ constexpr auto for_each(auto fn);
     FetchContent_Declare(
       qlibs.mp
       GIT_REPOSITORY https://github.com/qlibs/mp
-      GIT_TAG v2.0.5
+      GIT_TAG v2.0.6
     )
 
     FetchContent_MakeAvailable(qlibs.mp)
@@ -314,7 +314,7 @@ constexpr auto for_each(auto fn);
     ```
 
 - Similar projects?
-    > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.mpl](https://github.com/boostorg/mpl)
+    > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.fusion](https://github.com/boostorg/fusion), [boost.mpl](https://github.com/boostorg/mpl)
 <!--
 #endif
 
@@ -327,7 +327,7 @@ constexpr auto for_each(auto fn);
 #define MP_SIZE 1024u
 #endif
 
-namespace mp::inline v2_0_5 {
+namespace mp::inline v2_0_6 {
 using size_t = decltype(sizeof(int));
 
 namespace utility {
