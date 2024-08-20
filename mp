@@ -326,7 +326,7 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
     FetchContent_Declare(
       qlibs.mp
       GIT_REPOSITORY https://github.com/qlibs/mp
-      GIT_TAG v2.0.7
+      GIT_TAG v2.0.8
     )
 
     FetchContent_MakeAvailable(qlibs.mp)
@@ -350,7 +350,7 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
 #define MP_SIZE 1024u
 #endif
 
-namespace mp::inline v2_0_7 {
+namespace mp::inline v2_0_8 {
 using size_t = decltype(sizeof(int));
 
 namespace utility {
