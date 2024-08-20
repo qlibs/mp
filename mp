@@ -29,7 +29,7 @@
 
 [![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Version](https://img.shields.io/github/v/release/qlibs/mp)](https://github.com/qlibs/mp/releases)
-[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/6asb6K4EK)
+[![Build](https://img.shields.io/badge/build-green.svg)](https://godbolt.org/z/6asb6K4EK)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/3TqPx5WEG)
 
   > https://en.wikipedia.org/wiki/Template_metaprogramming
