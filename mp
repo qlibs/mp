@@ -286,7 +286,7 @@ constexpr auto for_each(auto&& fn);
 /**
  * Asserts that condition is satisfied
  *  - constant evaluation: calls undefined function `failed()`
- *  - run-time evaluation: calls `breakpoint()`
+ *  - run-time evaluation: #ifndef NDEBUG calls `breakpoint()` otherwise empty call
  */
 constexpr void expect(auto cond) requires requires { bool(cond); };
 ```
@@ -599,19 +599,23 @@ constexpr auto for_each(auto&& fn) {
 /**
  * Asserts that condition is satisfied
  *  - constant evaluation: calls undefined function `failed()`
- *  - run-time evaluation: calls `breakpoint()`
+ *  - run-time evaluation: #ifndef NDEBUG calls `breakpoint()` otherwise empty call
  */
 constexpr void expect(auto cond) requires requires { bool(cond); } {
-  if (not cond) {
-    if (__builtin_is_constant_evaluated()) {
+  if (__builtin_is_constant_evaluated()) {
+    if (not cond) {
       detail::failed();
-    } else {
-      #if defined (_MSC_VER)
-        __debugbreak();
-      #else
-        __builtin_trap();
-      #endif
     }
+  } else {
+    #ifndef NDEBUG
+      if (not cond) {
+        #if defined (_MSC_VER)
+          __debugbreak();
+        #else
+          __builtin_trap();
+        #endif
+      }
+    #endif
   }
 }
 } // namespace mp
