@@ -547,7 +547,7 @@ constexpr auto invoke(info meta) {
   return invoke([]<info meta> {
     using type = type_of<meta>;
     if constexpr (requires { T<type, Ts...>::value; }) {
-      return T<type>::value;
+      return T<type, Ts...>::value;
     } else {
       return mp::meta<typename T<type, Ts...>::type>;
     }
