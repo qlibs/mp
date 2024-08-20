@@ -285,8 +285,7 @@ constexpr auto for_each(auto&& fn);
 ```cpp
 /**
  * Asserts that condition is satisfied
- *  - constant evaluation: calls undefined function `failed()`
- *  - run-time evaluation: #ifndef NDEBUG calls `breakpoint()` otherwise empty call
+ *  - #ifndef NDEBUG calls `breakpoint()` (which is not constexpr) otherwise empty call
  */
 constexpr void expect(auto cond) requires requires { bool(cond); };
 ```
@@ -469,7 +468,6 @@ template<class T> struct meta {
   static constexpr auto id = mp::info{gen()};
   constexpr auto friend get(info<id>) { return meta{}; }
 };
-void failed();
 } // namespace detail
 
 /**
@@ -598,25 +596,18 @@ constexpr auto for_each(auto&& fn) {
 
 /**
  * Asserts that condition is satisfied
- *  - constant evaluation: calls undefined function `failed()`
- *  - run-time evaluation: #ifndef NDEBUG calls `breakpoint()` otherwise empty call
+ *  - #ifndef NDEBUG calls `breakpoint()` (which is not constexpr) otherwise empty call
  */
 constexpr void expect(auto cond) requires requires { bool(cond); } {
-  if (__builtin_is_constant_evaluated()) {
+  #ifndef NDEBUG
     if (not cond) {
-      detail::failed();
+      #if defined (_MSC_VER)
+        __debugbreak();
+      #else
+        __builtin_trap();
+      #endif
     }
-  } else {
-    #ifndef NDEBUG
-      if (not cond) {
-        #if defined (_MSC_VER)
-          __debugbreak();
-        #else
-          __builtin_trap();
-        #endif
-      }
-    #endif
-  }
+  #endif
 }
 } // namespace mp
 
