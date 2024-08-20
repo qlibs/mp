@@ -252,6 +252,7 @@ using apply_t = decltype(apply_v<T, range>);
  * @endcode
  */
 [[nodiscard]] constexpr auto invoke(auto&& fn, info meta);
+```
 
 ```cpp
 /**
@@ -281,7 +282,7 @@ template<concepts::range auto range>
 constexpr auto for_each(auto&& fn);
 ```
 
-``cpp
+```cpp
 /**
  * Asserts that condition is satisfied
  *  - constant evaluation: calls undefined function `failed()`
