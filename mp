@@ -243,14 +243,27 @@ using apply_t = decltype(apply_v<T, range>);
 
 ```cpp
 /**
- * Invokes function with compile-time info based on run-time info
+ * Invokes function with compile-time info based on meta-info
  *
  * @code
- * info i = meta<conts int>; // run-time
- * static_assert(invoke([]<info m> { return std::is_const_v<type_of<m>>; }, i));
+ * static_assert(invoke(
+ *   []<info m> { return std::is_const_v<type_of<m>>;
+ * }, meta<conts int>));
  * @endcode
  */
-constexpr auto invoke(auto&& fn, info meta);
+[[nodiscard]] constexpr auto invoke(auto&& fn, info meta);
+
+```cpp
+/**
+ * Invokes type_trait with meta-info
+ *
+ * @code
+ * static_assert(not invoke<std::is_const>(meta<int>));
+ * static_assert(invoke<std::is_const>(meta<const int>));
+ * @endcode
+ */
+template<template<class...> class T, class... Ts>
+[[nodiscard]] constexpr auto invoke(info meta) {
 ```
 
 ```cpp
@@ -266,6 +279,15 @@ constexpr auto invoke(auto&& fn, info meta);
  */
 template<concepts::range auto range>
 constexpr auto for_each(auto&& fn);
+```
+
+``cpp
+/**
+ * Asserts that condition is satisfied
+ *  - constant evaluation: calls undefined function `failed()`
+ *  - run-time evaluation: calls `breakpoint()`
+ */
+constexpr void expect(auto cond) requires requires { bool(cond); };
 ```
 
 ---
@@ -446,6 +468,7 @@ template<class T> struct meta {
   static constexpr auto id = mp::info{gen()};
   constexpr auto friend get(info<id>) { return meta{}; }
 };
+void failed();
 } // namespace detail
 
 /**
@@ -514,12 +537,13 @@ using apply_t = decltype(
  * Invokes function with compile-time info based on run-time info
  *
  * @code
- * info i = meta<conts int>; // run-time
- * static_assert(invoke([]<info m> { return std::is_const_v<type_of<m>>; }, i));
+ * static_assert(invoke(
+ *   []<info m> { return std::is_const_v<type_of<m>>;
+ * }, meta<conts int>));
  * @endcode
  */
 template<class Fn, class T = decltype([]{})>
-constexpr auto invoke(Fn&& fn, info meta) {
+[[nodiscard]] constexpr auto invoke(Fn&& fn, info meta) {
   constexpr auto dispatch = [&]<size_t... Ns>(utility::index_sequence<Ns...>) {
     return array{
       []<info N> {
@@ -535,7 +559,7 @@ constexpr auto invoke(Fn&& fn, info meta) {
 }
 
 /**
- * Invokes meta-function
+ * Invokes type_trait with meta-info
  *
  * @code
  * static_assert(not invoke<std::is_const>(meta<int>));
@@ -543,7 +567,7 @@ constexpr auto invoke(Fn&& fn, info meta) {
  * @endcode
  */
 template<template<class...> class T, class... Ts, auto = []{}>
-constexpr auto invoke(info meta) {
+[[nodiscard]] constexpr auto invoke(info meta) {
   return invoke([]<info meta> {
     using type = type_of<meta>;
     if constexpr (requires { T<type, Ts...>::value; }) {
@@ -570,6 +594,25 @@ constexpr auto for_each(auto&& fn) {
     (fn.template operator()<range[Ns]>(), ...);
   }(utility::make_index_sequence<range.size()>{});
 }
+
+/**
+ * Asserts that condition is satisfied
+ *  - constant evaluation: calls undefined function `failed()`
+ *  - run-time evaluation: calls `breakpoint()`
+ */
+constexpr void expect(auto cond) requires requires { bool(cond); } {
+  if (not cond) {
+    if (__builtin_is_constant_evaluated()) {
+      detail::failed();
+    } else {
+      #if defined (_MSC_VER)
+        __debugbreak();
+      #else
+        __builtin_trap();
+      #endif
+    }
+  }
+}
 } // namespace mp
 
 #ifndef NTEST
@@ -580,11 +623,11 @@ namespace mp::test {
   template<class T> struct is_const { static constexpr auto value = false; };
   template<class T> struct is_const<const T> { static constexpr auto value = true; };
   template<class T> struct add_const { using type = const T; };
-  void failed(); constexpr void expect(bool cond) { if (not cond) { failed(); } }
 } // namespace mp::test
 
 static_assert(([] {
   using namespace mp::test;
+  using mp::expect;
 
   // mp::test
   {
@@ -609,8 +652,8 @@ static_assert(([] {
   // mp::array
   {
     {
-      mp::array<mp::size_t, 1> a{};
-      expect(1 == a.size());
+      mp::array<mp::size_t, 1u> a{};
+      expect(1u == a.size());
     }
 
     {
