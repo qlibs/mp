@@ -571,10 +571,10 @@ template<template<class...> class T, class... Ts, auto = []{}>
 [[nodiscard]] constexpr auto invoke(info meta) {
   return invoke([]<info meta> {
     using type = type_of<meta>;
-    if constexpr (requires { T<type, Ts...>::value; }) {
-      return T<type, Ts...>::value;
+    if constexpr (requires { T<Ts..., type>::value; }) {
+      return T<Ts..., type>::value;
     } else {
-      return mp::meta<typename T<type, Ts...>::type>;
+      return mp::meta<typename T<Ts..., type>::type>;
     }
   }, meta);
 }
