@@ -304,6 +304,11 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
     > When `-DNTEST` is defined static_asserts tests wont be executed upon include.
     Note: Use with caution as disabling tests means that there are no gurantees upon include that given compiler/env combination works as expected.
 
+- How does it work?
+
+    > [Template-less Metaprogramming](https://krzysztof-jusiak.github.io/talks/cppcon-2024)
+    > C++17 / 100 LOC / msvc, gcc, clang / no dependencies - https://godbolt.org/z/efexGo676
+
 - How `mp` compares to Reflection for C++26 (https://wg21.link/P2996)?
 
     > `mp` meta-programming model is very simpilar to P2996 and its based on type erased info object and meta-functions. `mp` also supports all C++ standard library and since verion 2.0.0+ `mp` type names have been adopted to closer reflect the reflection proposal.
@@ -311,9 +316,10 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
     | mp (C++20) | P2996 (C++26*) |
     | - | - |
     | `meta<T>` | `^T` |
+    | `using info = decltype(meta<void>)` | `using info = decltype(^::)` |
     | `type_of<T>` | `typename [: T :]` |
     | `for_each` | `template for` (https://wg21.link/p1306) |
-    | `apply` | `substitute` |
+    | `apply_t` | `substitute` |
     | `invoke<Fn>` | `reflect_invoke` |
     | `invoke<Trait>` | `test_trait` |
     | `invoke<T>` | `extract` |
