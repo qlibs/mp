@@ -308,7 +308,7 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
 
     > Slides - [Template-less Metaprogramming](https://krzysztof-jusiak.github.io/talks/cppcon-2024)
 
-    > Source code (C++17 / 100 LOC / gcc, clang, msvc / no dependencies) - https://godbolt.org/z/efexGo676
+    > Code - https://godbolt.org/z/efexGo676 (C++17 / 100 LOC / gcc, clang, msvc / no dependencies) 
 
 - How `mp` compares to Reflection for C++26 (https://wg21.link/P2996)?
 
