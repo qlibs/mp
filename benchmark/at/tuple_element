@@ -1,0 +1,20 @@
+#include <tuple>
+
+template<std::size_t I, class T>
+struct tuple_element;
+ 
+// recursive case
+template<std::size_t I, class Head, class... Tail>
+struct tuple_element<I, std::tuple<Head, Tail...>>
+    : std::tuple_element<I - 1, std::tuple<Tail...>>
+{ };
+ 
+// base case
+template<class Head, class... Tail>
+struct tuple_element<0, std::tuple<Head, Tail...>>
+{
+    using type = Head;
+};
+
+template<std::size_t N, class... Ts>
+using at = typename tuple_element<N*3, std::tuple<Ts..., Ts..., Ts...>>::type;

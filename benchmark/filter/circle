@@ -1,0 +1,3 @@
+template<class...> struct type_list{};
+template<class... Ts>
+using filter = type_list<if Ts::value % 2 => Ts...>;

@@ -1,0 +1,30 @@
+#include <vector>
+#include <array>
+#include <ranges>
+#include <experimental/meta>
+
+template<class...> struct type_list { };
+
+template <auto R> struct meta_identity {
+    consteval operator decltype(R)() { return R; }
+};
+template <std::meta::info R> meta_identity<R> meta_token {};
+
+consteval auto lift_into_constexpr(auto Fn,
+                                      std::span<std::meta::info const> Rs) {
+    std::vector<std::meta::info> Args;
+    for (auto R : Rs)
+        Args.push_back(substitute(^meta_token, {reflect_value(R)}));
+
+    return extract<int>(reflect_invoke(^Fn, Args));
+}
+
+template<class... Ts>
+using filter = typename [: 
+    substitute(^type_list, std::array {^Ts...} |
+               std::views::filter([](std::meta::info RTy) {
+                   return lift_into_constexpr(
+                        [](auto r) { return [:r:]::value % 2; },
+                        {RTy});
+                   }) |
+               std::ranges::to<std::vector>()) :];
