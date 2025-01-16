@@ -317,8 +317,8 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
 
     | mp (C++20) | P2996 (C++26*) |
     | - | - |
-    | `meta<T>` | `^T` |
-    | `using info = decltype(meta<void>)` | `using info = decltype(^::)` |
+    | `meta<T>` | `^^T` |
+    | `using info = decltype(meta<void>)` | `using info = decltype(^^::)` |
     | `type_of<T>` | `typename [: T :]` |
     | `for_each` | `template for` (https://wg21.link/p1306) |
     | `apply_t` | `substitute` |
