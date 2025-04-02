@@ -334,7 +334,7 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
     FetchContent_Declare(
       qlibs.mp
       GIT_REPOSITORY https://github.com/qlibs/mp
-      GIT_TAG v2.0.10
+      GIT_TAG v2.0.11
     )
 
     FetchContent_MakeAvailable(qlibs.mp)
