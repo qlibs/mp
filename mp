@@ -349,13 +349,11 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
 <!--
 #endif
 
-#pragma once
-#ifdef __GNUC__
-#pragma GCC system_header
-#endif
+#ifndef MP
+#define MP 1024u
 
-#ifndef MP_SIZE
-#define MP_SIZE 1024u
+#if __GNUC__
+#pragma GCC system_header
 #endif
 
 namespace mp::inline v2_0_10 {
@@ -438,7 +436,7 @@ struct vector {
   [[nodiscard]] constexpr auto& operator[](size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
   [[nodiscard]] constexpr auto resize(size_t size) { size_ = size; }
-  [[nodiscard]] constexpr auto capacity() const { return MP_SIZE; }
+  [[nodiscard]] constexpr auto capacity() const { return MP; }
   [[nodiscard]] constexpr auto operator==(const vector<T>& other) const -> bool {
     if (size_ != other.size_) { return false; }
     for (auto i = 0u; i < size_; ++i) { if (data[i] != other.data[i]) { return false; } }
@@ -449,7 +447,7 @@ struct vector {
   }
   constexpr void clear() { size_ = {}; }
 
-  union { T data[MP_SIZE]{}; }; // __cpp_trivial_union
+  union { T data[MP]{}; }; // __cpp_trivial_union
   size_t size_{};
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T>;
@@ -463,7 +461,7 @@ namespace detail {
 template<info> struct info { constexpr auto friend get(info); };
 template<class T> struct meta {
   using value_type = T;
-  template<size_t left = 0u, size_t right = MP_SIZE - 1u>
+  template<size_t left = 0u, size_t right = MP - 1u>
   static constexpr auto gen() -> size_t {
     if constexpr (left >= right) {
       return left + requires { get(info<mp::info{left}>{}); };
@@ -881,3 +879,4 @@ static_assert(([] {
   }
 }(), true));
 #endif // NTEST
+#endif // MP
