@@ -36,7 +36,7 @@
 
 ### Features
 
-- Single header (https://raw.githubusercontent.com/qlibs/mp/main/mp - for integration see [FAQ](#faq))
+- Single header (https://raw.githubusercontent.com/qlibs/mp/main/mp)
 - Minimal [API](#api) and learning curve (supports STL, ranges, ...)
 - Supports debugging (meta-functions can be executed and debugged at run-time - see [examples](#examples))
 - Supports reflection (requires https://github.com/qlibs/reflect - see [examples](#examples))
