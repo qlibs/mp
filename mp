@@ -326,24 +326,6 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
     | `invoke<Trait>` | `test_trait` |
     | `invoke<T>` | `extract` |
 
-- How to integrate with [CMake.FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)?
-
-    ```
-    include(FetchContent)
-
-    FetchContent_Declare(
-      qlibs.mp
-      GIT_REPOSITORY https://github.com/qlibs/mp
-      GIT_TAG v2.0.11
-    )
-
-    FetchContent_MakeAvailable(qlibs.mp)
-    ```
-
-    ```
-    target_link_libraries(${PROJECT_NAME} PUBLIC qlibs.mp);
-    ```
-
 - Similar projects?
     > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.fusion](https://github.com/boostorg/fusion), [boost.mpl](https://github.com/boostorg/mpl)
 <!--
