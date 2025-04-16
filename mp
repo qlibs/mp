@@ -160,146 +160,133 @@ int main() {
 ### API
 
 ```cpp
-/**
- * Meta info type
- */
-enum class info : size_t { };
-```
+namespace mp::inline v2_0_11 {
+  /**
+   * Meta info type
+   */
+  enum class info : size_t { };
 
-```cpp
-/**
- * Creates meta type
- *
- * @code
- * static_assert(meta<void> == meta<void>);
- * static_assert(meta<void> != meta<int>);
- * @endcode
- */
-template<class T> inline constexpr info meta = /* unspecified */;
-```
+  /**
+   * Creates meta type
+   *
+   * @code
+   * static_assert(meta<void> == meta<void>);
+   * static_assert(meta<void> != meta<int>);
+   * @endcode
+   */
+  template<class T> inline constexpr info meta = /* unspecified */;
 
-```cpp
-/**
- * Returns underlying type from meta type
- *
- * @code
- * static_assert(typeid(type_of<meta<void>>) == typeid(void));
- * @endcode
- */
-template<info meta> using type_of = /* unspecified */;
-```
+  /**
+   * Returns underlying type from meta type
+   *
+   * @code
+   * static_assert(typeid(type_of<meta<void>>) == typeid(void));
+   * @endcode
+   */
+  template<info meta> using type_of = /* unspecified */;
 
-```cpp
-/**
- * Applies invocable `[] { return vector<info>{...}; }` to
- *                   `T<type_of<info>...>`
- *
- * @code
- * static_assert(typeid(variant<int>) ==
- *               typeid(apply<variant>([] { return vector{meta<int>}; })));
- * @endcode
- */
-template<template<class...> class T>
-[[nodiscard]] constexpr auto apply(concepts::invocable auto expr);
-```
+  /**
+   * Applies invocable `[] { return vector<info>{...}; }` to
+   *                   `T<type_of<info>...>`
+   *
+   * @code
+   * static_assert(typeid(variant<int>) ==
+   *               typeid(apply<variant>([] { return vector{meta<int>}; })));
+   * @endcode
+   */
+  template<template<class...> class T>
+  [[nodiscard]] constexpr auto apply(concepts::invocable auto expr);
 
-```cpp
-/**
- * Applies range to `T<type_of<info>...>`
- *
- * @code
- * static_assert(typeid(variant<int>) ==
- *               typeid(apply<variant, vector{meta<int>}>));
- * @endcode
- */
-template<template<class...> class T, concepts::range auto range>
-inline constexpr auto apply_v = decltype(apply<T, [] { return range; }>);
-```
+  /**
+   * Applies range to `T<type_of<info>...>`
+   *
+   * @code
+   * static_assert(typeid(variant<int>) ==
+   *               typeid(apply<variant, vector{meta<int>}>));
+   * @endcode
+   */
+  template<template<class...> class T, concepts::range auto range>
+  inline constexpr auto apply_v = decltype(apply<T, [] { return range; }>);
 
-```cpp
-/**
- * Applies range to `T<type_of<info>...>`
- *
- * @code
- * static_assert(typeid(variant<int>) ==
- *               typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
- * @endcode
- */
-template<template<class...> class T, concepts::range auto range>
-using apply_t = decltype(apply_v<T, range>);
-```
+  /**
+   * Applies range to `T<type_of<info>...>`
+   *
+   * @code
+   * static_assert(typeid(variant<int>) ==
+   *               typeid(apply_t<variant, [] { return vector{meta<int>}; }>));
+   * @endcode
+   */
+  template<template<class...> class T, concepts::range auto range>
+  using apply_t = decltype(apply_v<T, range>);
 
-```cpp
-/**
- * Invokes function with compile-time info based on meta-info
- *
- * @code
- * static_assert(invoke(
- *   []<info m> { return std::is_const_v<type_of<m>>;
- * }, meta<conts int>));
- * @endcode
- */
-[[nodiscard]] constexpr auto invoke(auto&& fn, info meta);
-```
+  /**
+   * Invokes function with compile-time info based on meta-info
+   *
+   * @code
+   * static_assert(invoke(
+   *   []<info m> { return std::is_const_v<type_of<m>>;
+   * }, meta<conts int>));
+   * @endcode
+   */
+  [[nodiscard]] constexpr auto invoke(auto&& fn, info meta);
 
-```cpp
-/**
- * Invokes type_trait with meta-info
- *
- * @code
- * static_assert(not invoke<std::is_const>(meta<int>));
- * static_assert(invoke<std::is_const>(meta<const int>));
- * @endcode
- */
-template<template<class...> class T, class... Ts>
-[[nodiscard]] constexpr auto invoke(info meta) {
-```
+  /**
+   * Invokes type_trait with meta-info
+   *
+   * @code
+   * static_assert(not invoke<std::is_const>(meta<int>));
+   * static_assert(invoke<std::is_const>(meta<const int>));
+   * @endcode
+   */
+  template<template<class...> class T, class... Ts>
+  [[nodiscard]] constexpr auto invoke(info meta);
 
-```cpp
-/**
- * Iterates over all elements of a range
- *
- * @code
- * constexpr vector v{meta<int>};
- * for_each<v>([]<info m> {
- *   static_assert(typeid(int) == typeid(type_of<m>));
- * });
- * @endcode
- */
-template<concepts::range auto range>
-constexpr auto for_each(auto&& fn);
-```
+  /**
+   * unrolls fn N times # optionally passes index I to fn
+   * @code
+   * mp::unroll<3>([]{ std::print("mp"); });
+   * mp::unroll<3>([]<auto I>{ std::print("{}", I); });
+   * @endcode
+   */
+  template<size_t N>
+  inline constexpr auto unroll(auto&& fn);
 
-```cpp
-/**
- * Asserts that condition is satisfied
- *  - constant evaluation: calls undefined function `failed()`
- *  - run-time evaluation: #ifndef NDEBUG calls `breakpoint()` otherwise empty call
- */
-constexpr void expect(auto cond) requires requires { bool(cond); };
+  /**
+   * Iterates over all elements of a range
+   *
+   * @code
+   * constexpr vector v{meta<int>};
+   * for_each<v>([]<info m> {
+   *   static_assert(typeid(int) == typeid(type_of<m>));
+   * });
+   * @endcode
+   */
+  template<concepts::range auto range>
+  inline constexpr auto for_each(auto&& fn);
+} // namesapce mp
 ```
 
 ### FAQ
 
 > - What does it mean that `mp` tests itself upon include?
 >
->     > `mp` runs all tests (via static_asserts) upon include. If the include compiled it means all tests are passing and the library works correctly on given compiler, enviornment.
+>     `mp` runs all tests (via static_asserts) upon include. If the include compiled it means all tests are passing and the library works correctly on given compiler, enviornment.
 >
 > - How to disable running tests at compile-time?
 >
->     > When `-DNTEST` is defined static_asserts tests wont be executed upon include.
+>     When `-DNTEST` is defined static_asserts tests wont be executed upon include.
 >     Note: Use with caution as disabling tests means that there are no gurantees upon include that given compiler/env combination works as expected.
 >
 > - How does it work?
 >
->     > Template-less Metaprogramming
->     > - Video - https://www.youtube.com/watch?v=yriNqhv-oM0
->     > - Slides - https://kris-jusiak.github.io/talks/cppcon-2024
->     > - Source code - https://godbolt.org/z/Kf9rovaqE (~100 LOC, C++17, gcc, clang, msvc, no dependencies)
+>     Template-less Metaprogramming
+>     - Video - https://www.youtube.com/watch?v=yriNqhv-oM0
+>     - Slides - https://kris-jusiak.github.io/talks/cppcon-2024
+>     - Source code - https://godbolt.org/z/Kf9rovaqE (~100 LOC, C++17, gcc, clang, msvc, no dependencies)
 >
 > - How `mp` compares to Reflection for C++26 (https://wg21.link/P2996)?
 >
->     > `mp` meta-programming model is very simpilar to P2996 and its based on type erased info object and meta-functions. `mp` also supports all C++ standard library and since verion 2.0.0+ `mp` type names have been adopted to closer reflect the reflection proposal.
+>     `mp` meta-programming model is very simpilar to P2996 and its based on type erased info object and meta-functions. `mp` also supports all C++ standard library and since verion 2.0.0+ `mp` type names have been adopted to closer reflect the reflection proposal.
 >
 >     | mp (C++20) | P2996 (C++26*) |
 >     | - | - |
@@ -311,9 +298,9 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
 >     | `invoke<Fn>` | `reflect_invoke` |
 >     | `invoke<Trait>` | `test_trait` |
 >     | `invoke<T>` | `extract` |
-
-- Similar projects?
-    > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.fusion](https://github.com/boostorg/fusion), [boost.mpl](https://github.com/boostorg/mpl)
+>
+> - Similar projects?
+>   [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.fusion](https://github.com/boostorg/fusion), [boost.mpl](https://github.com/boostorg/mpl)
 
 ### Resources
 
@@ -328,14 +315,12 @@ constexpr void expect(auto cond) requires requires { bool(cond); };
 <!--
 #endif
 
-#ifndef MP
-#define MP 1024u
-
+#pragma once
 #if __GNUC__
 #pragma GCC system_header
 #endif
 
-namespace mp::inline v2_0_10 {
+namespace mp::inline v2_0_11 {
 using size_t = decltype(sizeof(int));
 
 namespace utility {
@@ -398,7 +383,7 @@ template<class T, class... Ts> array(T, Ts...) -> array<T, 1u + sizeof...(Ts)>;
  * assert(meta<int> == v[1]);
  * @endcode
  */
-template<class T>
+template<class T, size_t N = 1024u>
 struct vector {
   using value_type = T;
   constexpr vector() = default;
@@ -415,7 +400,7 @@ struct vector {
   [[nodiscard]] constexpr auto& operator[](size_t i) { return data[i]; }
   [[nodiscard]] constexpr auto size() const { return size_; }
   [[nodiscard]] constexpr auto resize(size_t size) { size_ = size; }
-  [[nodiscard]] constexpr auto capacity() const { return MP; }
+  [[nodiscard]] constexpr auto capacity() const { return N; }
   [[nodiscard]] constexpr auto operator==(const vector<T>& other) const -> bool {
     if (size_ != other.size_) { return false; }
     for (auto i = 0u; i < size_; ++i) { if (data[i] != other.data[i]) { return false; } }
@@ -426,7 +411,7 @@ struct vector {
   }
   constexpr void clear() { size_ = {}; }
 
-  union { T data[MP]{}; }; // __cpp_trivial_union
+  union { T data[N]{}; }; // __cpp_trivial_union
   size_t size_{};
 };
 template<class T, class... Ts> vector(T, Ts...) -> vector<T>;
@@ -440,7 +425,7 @@ namespace detail {
 template<info> struct info { constexpr auto friend get(info); };
 template<class T> struct meta {
   using value_type = T;
-  template<size_t left = 0u, size_t right = MP - 1u>
+  template<size_t left = 0u, size_t right = 1024u - 1u>
   static constexpr auto gen() -> size_t {
     if constexpr (left >= right) {
       return left + requires { get(info<mp::info{left}>{}); };
@@ -529,7 +514,7 @@ using apply_t = decltype(
  * @endcode
  */
 template<class Fn, class T = decltype([]{})>
-[[nodiscard]] constexpr auto invoke(Fn&& fn, info meta) {
+[[nodiscard]] inline constexpr auto invoke(Fn&& fn, info meta) {
   constexpr auto dispatch = [&]<size_t... Ns>(utility::index_sequence<Ns...>) {
     return array{
       []<info N> {
@@ -553,7 +538,7 @@ template<class Fn, class T = decltype([]{})>
  * @endcode
  */
 template<template<class...> class T, class... Ts, auto = []{}>
-[[nodiscard]] constexpr auto invoke(info meta) {
+[[nodiscard]] inline constexpr auto invoke(info meta) {
   return invoke([]<info meta> {
     using type = type_of<meta>;
     if constexpr (requires { T<Ts..., type>::value; }) {
@@ -563,6 +548,27 @@ template<template<class...> class T, class... Ts, auto = []{}>
     }
   }, meta);
 }
+
+/**
+ * unrolls fn N times # optionally passes index I to fn
+ * @code
+ * mp::unroll<3>([]{ std::print("mp"); });
+ * mp::unroll<3>([]<auto I>{ std::print("{}", I); });
+ * @endcode
+ */
+template<size_t N>
+inline constexpr auto unroll = [](auto&& fn) {
+  const auto invoke = [&]<size_t I> {
+    if constexpr (requires { fn.template operator()<size_t{}>(); }) {
+      fn.template operator()<I>();
+    } else {
+      fn();
+    }
+  };
+  [&]<size_t... Ns>(utility::index_sequence<Ns...>) {
+    (invoke.template operator()<Ns>(), ...);
+  }(utility::make_index_sequence<N>{});
+};
 
 /**
  * Iterates over all elements of over range
@@ -575,11 +581,11 @@ template<template<class...> class T, class... Ts, auto = []{}>
  * @endcode
  */
 template<concepts::range auto range>
-constexpr auto for_each(auto&& fn) {
+inline constexpr auto for_each = [](auto&& fn) {
   [fn]<size_t... Ns>(utility::index_sequence<Ns...>) {
     (fn.template operator()<range[Ns]>(), ...);
   }(utility::make_index_sequence<range.size()>{});
-}
+};
 
 /**
  * Asserts that condition is satisfied
@@ -832,6 +838,33 @@ static_assert(([] {
     static_assert(is_same_v<const int, mp::type_of<mp::invoke<add_const>(mp::meta<const int>)>>);
   }
 
+  // mp::unroll
+  {
+    {
+      auto calls = 0u;
+      mp::unroll<0>([&]{ ++calls; });
+      expect(not calls);
+    }
+
+    {
+      auto calls = 0u;
+      mp::unroll<1>([&]{ ++calls; });
+      expect(calls == 1u);
+    }
+
+    {
+      auto calls = 0u;
+      mp::unroll<2>([&]{ ++calls; });
+      expect(calls == 2u);
+    }
+
+    {
+      auto calls = 0u;
+      mp::unroll<3>([&]<auto N>{ calls += N; });
+      expect(calls == 0u + 1u + 2u);
+    }
+  }
+
   // mp::for_each
   {
     {
@@ -858,4 +891,3 @@ static_assert(([] {
   }
 }(), true));
 #endif // NTEST
-#endif // MP
