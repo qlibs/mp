@@ -300,6 +300,7 @@ namespace mp::inline v2_0_11 {
 >     | `invoke<T>` | `extract` |
 >
 > - Similar projects?
+>
 >   [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.fusion](https://github.com/boostorg/fusion), [boost.mpl](https://github.com/boostorg/mpl)
 
 ### Resources
