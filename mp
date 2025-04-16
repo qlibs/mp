@@ -23,7 +23,7 @@
 //
 #if 0
 // -->
-[Overview](#Overview) / [Examples](#Examples) / [API](#API) / [FAQ](#FAQ)
+[Overview](#Overview) / [Examples](#Examples) / [API](#API) / [FAQ](#FAQ) / Resources(#Resources)
 
 ## MP: ~~Template~~ Meta-Programming library
 
@@ -46,8 +46,6 @@
 ### Requirements
 
 - C++20 ([clang++13+, g++11+, msvc-19.34+](https://en.cppreference.com/w/cpp/compiler_support))
-
----
 
 ### Overview
 
@@ -81,8 +79,6 @@ int main() {
 // and more (see API)...
 ```
 
----
-
 ### Examples
 
 > Hello World (https://godbolt.org/z/69jGzqPs1)
@@ -95,8 +91,6 @@ static_assert(std::is_same_v<int, at_c<0, int, bool, float>>);
 static_assert(std::is_same_v<bool, at_c<1, int, bool, float>>);
 static_assert(std::is_same_v<float, at_c<2, int, bool, float>>);
 ```
-
----
 
 > Algorithms (https://godbolt.org/z/GvzjvdPq8)
 
@@ -121,8 +115,6 @@ static_assert(
 );
 ```
 
----
-
 > Reflection - https://github.com/qlibs/reflect (https://godbolt.org/z/qb37G79Ya)
 
 ```cpp
@@ -141,8 +133,6 @@ constexpr mp::vector<mp::info> v =
 
 static_assert(std::tuple{42, 3.2f} == to<std::tuple, v>(f));
 ```
-
----
 
 > Run-time testing/debugging (https://godbolt.org/z/vTfGGToa4)
 
@@ -166,8 +156,6 @@ int main() {
   ));
 }
 ```
-
----
 
 ### API
 
@@ -291,43 +279,52 @@ constexpr auto for_each(auto&& fn);
 constexpr void expect(auto cond) requires requires { bool(cond); };
 ```
 
----
-
 ### FAQ
 
-- What does it mean that `mp` tests itself upon include?
-
-    > `mp` runs all tests (via static_asserts) upon include. If the include compiled it means all tests are passing and the library works correctly on given compiler, enviornment.
-
-- How to disable running tests at compile-time?
-
-    > When `-DNTEST` is defined static_asserts tests wont be executed upon include.
-    Note: Use with caution as disabling tests means that there are no gurantees upon include that given compiler/env combination works as expected.
-
-- How does it work?
-
-    > Template-less Metaprogramming
-    > - Video - https://www.youtube.com/watch?v=yriNqhv-oM0
-    > - Slides - https://kris-jusiak.github.io/talks/cppcon-2024
-    > - Source code - https://godbolt.org/z/Kf9rovaqE (~100 LOC, C++17, gcc, clang, msvc, no dependencies)
-
-- How `mp` compares to Reflection for C++26 (https://wg21.link/P2996)?
-
-    > `mp` meta-programming model is very simpilar to P2996 and its based on type erased info object and meta-functions. `mp` also supports all C++ standard library and since verion 2.0.0+ `mp` type names have been adopted to closer reflect the reflection proposal.
-
-    | mp (C++20) | P2996 (C++26*) |
-    | - | - |
-    | `meta<T>` | `^^T` |
-    | `using info = decltype(meta<void>)` | `using info = decltype(^^::)` |
-    | `type_of<T>` | `typename [: T :]` |
-    | `for_each` | `template for` (https://wg21.link/p1306) |
-    | `apply_t` | `substitute` |
-    | `invoke<Fn>` | `reflect_invoke` |
-    | `invoke<Trait>` | `test_trait` |
-    | `invoke<T>` | `extract` |
+> - What does it mean that `mp` tests itself upon include?
+>
+>     > `mp` runs all tests (via static_asserts) upon include. If the include compiled it means all tests are passing and the library works correctly on given compiler, enviornment.
+>
+> - How to disable running tests at compile-time?
+>
+>     > When `-DNTEST` is defined static_asserts tests wont be executed upon include.
+>     Note: Use with caution as disabling tests means that there are no gurantees upon include that given compiler/env combination works as expected.
+>
+> - How does it work?
+>
+>     > Template-less Metaprogramming
+>     > - Video - https://www.youtube.com/watch?v=yriNqhv-oM0
+>     > - Slides - https://kris-jusiak.github.io/talks/cppcon-2024
+>     > - Source code - https://godbolt.org/z/Kf9rovaqE (~100 LOC, C++17, gcc, clang, msvc, no dependencies)
+>
+> - How `mp` compares to Reflection for C++26 (https://wg21.link/P2996)?
+>
+>     > `mp` meta-programming model is very simpilar to P2996 and its based on type erased info object and meta-functions. `mp` also supports all C++ standard library and since verion 2.0.0+ `mp` type names have been adopted to closer reflect the reflection proposal.
+>
+>     | mp (C++20) | P2996 (C++26*) |
+>     | - | - |
+>     | `meta<T>` | `^^T` |
+>     | `using info = decltype(meta<void>)` | `using info = decltype(^^::)` |
+>     | `type_of<T>` | `typename [: T :]` |
+>     | `for_each` | `template for` (https://wg21.link/p1306) |
+>     | `apply_t` | `substitute` |
+>     | `invoke<Fn>` | `reflect_invoke` |
+>     | `invoke<Trait>` | `test_trait` |
+>     | `invoke<T>` | `extract` |
 
 - Similar projects?
     > [boost.mp11](https://github.com/boostorg/mp11), [boost.hana](https://github.com/boostorg/hana), [boost.fusion](https://github.com/boostorg/fusion), [boost.mpl](https://github.com/boostorg/mpl)
+
+### Resources
+
+> - https://wg21.link/P2996 (Reflection for C++26)
+> - https://github.com/seanbaxter/circle (Circle-lang)
+> - https://zig.guide/language-basics/comptime (Zig-comptime)
+
+### License
+
+> - [MIT](LICENSE)
+
 <!--
 #endif
 
