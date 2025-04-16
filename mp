@@ -244,8 +244,8 @@ namespace mp::inline v2_0_11 {
   /**
    * unrolls fn N times # optionally passes index I to fn
    * @code
-   * mp::unroll<3>([]{ std::print("mp"); });
-   * mp::unroll<3>([]<auto I>{ std::print("{}", I); });
+   * mp::unroll<3>([]{ std::print("mp"); }); // prints 'mpmpmp'
+   * mp::unroll<3>([]<auto I>{ std::print("{}", I); }); // prints '012'
    * @endcode
    */
   template<size_t N>
@@ -553,8 +553,8 @@ template<template<class...> class T, class... Ts, auto = []{}>
 /**
  * unrolls fn N times # optionally passes index I to fn
  * @code
- * mp::unroll<3>([]{ std::print("mp"); });
- * mp::unroll<3>([]<auto I>{ std::print("{}", I); });
+ * mp::unroll<3>([]{ std::print("mp"); }); // prints 'mpmpmp'
+ * mp::unroll<3>([]<auto I>{ std::print("{}", I); }); // prints '012'
  * @endcode
  */
 template<size_t N>
