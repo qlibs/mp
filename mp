@@ -36,7 +36,7 @@
 
 ### Features
 
-- Single header (https://raw.githubusercontent.com/qlibs/mp/main/mp)
+- Single header (https://raw.githubusercontent.com/qlibs/mp/main/mp) / C++20 module (https://raw.githubusercontent.com/qlibs/mp/main/mp.cppm)
 - Minimal [API](#api) and learning curve (supports STL, ranges, ...)
 - Supports debugging (meta-functions can be executed and debugged at run-time - see [examples](#examples))
 - Supports reflection (requires https://github.com/qlibs/reflect - see [examples](#examples))
