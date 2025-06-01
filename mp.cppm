@@ -36,7 +36,6 @@ export namespace mp {
   using mp::unroll;
   using mp::for_each;
 } // namesapce mp
-} // namespace mp
 
 // -*- mode: c++; -*-
 // vim: set filetype=cpp:
